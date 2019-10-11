@@ -85,8 +85,7 @@ paths:
           description: Invalid status value
           content: {}
       security:
-      - infoenergia_auth:
-        - read:contracts
+        - infoenergia_auth: []
   
   /contracts/{contractId}:
     get:
@@ -576,13 +575,6 @@ components:
 
   securitySchemes:
     infoenergia_auth:
-      type: oauth2
-      flows:
-        implicit:
-          authorizationUrl: http://infoenergia/oauth2/authorize
-          scopes:
-            read:contracts: read contracts 
-    api_key:
-      type: apiKey
-      name: api_key
-      in: header
+      type: http
+      scheme: basic
+      x-basicInfoFunc: app.basic_auth
