@@ -428,4 +428,4 @@ if __name__ == '__main__':
         **api_extra_args
     )
 
-    app.run(port=8090)
+    app.run(host='localhost', port=8090)

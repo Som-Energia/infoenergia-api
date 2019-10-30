@@ -13,7 +13,7 @@ externalDocs:
   description: ''
   url: ''
 servers:
-- url: https://infoenergia-api.somenergia.coop/
+- url: http://localhost:8090
 tags:
 - name: contracts
   description: All information about a contract
