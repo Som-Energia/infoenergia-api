@@ -1,0 +1,615 @@
+openapi: 3.0.1
+info:
+  title: Som Energia Infoenergia API
+  description: 'API for exchange contract information'
+  termsOfService: https://www.somenergia.coop/ca/avis-legal/
+  contact:
+    email: it@somenergia.coop
+  license:
+    name: AGPL-3.0
+    url: https://www.gnu.org/licenses/agpl-3.0.en.html
+  version: 0.0.0
+externalDocs:
+  description: ''
+  url: ''
+servers:
+- url: http://localhost:8090
+tags:
+- name: contracts
+  description: All information about a contract
+- name: modcontracts
+  description: All information about contract modifications
+- name: measurements
+  description: All information about contract energy measurements
+paths:
+  /contracts:
+    get:
+      tags:
+      - contracts
+      summary: Obtain all contracts information
+      description: 'Get contracts information depending on some date and tariff
+        parameters'
+      operationId: server.get_contracts
+      parameters:
+      - name: tariff
+        in: query
+        description: Tariff of the contract to filter
+        required: false
+        style: form
+        explode: false
+        schema:
+          type: string
+          default: None
+          enum:
+            - None
+            - 2.0A
+            - 2.1A
+            - 2.0DHA
+            - 2.0DHS
+            - 2.1DHA
+            - 2.1DHS
+            - 3.0A
+            - 3.1A
+            - 3.1A-LB
+            - 6.1
+            - 6.1A
+            - 6.1B
+      - name: from_
+        in: query
+        description: Filter contracts with activation date from this date on. In format YYYY-MM-DD
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          format: date
+          default: None
+          example: '2019-08-01'
+      - name: to_
+        in: query
+        description: Filter contracts with activation date until this date. In format YYYY-MM-DD
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          format: date
+          default: None
+          example: '2019-08-10'
+      - name: limit
+        in: query
+        description: How many contracts to return at one time (max 100)
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          default: 100
+      responses:
+        200:
+          description: successful operation
+          # links:
+          #   x-next:
+          #     description: A link to the next page of responses
+          #     operationId: server.get_contracts
+          #     parameters:
+          #       limit: '$response.page_results#/contracts'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/contracts'
+        400:
+          description: Invalid status value
+          content: {}
+      security:
+        - jwt: []
+  /contracts/{contractId}:
+    get:
+      tags:
+      - contracts
+      summary: Find contract by ID
+      description: Returns a single contract
+      operationId: server.get_contract_by_id
+      parameters:
+      - name: contractId
+        in: path
+        description: ID of contract to return
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/contracts'
+        400:
+          description: Invalid ID supplied
+          content: {}
+        404:
+          description: Contract not found
+          content: {}
+      security:
+        - jwt: []
+  /user/login:
+    post:
+      tags:
+      - user
+      summary: Logs user into the system
+      operationId: server.basic_auth
+      parameters:
+      - name: username
+        in: query
+        description: The user name for login
+        required: true
+        schema:
+          type: string
+      - name: password
+        in: query
+        description: The password for login in clear text
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: string
+        400:
+          description: Invalid username/password supplied
+          content: {}
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        username:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+        token:
+          type: string
+        active:
+          type: boolean
+  schemas:
+    contracts:
+      type: object
+      properties:
+        page_results:
+          type: integer
+          description: number of contracts per page
+          example: 100
+        contractId:
+          type: string
+          description: contract ID
+          example: contractId-123
+        ownerId:
+          type: string
+          description: owner ID
+          example: ownerId-123
+        payerId:
+          type: string
+          description: payer ID (should be the same as the owner id)
+          example: signerId-123
+        power:
+          type: integer
+          format: int64
+          description: contracted power
+          example: 123
+        power_:
+          type: object
+          description: power information
+          items:
+            type: object
+            properties:
+              power:
+                type: integer
+              dateStart:
+                type: string
+                format: date-time
+              dateEnd:
+                type: string
+                format: date-time
+          example:
+              {
+                "power": 123,
+                "dateStart": "2019-08-11T00:00:00Z",
+                "dateEnd": null
+              }
+        powerHistory:
+          type: array
+          description: power history
+          items:
+            type: object
+            properties:
+              power:
+                type: integer
+              dateStart:
+                type: string
+                format: date-time
+              dateEnd:
+                type: string
+                format: date-time
+          example:
+              {
+                "power": 123,
+                "dateStart": "2019-08-11T00:00:00Z",
+                "dateEnd": "2019-08-11T00:00:00Z",
+              }
+        tertiaryPower:
+          type: object
+          description: 3.0 power values
+          items:
+            type: object
+            properties:
+              p1:
+                type: integer
+              p2:
+                type: integer
+              p3:
+                type: integer
+          example: {"p1": 20000, "p2": 20000, "p3": 20000}
+        tradeOffice:
+          type: string
+          description:  trade office id
+          example: "tradeOffice-123"
+        dateStart:
+          type: string
+          format: date-time
+          description: contract activation date
+          example: "2013-10-11T16:37:05Z"
+        dateEnd:
+          type: string
+          nullable: true
+          description: contract cancelation date
+          example: null
+        climaticZone:
+          type: string
+          description:  climatic zone code
+          example: "climaticZone-1"
+        weatherStationId:
+          type: string
+          description:  weather station id
+          example: "weatherStatioId-123"
+        activeUser:
+          type: boolean
+          description: set to true if contract is active
+          example:  true
+        activeUserDate":
+          type: string
+          format: date-time
+          description:  user activation date
+          example: "2013-10-11T16:37:05Z"
+        experimentalGroupUser:
+          type: boolean
+          description: set to true if the contract is in an experimental group
+          example: true
+        experimentalGroupUserTest:
+          type: boolean
+          description: set to true if it is a test
+          example: true
+        customer:
+          type: object
+          description: contract owner
+          items:
+            type: object
+            properties:
+              customerId:
+                type: integer
+              address:
+                type: object
+                items:
+                  type: object
+                  properties:
+                    buildingId:
+                      type: string
+                    city:
+                      type: string
+                    cityCode:
+                      type: string
+                    countryCode:
+                      type: string
+                    country:
+                      type: string
+                    street:
+                      type: string
+                    postalCode:
+                      type: string
+                    province:
+                      type: string
+                    provinceCode:
+                      type: string
+                    parcelNumber:
+                      type: string
+                    GPS:
+                      type: object
+                      items:
+                        properties:
+                          latitude:
+                            type: string
+                          longitude:
+                            type: string
+          example:
+                {
+                "customerId": "customerId-123",
+                "address":
+                  {
+                  "buildingId": "building-123",
+                  "city": "city-123",
+                  "cityCode": "cityCode-123",
+                  "countryCode": "ES",
+                  "country": "Spain",
+                  "street": "street-123",
+                  "postalCode": "postalCode-123",
+                  "province": "Barcelona",
+                  "provinceCode": "provinceCode-123",
+                  "parcelNumber": "parcelNumber-123",
+                  "GPS": {
+                      "latitude": "01 02 03 N",
+                      "longitude": "04 05 06 W",
+                      }
+                  }
+                }
+        buildingData:
+          type: object
+          description: details on building conditions
+          items:
+            type: object
+            properties:
+              buildingConstructionYear:
+                type: integer
+                format: date
+                description: construction year
+              dwellingArea:
+                type: integer
+                description: area of residence
+              propertyType:
+                type: string
+                description: type of residence
+              buildingType:
+                type: string
+                description: first or second residence
+              dwellingPositionInBuilding:
+                type: string
+                description: residence floor
+              dwellingOrientation:
+                type: string
+                description: orientation
+              buildingWindowsType:
+                type: string
+                description: type of windows
+              buildingWindowsFrame:
+                type: string
+                description: type of windows frame
+              buildingCoolingSource:
+                type: string
+                description: cooling source
+              buildingHeatingSource:
+                type: string
+                description: heating source
+              buildingHeatingSourceDhw:
+                type: string
+                description: type of dwh heating source
+              buildingSolarSystem:
+                type: string
+                description: type of solar installation
+          example:
+                 {
+                  "buildingData":
+                  {
+                    "buildingConstructionYear": 2014,
+                    "dwellingArea": 196,
+                    "propertyType": "primary",
+                    "buildingType": "Apartment",
+                    "dwellingPositionInBuilding": "first_floor",
+                    "dwellingOrientation": "SE",
+                    "buildingWindowsType": "double_panel",
+                    "buildingWindowsFrame": "PVC",
+                    "buildingCoolingSource": "electricity",
+                    "buildingHeatingSource": "district_heating",
+                    "buildingHeatingSourceDhw": "gasoil",
+                    "buildingSolarSystem": "not_installed"
+                  }
+                }
+        profile:
+          type: object
+          description: details on residents
+          items:
+            type: object
+            properties:
+              totalPersonsNumber:
+                type: integer
+                description: total number of persons
+              minorsPersonsNumber:
+                type: integer
+                description: number of minors
+              workingAgePersonsNumber:
+                type: integer
+                description: number of working persons
+              retiredAgePersonsNumber:
+                type: integer
+                description: number of retired persons
+              malePersonsNumber:
+                type: integer
+                description: number of male persons
+              femalePersonsNumber:
+                type: integer
+                description: number of female persons
+              educationLevel:
+                type: object
+                description: education level of residents
+                items:
+                  type: object
+                  properties:
+                    edu_prim:
+                      type: integer
+                    edu_sec:
+                      type: integer
+                    edu_uni:
+                      type: integer
+                    edu_noStudies:
+                      type: integer
+          example:
+                {
+                "profile":
+                  {
+                  "totalPersonsNumber": 3,
+                  "minorsPersonsNumber": 0,
+                  "workingAgePersonsNumber": 2,
+                  "retiredAgePersonsNumber": 1,
+                  "malePersonsNumber": 2,
+                  "femalePersonsNumber": 1,
+                  "educationLevel":
+                    {
+                    "edu_prim": 0,
+                    "edu_sec": 1,
+                    "edu_uni": 1,
+                    "edu_noStudies": 1
+                    }
+                  }
+                }
+        customisedGroupingCriteria:
+          type: object
+          description: Group a contract by criteria
+          items:
+            type: object
+            properties:
+              criteria_1:
+                type: string
+                description: criteria id
+              criteria_2:
+                type: string
+                description: detail on criteria
+              criteria_3:
+                type: string
+                description: detail on criteria
+          example:
+                {
+                "customisedGroupingCriteria":
+                  {
+                  "criteria_1": "CLASS 1",
+                  "criteria_2": "XXXXXXX",
+                  "criteria_3": "YYYYYYY"
+                  },
+                }
+        customisedServiceParameters:
+          type: object
+          description: customised service parameters
+          items:
+            type: object
+            properties:
+              OT701:
+                type: string
+          example:
+                {
+                "customisedServiceParameters":
+                  {
+                  "OT701": "p1;p2;px"
+                  }
+                }
+        meteringPointId:
+          type: string
+          description: metering point ID
+          example: "c1759810-90f3-012e-0404-34159e211070"
+        devices:
+          type: array
+          description: metering device
+          items:
+            type: object
+            properties:
+              dateStart:
+                type: string
+                format: date-time
+                description: activation date
+              dateEnd:
+                type: string
+                nullable: true
+                format: date-time
+                description: deactivation date
+              devideId:
+                type: string
+                description: metering device id
+          example:
+            [{
+              "dateStart": "2019-10-11T16:37:05Z",
+              "dateEnd": null,
+              "deviceId": "c1810810-0381-012d-25a8-0017f2cd3574"
+              }]
+        version:
+          type: string
+          description: API version
+          example: "1"
+        activityCode:
+          type: string
+          description: activity code
+          example: "activityCode"
+        activityCodeDescription:
+          type: string
+          description: activity code description
+          example: "activityCodeDescription"
+        tariffId:
+          type: string
+          description: tariff id
+          example:  "tariffID-123"
+        tariffCostId:
+          type: string
+          description: tariff cost id
+          example: "tariffCostId-123"
+        CT:
+          type: string
+          description: CT id
+          example: "CT_Id123"
+        report:
+          type: object
+          description: report
+          items:
+            type: object
+            properties:
+              initialMonth:
+                type: string
+                format: YYYYMM
+                description: report month
+              language:
+                type: string
+                description: report language
+          example:
+            {
+              "initialMonth": "201902",
+              "language": "ES"
+            }
+    Error:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: integer
+          format: int32
+          example: 1
+        message:
+          type: string
+          example: Example error
+  securitySchemes:
+    infoenergia_auth:
+      type: http
+      scheme: basic
+      x-basicInfoFunc: server.basic_auth
+    jwt:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      x-bearerInfoFunc: server.decode_token
