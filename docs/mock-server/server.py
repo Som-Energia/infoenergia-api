@@ -1,11 +1,11 @@
 import os
 import time
-import six
-import connexion
 
-from werkzeug.exceptions import Unauthorized
+import connexion
+import six
 from connexion.mock import MockResolver
 from jose import JWTError, jwt
+from werkzeug.exceptions import Unauthorized
 
 BASE_DIR = os.path.dirname(os.path.abspath(__name__))
 
@@ -76,11 +76,7 @@ def get_contract_by_id(user, token_info, contractId):
                 'p2': None,
                 'p3': None
             },
-            'tradeOffice': 'tradeOffice-123',
             'climaticZone': 'climaticZone-2',
-            'weatherStationId': 'weatherStatioId-123',
-            'activeUser': True,
-            'activeUserDate': '2013-10-11T16:37:05Z',
             'experimentalGroupUser': True,
             'experimentalGroupUserTest': True,
             'buildingData':
@@ -108,16 +104,10 @@ def get_contract_by_id(user, token_info, contractId):
                     'cityCode': 'cityCode-123',
                     'countryCode': 'ES',
                     'country': 'Spain',
-                    'street': 'street-123',
                     'postalCode': 'postalCode-123',
                     'province': 'Barcelona',
                     'provinceCode': 'provinceCode-123',
                     'parcelNumber': 'parcelNumber-123',
-                    'GPS':
-                    {
-                        'latitude': '01 02 03 N',
-                        'longitude': '04 05 06 W',
-                    }
                 }
             },
             'profile':
@@ -136,10 +126,8 @@ def get_contract_by_id(user, token_info, contractId):
                     'edu_noStudies': 1
                 }
             },
-            'activityCode': 'activityCode',
-            'activityCodeDescription': 'activityCodeDescription',
+            'activityCode': 'activityCode - activityCodeDescription',
             'tariffId': 'tariffId-123',
-            'tariffCostId': 'tariffCostId-123',
             'customisedGroupingCriteria':
             {
                 'criteria_1': 'CLASS 1',
@@ -157,8 +145,7 @@ def get_contract_by_id(user, token_info, contractId):
                 'dateEnd': None,
                 'deviceId': 'c1810810-0381-012d-25a8-0017f2cd3574'
             }],
-            'CT': 'CT_Id123',
-            'version': '1',
+            'version': 1,
             'report':
             {
                 'initialMonth': '201902',
@@ -167,7 +154,7 @@ def get_contract_by_id(user, token_info, contractId):
             }
 
 
-def get_contracts(user, token_info, limit, from_, to_, tariff):
+def get_contracts(user, token_info, limit, from_, to_, tariff, juridic_type):
 
     ContractsList = [
         {
@@ -200,11 +187,7 @@ def get_contracts(user, token_info, limit, from_, to_, tariff):
                 'p2': None,
                 'p3': None
             },
-            'tradeOffice': 'tradeOffice-123',
             'climaticZone': 'climaticZone-2',
-            'weatherStationId': 'weatherStatioId-123',
-            'activeUser': True,
-            'activeUserDate': '2013-10-11T16:37:05Z',
             'experimentalGroupUser': True,
             'experimentalGroupUserTest': True,
             'buildingData':
@@ -232,16 +215,10 @@ def get_contracts(user, token_info, limit, from_, to_, tariff):
                     'cityCode': 'cityCode-123',
                     'countryCode': 'ES',
                     'country': 'Spain',
-                    'street': 'street-123',
                     'postalCode': 'postalCode-123',
                     'province': 'Barcelona',
                     'provinceCode': 'provinceCode-123',
                     'parcelNumber': 'parcelNumber-123',
-                    'GPS':
-                    {
-                        'latitude': '01 02 03 N',
-                        'longitude': '04 05 06 W',
-                    }
                 }
             },
             'profile':
@@ -260,10 +237,8 @@ def get_contracts(user, token_info, limit, from_, to_, tariff):
                     'edu_noStudies': 1
                 }
             },
-            'activityCode': 'activityCode',
-            'activityCodeDescription': 'activityCodeDescription',
+            'activityCode': 'activityCode - activityCodeDescription',
             'tariffId': 'tariffId-123',
-            'tariffCostId': 'tariffCostId-123',
             'customisedGroupingCriteria':
             {
                 'criteria_1': 'CLASS 1',
@@ -281,8 +256,7 @@ def get_contracts(user, token_info, limit, from_, to_, tariff):
                 'dateEnd': None,
                 'deviceId': 'c1810810-0381-012d-25a8-0017f2cd3574'
             }],
-            'CT': 'CT_Id123',
-            'version': '1',
+            'version': 1,
             'report':
             {
                 'initialMonth': '201902',
@@ -319,11 +293,7 @@ def get_contracts(user, token_info, limit, from_, to_, tariff):
                 'p2': None,
                 'p3': None
             },
-            'tradeOffice': 'tradeOffice-123',
             'climaticZone': 'climaticZone-2',
-            'weatherStationId': 'weatherStatioId-123',
-            'activeUser': True,
-            'activeUserDate': '2013-10-11T16:37:05Z',
             'experimentalGroupUser': True,
             'experimentalGroupUserTest': True,
             'buildingData':
@@ -351,16 +321,10 @@ def get_contracts(user, token_info, limit, from_, to_, tariff):
                     'cityCode': 'cityCode-123',
                     'countryCode': 'ES',
                     'country': 'Spain',
-                    'street': 'street-123',
                     'postalCode': 'postalCode-123',
                     'province': 'Barcelona',
                     'provinceCode': 'provinceCode-123',
                     'parcelNumber': 'parcelNumber-123',
-                    'GPS':
-                    {
-                        'latitude': '01 02 03 N',
-                        'longitude': '04 05 06 W',
-                    }
                 }
             },
             'profile':
@@ -379,10 +343,8 @@ def get_contracts(user, token_info, limit, from_, to_, tariff):
                     'edu_noStudies': 1
                 }
             },
-            'activityCode': 'activityCode',
-            'activityCodeDescription': 'activityCodeDescription',
+            'activityCode': 'activityCode - activityCodeDescription',
             'tariffId': 'tariffId-123',
-            'tariffCostId': 'tariffCostId-123',
             'customisedGroupingCriteria':
             {
                 'criteria_1': 'CLASS 1',
@@ -400,8 +362,7 @@ def get_contracts(user, token_info, limit, from_, to_, tariff):
                 'dateEnd': None,
                 'deviceId': 'c1810810-0381-012d-25a8-0017f2cd3574'
             }],
-            'CT': 'CT_Id123',
-            'version': '1',
+            'version': 1,
             'report':
             {
                 'initialMonth': '201902',
