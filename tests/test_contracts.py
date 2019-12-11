@@ -4,6 +4,42 @@ from unittest import TestCase
 
 import yaml
 from api import app
+from api.registration.models import User
+from passlib.hash import pbkdf2_sha256
+from pony.orm import db_session
+from sanic.log import logger
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+with open(os.path.join(BASE_DIR, 'tests/json4test.yaml')) as f:
+    json4test = yaml.load(f.read())
+
+
+class TestLogin(TestCase):
+
+    def setUp(self):
+        self.client = app.test_client
+        self.maxDiff = None
+
+    @db_session
+    def test__authenticate_user(self):
+        user = User(
+            username='Joaquina',
+            password=pbkdf2_sha256.hash("12341234"),
+            id_partner=1,
+            is_superuser=True
+        )
+        auth_body = {
+            'username': user.username,
+            'password': "12341234"
+        }
+
+        request, response = self.client.post('/auth', json=auth_body)
+        token = response.json.get('access_token', None)
+
+        self.assertIsNotNone(token)
+
+        user.delete()
 
 
 class TestContracts(TestCase):
