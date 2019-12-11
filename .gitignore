@@ -105,3 +105,6 @@ venv.bak/
 
 #config files
 configdb.py
+
+#test files
+json4test.yaml
