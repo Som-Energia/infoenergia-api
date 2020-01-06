@@ -104,40 +104,56 @@ def get_contract_json(erp_client, contract):
     return contract_json
 
 
-def get_contracts(request, erp_client, id_contract=None):
-        contract_obj = erp_client.model('giscedata.polissa')
+def get_contracts(request, id_contract=None):
+    contract_obj = request.app.erp_client.model('giscedata.polissa')
 
-        filters = [
-            ("active", "=", True),
-            ("state", "=", "activa")
-        ]
-        fields = [
-            'name',
-            'titular',
-            'data_alta',
-            'data_baixa',
-            'potencia',
-            'tarifa',
-            'pagador',
-            'modcontractual_activa',
-            'comptadors',
-            'cups',
-            'soci',
-            'cnae',
-            'modcontractuals_ids'
-        ]
-        if request.args:
-            logger.info('request.args:{}'.format(request.args))
-            filters = get_request_filters(
-                erp_client,
-                request.args,
-                filters
-            )
-        logger.info('Filter contracts by: {}'.format(filters))
-        if id_contract:
-            return contract_obj.read(id_contract, fields)
-        id_contracts = contract_obj.search(filters)
-        return contract_obj.read(id_contracts, fields)
+    filters = [
+        ("active", "=", True),
+        ("state", "=", "activa")
+    ]
+    fields = [
+        'name',
+        'titular',
+        'data_alta',
+        'data_baixa',
+        'potencia',
+        'tarifa',
+        'pagador',
+        'modcontractual_activa',
+        'comptadors',
+        'cups',
+        'soci',
+        'cnae',
+        'modcontractuals_ids'
+    ]
+    if request.args:
+        logger.info('request.args: %s', request.args)
+        filters = get_request_filters(
+            request.app.erp_client,
+            request.args,
+            filters
+        )
+    logger.info('Filter contracts by: %s', filters)
+    if id_contract:
+        return contract_obj.read(id_contract, fields)
+    id_contracts = contract_obj.search(filters)
+    return contract_obj.read(id_contracts, fields)
+
+
+async def async_get_contract_json(loop, executor, erp_client, contract):
+    result = await loop.run_in_executor(
+        executor,
+        functools.partial(get_contract_json, erp_client, contract)
+    )
+    return result
+
+
+async def async_get_contracts(request, id_contract=None):
+    result = await request.app.loop.run_in_executor(
+        request.app.thread_pool,
+        functools.partial(get_contracts, request, id_contract)
+    )
+    return result
 
 
 def find_changes(erp_client, modcons_id, field):
