@@ -2,7 +2,6 @@ import uuid
 from datetime import datetime
 
 from pytz import timezone
-from sanic.log import logger
 
 
 def make_uuid(model, model_id):

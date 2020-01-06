@@ -1,12 +1,11 @@
-
+import functools
 from datetime import datetime
-
-from api.utils import (get_id_for_contract, get_request_filters,
-                       make_utc_timestamp, make_uuid)
 from sanic.log import logger
 
 from .climatic_zones import ine_to_zc
 from .postal_codes import ine_to_dp
+from .utils import (get_id_for_contract, get_request_filters,
+                    make_utc_timestamp, make_uuid)
 
 
 def get_contract_json(erp_client, contract):

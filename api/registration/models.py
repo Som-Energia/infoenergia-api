@@ -1,10 +1,7 @@
-import os
+from pony.orm import Database, Optional, PrimaryKey, Required, db_session
 
-from passlib.hash import pbkdf2_sha256
-from pony.orm import (Database, Optional, PrimaryKey, Required, commit,
-                      db_session, set_sql_debug)
+db = Database()
 
-BASE_DIR = os.path.dirname(os.path.abspath(__name__))
 
 db = Database()
 
