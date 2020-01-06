@@ -105,6 +105,7 @@ venv.bak/
 
 #config files
 configdb.py
-
+*.sqlite
+*.sqlite3
 #test files
 json4test.yaml
