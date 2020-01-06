@@ -48,9 +48,11 @@ class ContractsView(HTTPMethodView):
 bp_contracts.add_route(
     ContractsView.as_view(),
     '/contracts/',
+    name='get_contracts',
 )
 
 bp_contracts.add_route(
     ContractsIdView.as_view(),
     '/contracts/<contractId>',
+    name='get_contract_by_id'
 )

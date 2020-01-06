@@ -199,7 +199,7 @@ def get_current_tariff(erp_client, modcons_id):
 
 
 def get_tariffHistory(erp_client, modcons_ids):
-    """ 
+    """
     "tariffHistory": [
      {
       "tariffId": "tariffID-123",
@@ -372,9 +372,9 @@ def get_building_details(erp_client, building_id):
         'buildingHeatingSourceDhw',
         'buildingSolarSystem'
     ]
-    logger.info('building_id: {}'.format(building_id))
+    logger.info('building_id: %s', building_id)
     building = building_obj.read(building_id)[0]
-    logger.info('building: {}'.format(building))
+    logger.info('building: %s', building)
 
     return {field: building[field] for field in fields_to_read}
 
@@ -428,8 +428,6 @@ def get_cups_to_climaticZone(erp_client, cups_id):
     ine = muni_obj.read(cups['id_municipi'][0], ['ine'])['ine']
     if ine in ine_to_zc.keys():
         return ine_to_zc[ine]
-    else:
-        return None
 
 
 def get_service(erp_client, service_id):
