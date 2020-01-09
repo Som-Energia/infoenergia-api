@@ -37,7 +37,7 @@ class InvitationUrlToken(HTTPMethodView):
         payload['is_superuser'] = request.args.get('is_superuser', False)
 
         if request.args.get('id_partner'):
-            payload['id_partner'] = id_partner
+            payload['id_partner'] = request.args.get('id_partner')
 
         with db_session:
             invitation_token = InvitationToken(

@@ -40,7 +40,7 @@ class ContractsView(HTTPMethodView):
             await async_get_contract_json(
                 app.loop, app.thread_pool, app.erp_client, contract
             )
-            for contract in contracs
+            for contract in contracts
         ]
         return json(contracts_json)
 

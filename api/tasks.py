@@ -135,9 +135,10 @@ def get_contracts(request, id_contract=None):
         )
     logger.info('Filter contracts by: %s', filters)
     if id_contract:
-        return contract_obj.read(id_contract, fields)
+        return contract_obj.read(id_contract, fields) or {}
     id_contracts = contract_obj.search(filters)
-    return contract_obj.read(id_contracts, fields)
+
+    return contract_obj.read(id_contracts, fields) or []
 
 
 async def async_get_contract_json(loop, executor, erp_client, contract):
@@ -274,7 +275,7 @@ def get_devices(erp_client, device_ids):
     fields = ['data_alta', 'data_baixa']
 
     devices = []
-    for comptador in compt_obj.read(device_ids, fields):
+    for comptador in compt_obj.read(device_ids, fields) or []:
         devices.append(
             {
                 'dateStart': make_utc_timestamp(comptador['data_alta']),

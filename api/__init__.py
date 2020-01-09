@@ -29,7 +29,7 @@ def build_app(app, loop):
         )
 
         app.thread_pool = futures.ThreadPoolExecutor(app.config.MAX_THREADS)
-        # app.erp_client = Client(**app.config.ERP_CONF)
+        app.erp_client = Client(**app.config.ERP_CONF)
 
         db.bind(
             provider='sqlite',
