@@ -31,9 +31,9 @@ def get_contract_json(erp_client, contract):
             ('cups_id', '=', contract['cups'][0])
         ]
     )
-
+    logger.info(contract['name'])
     contract_json = {
-        'contractId': make_uuid('giscedata.polissa', contract['name']),
+        'contractId': contract['name'],
         'ownerId': make_uuid('res.partner', contract['titular']),
         'payerId': make_uuid('res.partner', contract['pagador']),
         'dateStart': make_utc_timestamp(contract['data_alta']),
