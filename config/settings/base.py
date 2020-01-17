@@ -1,7 +1,7 @@
 import os
 import pathlib
-import yaml
 
+import yaml
 from environs import Env
 
 env = Env()
@@ -14,3 +14,5 @@ ERP_CONF = env.json('ERP_CONF')
 DB_CONF = env.json('DATABASE_CONF')
 
 SECRET_KEY = '1234'
+
+MAX_THREADS = 124

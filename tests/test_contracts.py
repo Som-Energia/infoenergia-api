@@ -103,7 +103,8 @@ class TestContracts(TestCase):
             params=params,
             headers={
                 'Authorization': 'Bearer {}'.format(token)
-            }
+            },
+            timeout=None
         )
 
         self.assertEqual(response.status, 200)

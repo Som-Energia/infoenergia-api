@@ -4,7 +4,7 @@ db = Database()
 
 
 class InvitationToken(db.Entity):
-    _table_  = 'invitation_tokens'
+    _table_ = 'invitation_tokens'
 
     id = PrimaryKey(int, auto=True)
 

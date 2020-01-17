@@ -1,11 +1,15 @@
+import asyncio
 import functools
 from datetime import datetime
+
 from sanic.log import logger
 
 from .climatic_zones import ine_to_zc
 from .postal_codes import ine_to_dp
 from .utils import (get_id_for_contract, get_request_filters,
                     make_utc_timestamp, make_uuid)
+
+loop = asyncio.get_event_loop()
 
 
 def get_contract_json(erp_client, contract):
@@ -372,10 +376,7 @@ def get_building_details(erp_client, building_id):
         'buildingHeatingSourceDhw',
         'buildingSolarSystem'
     ]
-    logger.info('building_id: %s', building_id)
     building = building_obj.read(building_id)[0]
-    logger.info('building: %s', building)
-
     return {field: building[field] for field in fields_to_read}
 
 
