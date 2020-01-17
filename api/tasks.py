@@ -302,6 +302,8 @@ def get_devices(erp_client, device_ids):
       }
     ]
     """
+    if not device_ids:
+        return []
     compt_obj = erp_client.model('giscedata.lectures.comptador')
     fields = ['data_alta', 'data_baixa']
 
@@ -451,6 +453,8 @@ def get_cups_to_climaticZone(erp_client, cups_id):
     """
     Climatic zone from CTE DB-HE:
     """
+    if not cups_id:
+        return None
     cups_obj = erp_client.model('giscedata.cups.ps')
     muni_obj = erp_client.model('res.municipi')
     cups = cups_obj.read(cups_id, ['id_municipi'])
@@ -467,7 +471,7 @@ def get_service(erp_client, service_id):
      }
     """
     if not service_id:
-        return None
+        return {}
 
     service_obj = erp_client.model('empowering.modcontractual.service')
     service = service_obj.read(service_id)
