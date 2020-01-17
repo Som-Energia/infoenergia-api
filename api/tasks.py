@@ -144,23 +144,28 @@ def get_contracts(request, id_contract=None):
         )
     logger.info('Filter contracts by: %s', filters)
     if id_contract:
-        return contract_obj.read(id_contract, fields)
+        return contract_obj.read(
+            contract_obj.search([('name', '=', id_contract)]), fields
+        )[0]
     id_contracts = contract_obj.search(filters)
-    return contract_obj.read(id_contracts, fields)
+    return contract_obj.read(id_contracts, fields) or []
+
+
+async def async_get_contracts(request, id_contract=None):
+    try:
+        result = await request.app.loop.run_in_executor(
+            request.app.thread_pool,
+            functools.partial(get_contracts, request, id_contract)
+        )
+    except Exception as e:
+        raise e
+    return result
 
 
 async def async_get_contract_json(loop, executor, erp_client, contract):
     result = await loop.run_in_executor(
         executor,
         functools.partial(get_contract_json, erp_client, contract)
-    )
-    return result
-
-
-async def async_get_contracts(request, id_contract=None):
-    result = await request.app.loop.run_in_executor(
-        request.app.thread_pool,
-        functools.partial(get_contracts, request, id_contract)
     )
     return result
 
