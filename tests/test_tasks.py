@@ -75,6 +75,21 @@ class TestContracts(TestCase):
             ]
         )
 
+    def test__get_tertiaryPower(self):
+        tertiary_power_json = tasks.get_tertiaryPower(
+            self.erp_client,
+            '3.0A',
+            '0080474'
+        )
+        self.assertEqual(
+            tertiary_power_json,
+            {
+                'P1': 4000,
+                'P2': 4000,
+                'P3': 15001
+            }
+        )
+
     def test__get_devices(self):
         devices_json = tasks.get_devices(self.erp_client, [165130])
         self.assertListEqual(
