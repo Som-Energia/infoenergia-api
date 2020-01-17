@@ -46,8 +46,13 @@ def build_app():
         raise e
     else:
         logger.info("Build api finished")
+        return app
 
-@app.listener('after_server_stop')
-def shutdown_app(app, loop):
-    logger.info("Shuting down api... ")
-    app.thread_pool.shutdown()
+
+app = build_app()
+
+
+# @app.listener('after_server_stop')
+# def shutdown_app(app, loop):
+#     logger.info("Shuting down api... ")
+#     app.thread_pool.shutdown()
