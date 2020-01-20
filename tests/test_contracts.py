@@ -4,25 +4,31 @@ from concurrent import futures
 from unittest import TestCase, skip
 
 import yaml
-from api import app
-from api.registration.models import User
 from passlib.hash import pbkdf2_sha256
 from pony.orm import db_session
 from sanic.log import logger
+from sanic_jwt.authentication import Authentication
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-with open(os.path.join(BASE_DIR, 'tests/json4test.yaml')) as f:
+os.environ.setdefault('INFOENERGIA_MODULE_SETTINGS', 'config.settings.testing')
+
+from api import app
+from api.registration.models import User
+
+with open(os.path.join(app.config.BASE_DIR, 'tests/json4test.yaml')) as f:
     json4test = yaml.load(f.read())
 
 
-class TestLogin(TestCase):
+class BaseTestCace(TestCase):
 
     def setUp(self):
         self.client = app.test_client
         self.maxDiff = None
         if app.thread_pool._shutdown:
             app.thread_pool = futures.ThreadPoolExecutor(app.config.MAX_THREADS)
+
+
+class TestLogin(BaseTestCace):
 
     @skip
     @db_session
@@ -48,24 +54,22 @@ class TestLogin(TestCase):
         user.delete()
 
 
-class TestContracts(TestCase):
+class TestContracts(BaseTestCace):
 
-    def setUp(self):
-        self.client = app.test_client
-        self.maxDiff = None
-
-    def get_auth_token(self, username, password, email):
-        auth_body = {
-            'username': username,
-            'password': password,
-            'email': email
-        }
-        request, response = self.client.post('/auth', json=auth_body)
-        token = response.json.get('access_token', None)
-        return token
 
     @db_session
     def test__get_contracts_by_id(self):
+        # TODO: Delete this
+        def get_auth_token(username, password, email):
+            auth_body = {
+                'username': username,
+                'password': password,
+                'email': email
+            }
+            request, response = self.client.post('/auth', json=auth_body)
+            token = response.json.get('access_token', None)
+            return token
+
         user = User(
             username='someone',
             password=pbkdf2_sha256.hash("123412345"),
@@ -73,7 +77,7 @@ class TestContracts(TestCase):
             id_partner=1,
             is_superuser=True
         )
-        token = self.get_auth_token(
+        token = get_auth_token(
             'someone',
             '123412345',
             'someone@somenergia.coop'
@@ -95,6 +99,17 @@ class TestContracts(TestCase):
 
     @db_session
     def test__get_contracts___auth_user(self):
+        # TODO: Delete this
+        def get_auth_token(username, password, email):
+            auth_body = {
+                'username': username,
+                'password': password,
+                'email': email
+            }
+            request, response = self.client.post('/auth', json=auth_body)
+            token = response.json.get('access_token', None)
+            return token
+
         user = User(
             username='someone',
             password=pbkdf2_sha256.hash("123412345"),
@@ -102,7 +117,7 @@ class TestContracts(TestCase):
             id_partner=1,
             is_superuser=True
         )
-        token = self.get_auth_token(
+        token = get_auth_token(
             'someone',
             '123412345',
             'someone@somenergia.coop'

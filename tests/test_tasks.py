@@ -1,15 +1,18 @@
 from unittest import TestCase
 
-import configdb
-from api import tasks
 from erppeek import Client
 from sanic.log import logger
+
+os.environ.setdefault('INFOENERGIA_MODULE_SETTINGS', 'config.settings.testing')
+
+from api import tasks
+from config import config
 
 
 class TestContracts(TestCase):
 
     def setUp(self):
-        self.erp_client = Client(**configdb.erppeek)
+        self.erp_client = Client(**config.ERP_CONF)
 
     def test__get_current_tariff(self):
         tariff_json = tasks.get_current_tariff(self.erp_client, 172830)

@@ -18,11 +18,12 @@ class ContractsIdView(HTTPMethodView):
     ]
 
     async def get(self, request, contractId):
+        app = request.app
         contract = await async_get_contracts(request, contractId)
         contract_json = await async_get_contract_json(
-            request.app.loop,
-            request.app.thread_pool,
-            request.app.erp_client,
+            app.loop,
+            app.thread_pool,
+            app.erp_client,
             contract
         )
         return json(contract_json)
@@ -40,7 +41,7 @@ class ContractsView(HTTPMethodView):
 
         contracts_json = [
             await async_get_contract_json(
-                asyncio.get_event_loop(),
+                app.loop,
                 app.thread_pool,
                 app.erp_client,
                 contract
