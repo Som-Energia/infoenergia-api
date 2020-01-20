@@ -2,14 +2,15 @@ from datetime import datetime, timedelta
 
 import jwt
 from passlib.hash import pbkdf2_sha256
-from pony.orm import db_session, select, core, commit
+from pony.orm import commit, core, db_session, select
 from sanic.exceptions import InvalidUsage
 from sanic.log import logger
 from sanic.response import json
 from sanic.views import HTTPMethodView
-from sanic_jwt import exceptions, BaseEndpoint
+from sanic_jwt import BaseEndpoint, exceptions
 
-from .models import InvitationToken, get_user, User
+from .models import InvitationToken, User, get_user
+
 
 async def authenticate(request):
     body = request.json

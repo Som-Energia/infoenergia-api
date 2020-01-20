@@ -1,11 +1,15 @@
+import asyncio
 import functools
 from datetime import datetime
+
 from sanic.log import logger
 
 from .climatic_zones import ine_to_zc
 from .postal_codes import ine_to_dp
 from .utils import (get_id_for_contract, get_request_filters,
                     make_utc_timestamp, make_uuid)
+
+loop = asyncio.get_event_loop()
 
 
 def get_contract_json(erp_client, contract):
@@ -27,9 +31,9 @@ def get_contract_json(erp_client, contract):
             ('cups_id', '=', contract['cups'][0])
         ]
     )
-
+    logger.info(contract['name'])
     contract_json = {
-        'contractId': make_uuid('giscedata.polissa', contract['name']),
+        'contractId': contract['name'],
         'ownerId': make_uuid('res.partner', contract['titular']),
         'payerId': make_uuid('res.partner', contract['pagador']),
         'dateStart': make_utc_timestamp(contract['data_alta']),
@@ -50,6 +54,11 @@ def get_contract_json(erp_client, contract):
         'powerHistory': get_powerHistory(
             erp_client,
             contract['modcontractuals_ids'],
+        ),
+        'terciaryPower': get_tertiaryPower(
+            erp_client,
+            contract['tarifa'][1],
+            contract['id']
         ),
         'climaticZone': get_cups_to_climaticZone(
             erp_client,
@@ -135,24 +144,28 @@ def get_contracts(request, id_contract=None):
         )
     logger.info('Filter contracts by: %s', filters)
     if id_contract:
-        return contract_obj.read(id_contract, fields) or {}
+        return contract_obj.read(
+            contract_obj.search([('name', '=', id_contract)]), fields
+        )[0] or {}
     id_contracts = contract_obj.search(filters)
-
     return contract_obj.read(id_contracts, fields) or []
+
+
+async def async_get_contracts(request, id_contract=None):
+    try:
+        result = await request.app.loop.run_in_executor(
+            request.app.thread_pool,
+            functools.partial(get_contracts, request, id_contract)
+        )
+    except Exception as e:
+        raise e
+    return result
 
 
 async def async_get_contract_json(loop, executor, erp_client, contract):
     result = await loop.run_in_executor(
         executor,
         functools.partial(get_contract_json, erp_client, contract)
-    )
-    return result
-
-
-async def async_get_contracts(request, id_contract=None):
-    result = await request.app.loop.run_in_executor(
-        request.app.thread_pool,
-        functools.partial(get_contracts, request, id_contract)
     )
     return result
 
@@ -260,6 +273,24 @@ def get_powerHistory(erp_client, modcons_id):
         for modcon in find_changes(erp_client, modcons_id, 'potencia')]
 
 
+def get_tertiaryPower(erp_client, tariff, contract_id):
+    """
+    Terciary Power:
+     {
+        "P1": 20000,
+        "P2": 20000,
+        "P3": 20000
+    }
+    """
+    if '2.' in tariff:
+        return {}
+    period_obj = erp_client.model('giscedata.polissa.potencia.contractada.periode')
+    period_powers = period_obj.read([('polissa_id', '=', contract_id)])
+    return {
+     'P{}'.format(i): int(period['potencia'] * 1000) for i, period in enumerate(period_powers, 1)
+    }
+
+
 def get_devices(erp_client, device_ids):
     """
     All devices:
@@ -271,6 +302,8 @@ def get_devices(erp_client, device_ids):
       }
     ]
     """
+    if not device_ids:
+        return []
     compt_obj = erp_client.model('giscedata.lectures.comptador')
     fields = ['data_alta', 'data_baixa']
 
@@ -373,10 +406,7 @@ def get_building_details(erp_client, building_id):
         'buildingHeatingSourceDhw',
         'buildingSolarSystem'
     ]
-    logger.info('building_id: %s', building_id)
     building = building_obj.read(building_id)[0]
-    logger.info('building: %s', building)
-
     return {field: building[field] for field in fields_to_read}
 
 
@@ -423,6 +453,8 @@ def get_cups_to_climaticZone(erp_client, cups_id):
     """
     Climatic zone from CTE DB-HE:
     """
+    if not cups_id:
+        return None
     cups_obj = erp_client.model('giscedata.cups.ps')
     muni_obj = erp_client.model('res.municipi')
     cups = cups_obj.read(cups_id, ['id_municipi'])
@@ -439,7 +471,7 @@ def get_service(erp_client, service_id):
      }
     """
     if not service_id:
-        return None
+        return {}
 
     service_obj = erp_client.model('empowering.modcontractual.service')
     service = service_obj.read(service_id)

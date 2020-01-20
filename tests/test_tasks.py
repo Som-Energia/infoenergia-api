@@ -38,7 +38,7 @@ class TestContracts(TestCase):
                 {
                     'tariffId': '2.0DHA',
                     'dateStart': '2019-06-01T00:00:00-00:15Z',
-                    'dateEnd': '2019-10-31T00:00:00-00:15Z'
+                    'dateEnd': '2020-10-31T00:00:00-00:15Z'
                 }
             ]
         )
@@ -70,9 +70,24 @@ class TestContracts(TestCase):
                 {
                     'power': 3400,
                     'dateStart': '2019-09-02T00:00:00-00:15Z',
-                    'dateEnd': '2019-11-21T00:00:00-00:15Z'
+                    'dateEnd': '2020-11-21T00:00:00-00:15Z'
                 },
             ]
+        )
+
+    def test__get_tertiaryPower(self):
+        tertiary_power_json = tasks.get_tertiaryPower(
+            self.erp_client,
+            '3.0A',
+            '0080474'
+        )
+        self.assertEqual(
+            tertiary_power_json,
+            {
+                'P1': 4000,
+                'P2': 4000,
+                'P3': 15001
+            }
         )
 
     def test__get_devices(self):
@@ -103,7 +118,7 @@ class TestContracts(TestCase):
         )
 
     def test__get_building_details(self):
-        address_json = tasks.get_building_details(self.erp_client, 3)
+        address_json = tasks.get_building_details(self.erp_client, [3])
         self.assertDictEqual(
             address_json,
             {
@@ -160,7 +175,7 @@ class TestContracts(TestCase):
         service_json = tasks.get_service(self.erp_client, None)
         self.assertEqual(
             service_json,
-            None
+            {}
         )
 
     def test_get_version(self):

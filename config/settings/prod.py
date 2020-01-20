@@ -1,5 +1,11 @@
 from .base import *
 
+# ERP configuration
+ERP_CONF = env.json('ERP_CONF')
+
+# DATABASE configuration
+DB_CONF = env.json('DATABASE_CONF')
+
 ACCESS_LOG = False
 
 PROXIES_COUNT = 1
@@ -9,6 +15,8 @@ MAX_THREADS = 20
 INVITATION_EXP_DAYS = env.int('EXP_DAYS')
 
 SECRET_KEY = env.str('SECRET_KEY')
+
+SANIC_JWT_SECRET = SECRET_KEY
 
 LOGGING = {
     'version': 1,

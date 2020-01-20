@@ -1,3 +1,6 @@
+import asyncio
+import json as json_basic
+
 from sanic import Blueprint
 from sanic.log import logger
 from sanic.response import json
@@ -5,7 +8,6 @@ from sanic.views import HTTPMethodView
 from sanic_jwt.decorators import protected
 
 from ..tasks import async_get_contract_json, async_get_contracts
-
 
 bp_contracts = Blueprint('contracts')
 
@@ -38,7 +40,10 @@ class ContractsView(HTTPMethodView):
 
         contracts_json = [
             await async_get_contract_json(
-                app.loop, app.thread_pool, app.erp_client, contract
+                asyncio.get_event_loop(),
+                app.thread_pool,
+                app.erp_client,
+                contract
             )
             for contract in contracts
         ]

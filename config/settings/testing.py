@@ -1,16 +1,16 @@
 from .base import *
 
-# ERP configuration
-ERP_CONF = env.json('ERP_CONF')
+test_env = Env()
+test_env.read_env(os.path.join(BASE_DIR, 'tests'))
 
-# DATABASE configuration
-DB_CONF = env.json('DATABASE_CONF')
+ERP_CONF = test_env.json('ERP_CONF')
+
+DB_CONF = test_env.json('DATABASE_CONF')
 
 MAX_THREADS = 10
 
-INVITATION_EXP_DAYS = 1
-
 SANIC_JWT_SECRET = SECRET_KEY
+INVITATION_EXP_DAYS = 1
 
 LOGGING = {
     'version': 1,
@@ -22,9 +22,12 @@ LOGGING = {
         },
     },
     'handlers': {
-        'console': {
-            'level': 'DEBUG',
-            'class': 'logging.StreamHandler',
+        'file': {
+            'level': 'INFO',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': 'logs/infoenergia-api_test.log',
+            'maxBytes': 5 * (1024 * 1024),
+            'backupCount': 7,
             'formatter': 'verbose'
         }
     },
@@ -36,4 +39,3 @@ LOGGING = {
         },
     }
 }
-
