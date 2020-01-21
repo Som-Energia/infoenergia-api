@@ -5,10 +5,6 @@ from pytz import timezone
 
 
 def make_uuid(model, model_id):
-    if isinstance(model, str):
-        model = model.encode('utf-8')
-    if isinstance(model_id, str):
-        model_id = model_id.encode('utf-8')
     token = '%s,%s' % (model, model_id)
     return str(uuid.uuid5(uuid.NAMESPACE_OID, token))
 

@@ -31,8 +31,8 @@ def get_contract_json(erp_client, contract):
     logger.info(contract['name'])
     contract_json = {
         'contractId': contract['name'],
-        'ownerId': make_uuid('res.partner', contract['titular']),
-        'payerId': make_uuid('res.partner', contract['pagador']),
+        'ownerId': make_uuid('res.partner', contract['titular'][0]),
+        'payerId': make_uuid('res.partner', contract['pagador'][0]),
         'dateStart': make_utc_timestamp(contract['data_alta']),
         'dateEnd': make_utc_timestamp(contract['data_baixa']),
         'tariffId': contract['tarifa'][1],
@@ -42,7 +42,7 @@ def get_contract_json(erp_client, contract):
         ),
         'tariffHistory': get_tariffHistory(
             erp_client,
-            contract['modcontractual_activa'][0]),
+            contract['modcontractuals_ids']),
         'power': int(contract['potencia'] * 1000),
         'power_': get_current_power(
             erp_client,
@@ -65,7 +65,7 @@ def get_contract_json(erp_client, contract):
         'customer': {
             'customerId': make_uuid(
                 'res.partner',
-                contract['titular']
+                contract['titular'][0]
             ),
             'address': get_contract_address(
                 erp_client,
