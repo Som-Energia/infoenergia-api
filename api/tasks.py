@@ -159,11 +159,12 @@ async def async_get_contracts(request, id_contract=None):
     return result
 
 
-async def async_get_contract_json(loop, executor, erp_client, contract):
-    result = await loop.run_in_executor(
-        executor,
-        functools.partial(get_contract_json, erp_client, contract)
-    )
+async def async_get_contract_json(loop, executor, erp_client, sem, contract):
+    async with sem:
+        result = await loop.run_in_executor(
+            executor,
+            functools.partial(get_contract_json, erp_client, contract)
+        )
     return result
 
 

@@ -36,19 +36,29 @@ class ContractsView(HTTPMethodView):
 
     async def get(self, request):
         app = request.app
+        sem = asyncio.Semaphore(app.config.MAX_TASKS)
+        result = []
         contracts = await async_get_contracts(request)
-        logger.info('how many contracts: %d', len(contracts))
+        logger.info("how many contracts: %d", len(contracts))
 
-        contracts_json = [
-            await async_get_contract_json(
-                app.loop,
-                app.thread_pool,
-                app.erp_client,
-                contract
+        to_do = [
+            async_get_contract_json(
+                app.loop, app.thread_pool, app.erp_client, sem, contract
             )
             for contract in contracts
         ]
-        return json(contracts_json)
+        while to_do:
+            logger.info("%d contracts to anonymize", len(to_do))
+            done, to_do = await asyncio.wait(to_do, timeout=app.config.TASK_TIMEOUT)
+            for task in done:
+                try:
+                    contract_json = task.result()
+                except Exception as e:
+                    logger.error("Reason: %s", str(e))
+                else:
+                    result.append(contract_json)
+
+        return json(result)
 
 
 bp_contracts.add_route(
