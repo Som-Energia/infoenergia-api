@@ -12,6 +12,7 @@ INVITATION_EXP_DAYS = 1
 
 SANIC_JWT_SECRET = SECRET_KEY
 
+DATA_DIR = BASE_DIR
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': True,

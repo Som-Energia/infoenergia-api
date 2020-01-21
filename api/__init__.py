@@ -31,7 +31,7 @@ def build_app():
         db.bind(
             provider='sqlite',
             filename=os.path.join(
-                app.config.BASE_DIR,
+                app.config.DATA_DIR,
                 '{}.sqlite3'.format(app.config.DB_CONF['database'])
             ),
             create_db=True

@@ -16,8 +16,10 @@ INVITATION_EXP_DAYS = env.int('EXP_DAYS')
 
 SECRET_KEY = env.str('SECRET_KEY')
 
+
 SANIC_JWT_SECRET = SECRET_KEY
 
+DATA_DIR = env.str('DATA_DIR')
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': True,
