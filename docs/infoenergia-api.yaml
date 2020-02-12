@@ -146,6 +146,117 @@ paths:
           content: {}
       security:
         - jwt: []
+  /f1:
+    get:
+      tags:
+      - f1
+      summary: Obtain all F1 information
+      description: 'Get detailed F1 information depending on date and tariff
+        parameters'
+      operationId: server.get_f1_measures
+      parameters:
+      - name: tariff
+        in: query
+        description: Tariff of the contract to filter
+        required: false
+        style: form
+        explode: false
+        schema:
+          type: string
+          default: None
+          enum:
+            - None
+            - 2.0A
+            - 2.1A
+            - 2.0DHA
+            - 2.0DHS
+            - 2.1DHA
+            - 2.1DHS
+            - 3.0A
+            - 3.1A
+            - 3.1A-LB
+            - 6.1
+            - 6.1A
+            - 6.1B
+      - name: from_
+        in: query
+        description: Filter contracts with activation date from this date on. In format YYYY-MM-DD
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          format: date
+          default: None
+          example: '2019-08-01'
+      - name: to_
+        in: query
+        description: Filter F1 for contracts with activation date until this date. In format YYYY-MM-DD
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          format: date
+          default: None
+          example: '2019-08-10'
+      - name: limit
+        in: query
+        description: How many f1 to return at one time (max 100)
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          default: 100
+      responses:
+        200:
+          description: successful operation
+          # links:
+          #   x-next:
+          #     description: A link to the next page of responses
+          #     operationId: server.get_contracts
+          #     parameters:
+          #       limit: '$response.page_results#/contracts'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/f1'
+        400:
+          description: Invalid status value
+          content: {}
+      security:
+        - jwt: []
+  /f1/{contractId}:
+    get:
+      tags:
+      - f1
+      summary: Get all F1 by contractID
+      description: Returns a single F1 file
+      operationId: server.get_f1_measures_by_contract_id
+      parameters:
+      - name: contractId
+        in: path
+        description: ID of contract to get F1 data
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/f1'
+        400:
+          description: Invalid ID supplied
+          content: {}
+        404:
+          description: Contract not found
+          content: {}
+      security:
+        - jwt: []
   /user/login:
     post:
       tags:
@@ -559,6 +670,150 @@ components:
               "initialMonth": "201902",
               "language": "ES"
             }
+    f1:
+      type: object
+      properties:
+        page_results:
+          type: integer
+          description: number of F1 per page
+          example: 100
+        contractId:
+          type: string
+          description: contract ID
+          example: contractId-123
+        meteringPointId:
+          type: string
+          description: metering point ID
+          example: "c1759810-90f3-012e-0404-34159e211070"
+        devices:
+          type: array
+          description: metering device
+          items:
+            type: object
+            properties:
+              dateStart:
+                type: string
+                format: date-time
+                description: activation date
+              dateEnd:
+                type: string
+                nullable: true
+                format: date-time
+                description: deactivation date
+              devideId:
+                type: string
+                description: metering device id
+          example:
+            [{
+              "dateStart": "2019-10-11T16:37:05Z",
+              "dateEnd": null,
+              "deviceId": "c1810810-0381-012d-25a8-0017f2cd3574"
+              }]
+        power_measurements:
+          type: array
+          description: current F1 power information
+          items:
+            type: object
+            properties:
+              period:
+                type: string
+              excess:
+                type: number
+                format: float
+              peak_maximeter:
+                type: number
+                format: float
+              units:
+                type: string
+            example:
+              [
+                {
+                  period: P1,
+                  excess: 0.0,
+                  peak_maximeter: 2.0,
+                  units: 'kW/dia'
+                },
+                {
+                  period: P2,
+                  excess: 0.0,
+                  peak_maximeter: 2.0,
+                  units: 'kW/dia'
+                },
+                {
+                  period: P3,
+                  excess: 0.0,
+                  peak_maximeter: 2.0,
+                  units: 'kW/dia'
+                }
+              ]
+        reactive_energy_measurements:
+          type: array
+          description: current F1 reactive energy information
+          items:
+            type: object
+            properties:
+              energyType:
+                type: string
+              source:
+                type: string
+              period:
+                type: string
+              consum:
+                type: number
+                format: float
+              units:
+                type: string
+            example:
+              [
+                {
+                  energyType: "reactiva",
+                  source: "Telegestión",
+                  period: P1,
+                  consum: 2.0,
+                  units: 'kVArh'
+                },
+                {
+                  energyType: "reactiva",
+                  source: "Real",
+                  period: P2,
+                  consum: 2.0,
+                  units: 'kVArh'
+                },
+              ]
+        active_energy_measurements:
+          type: array
+          description: current F1 active energy information
+          items:
+            type: object
+            properties:
+              energyType:
+                type: string
+              source:
+                type: string
+              period:
+                type: string
+              consum:
+                type: number
+                format: float
+              units:
+                type: string
+            example:
+              [
+                {
+                  energyType: "activa",
+                  source: "Telegestión",
+                  period: P1,
+                  consum: 2.0,
+                  units: 'kWh'
+                },
+                {
+                  energyType: "activa",
+                  source: "Real",
+                  period: P2,
+                  consum: 2.0,
+                  units: 'kWh'
+                },
+              ]
     Error:
       type: object
       required:
