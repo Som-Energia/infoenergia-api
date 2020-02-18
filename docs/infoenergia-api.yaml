@@ -180,7 +180,7 @@ paths:
             - 6.1B
       - name: from_
         in: query
-        description: Filter contracts with activation date from this date on. In format YYYY-MM-DD
+        description: Filter F1 with date from this date on. In format YYYY-MM-DD
         required: false
         style: form
         explode: true
@@ -191,7 +191,7 @@ paths:
           example: '2019-08-01'
       - name: to_
         in: query
-        description: Filter F1 for contracts with activation date until this date. In format YYYY-MM-DD
+        description: Filter F1 with date until this date. In format YYYY-MM-DD
         required: false
         style: form
         explode: true
@@ -681,6 +681,10 @@ components:
           type: string
           description: contract ID
           example: contractId-123
+        invoiceId:
+          type: string
+          description: invoide ID
+          example: invoiceId-123
         meteringPointId:
           type: string
           description: metering point ID
@@ -752,8 +756,6 @@ components:
           items:
             type: object
             properties:
-              energyType:
-                type: string
               source:
                 type: string
               period:
@@ -766,7 +768,6 @@ components:
             example:
               [
                 {
-                  energyType: "reactiva",
                   source: "Telegestión",
                   period: P1,
                   consum: 2.0,
@@ -786,8 +787,6 @@ components:
           items:
             type: object
             properties:
-              energyType:
-                type: string
               source:
                 type: string
               period:
@@ -800,14 +799,12 @@ components:
             example:
               [
                 {
-                  energyType: "activa",
                   source: "Telegestión",
                   period: P1,
                   consum: 2.0,
                   units: 'kWh'
                 },
                 {
-                  energyType: "activa",
                   source: "Real",
                   period: P2,
                   consum: 2.0,
