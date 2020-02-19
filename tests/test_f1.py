@@ -27,36 +27,10 @@ class BaseTestCace(TestCase):
             app.thread_pool = futures.ThreadPoolExecutor(app.config.MAX_THREADS)
 
 
-class TestLogin(BaseTestCace):
-
+class TestF1Base(BaseTestCace):
     @skip
     @db_session
-    def test__authenticate_user(self):
-        user = User(
-            username='someone',
-            password=pbkdf2_sha256.hash("12341234"),
-            email='someone@somenergia.coop',
-            id_partner=1,
-            is_superuser=True
-        )
-        auth_body = {
-            'username': user.username,
-            'password': "12341234",
-            'email': user.email
-        }
-
-        request, response = self.client.post('/auth', json=auth_body)
-        token = response.json.get('access_token', None)
-
-        self.assertIsNotNone(token)
-
-        user.delete()
-
-
-class TestContracts(BaseTestCace):
-
-    @db_session
-    def test__get_contracts_by_id(self):
+    def test__get_f1_by_contracts_id(self):
         # TODO: Delete this
         def get_auth_token(username, password, email):
             auth_body = {
@@ -81,7 +55,7 @@ class TestContracts(BaseTestCace):
             'someone@somenergia.coop'
         )
         request, response = self.client.get(
-            '/contracts/' + json4test['contractId2A'],
+            '/f1/' + json4test['contractId2F1'],
             headers={
                 'Authorization': 'Bearer {}'.format(token)
             },
@@ -89,14 +63,14 @@ class TestContracts(BaseTestCace):
         )
 
         self.assertEqual(response.status, 200)
-        self.assertDictEqual(
+        self.assertListEqual(
             response.json,
-            json4test['jsonContractById2A']
+            json4test['jsonF1_contractID']
         )
         user.delete()
 
     @db_session
-    def test__get_contracts___auth_user(self):
+    def test__get_f1___auth_user(self):
         # TODO: Delete this
         def get_auth_token(username, password, email):
             auth_body = {
@@ -121,13 +95,12 @@ class TestContracts(BaseTestCace):
             'someone@somenergia.coop'
         )
         params = {
-            'from_': '2019-10-03',
-            'to_': '2019-10-09',
-            'tariff': '2.0DHS',
-            'juridic_type': 'physical_person',
+            'from_': '2019-09-01',
+            'to_': '2019-10-01',
+            'tariff': '3.1A',
         }
         request, response = self.client.get(
-            '/contracts',
+            '/f1',
             params=params,
             headers={
                 'Authorization': 'Bearer {}'.format(token)
@@ -138,7 +111,7 @@ class TestContracts(BaseTestCace):
         self.assertEqual(response.status, 200)
         self.assertListEqual(
             response.json,
-            json4test['jsonList']
+            json4test['jsonF1']
 
         )
         user.delete()

@@ -1,4 +1,5 @@
 import functools
+import re
 from datetime import datetime
 
 from sanic.log import logger
@@ -7,6 +8,114 @@ from .climatic_zones import ine_to_zc
 from .postal_codes import ine_to_dp
 from .utils import (get_id_for_contract, get_request_filters,
                     make_utc_timestamp, make_uuid)
+
+
+def get_f1_measures_json(erp_client, invoice):
+    units = erp_client.model('product.uom')
+    f1_measures_json = {
+        'contractId': invoice['polissa_id'][1],
+        'invoiceId': make_uuid(
+            'giscedata.facturacio.factura',
+            invoice['id']
+        ),
+        'dateStart': make_utc_timestamp(invoice['data_inici']),
+        'dateEnd': make_utc_timestamp(invoice['data_final']),
+        'meteringPointId': make_uuid(
+            'giscedata.cups.ps',
+            invoice['cups_id'][1]
+        ),
+        'devices': get_devices(
+            erp_client,
+            invoice['comptadors']
+        ),
+        'power_measurements': get_f1_power(
+            erp_client,
+            invoice['lectures_potencia_ids'],
+            units.read([('id', '=', 10)])[0]['name']
+
+        ),
+        'reactive_energy_measurements': get_f1_energy_measurements(
+            erp_client,
+            invoice['lectures_energia_ids'],
+            'reactiva',
+            units.read([('id', '=', 4)])[0]['name']
+
+        ),
+        'active_energy_measurements': get_f1_energy_measurements(
+            erp_client,
+            invoice['lectures_energia_ids'],
+            'activa',
+            units.read([('id', '=', 3)])[0]['name']
+        ),
+    }
+    return f1_measures_json
+
+
+def get_invoices(request, contractId=None):
+    factura_obj = request.app.erp_client.model('giscedata.facturacio.factura')
+    filters = [
+        ('polissa_state', '=', 'activa'),
+        ('type', '=', 'in_invoice')
+    ]
+    if contractId:
+        filters.append(('polissa_id', '=', contractId))
+        return factura_obj.read(
+            factura_obj.search(filters)
+        ) or []
+
+    if request.args:
+        filters = get_request_filters(
+            request.app.erp_client,
+            request,
+            filters,
+        )
+    logger.info('Filter invoices by: %s', filters)
+    id_invoices = factura_obj.search(filters)
+    return factura_obj.read(id_invoices) or []
+
+
+def get_f1_power(erp_client, power_readings_ids, units):
+    """
+    Readings F1:
+    "power_measurements": {
+      "period": "P1",
+      "excess": "0.0",
+      "maximeter": "2",
+      "units": "kW/dia"
+    }
+    """
+
+    power_obj = erp_client.model('giscedata.facturacio.lectures.potencia')
+    f1_power = power_obj.read([('id', 'in', power_readings_ids)])
+    return [
+        {
+            'period': power['name'],
+            'excess': power['exces'],
+            'maximeter': power['pot_maximetre'],
+            'units': units
+        } for power in f1_power]
+
+
+def get_f1_energy_measurements(erp_client, energy_readings_ids, energy_type, units):
+    """
+    Readings F1:
+    "energy_measurements": {
+      "energyType": activa/reactiva
+      "source": telegestión/real
+      "period": "P1",
+      "consum": "2",
+      "units": "kWh"
+    }
+    """
+    measures_obj = erp_client.model('giscedata.facturacio.lectures.energia')
+    measures = measures_obj.read([('id', 'in', energy_readings_ids)])
+    return [
+        {
+            'source': 'Not informed' if isinstance(measure['origen_id'], bool) else measure['origen_id'][1],
+            'period': re.split('[()]', measure['name'])[1],
+            'consum': int(measure['consum']),
+            'units': units
+        } for measure in measures if measure['tipus'] == energy_type]
 
 
 def get_contract_json(erp_client, contract):
@@ -163,6 +272,25 @@ async def async_get_contract_json(loop, executor, erp_client, contract):
     result = await loop.run_in_executor(
         executor,
         functools.partial(get_contract_json, erp_client, contract)
+    )
+    return result
+
+
+async def assync_get_invoices(request, id_contract=None):
+    try:
+        result = await request.app.loop.run_in_executor(
+            request.app.thread_pool,
+            functools.partial(get_invoices, request, id_contract)
+        )
+    except Exception as e:
+        raise e
+    return result
+
+
+async def async_get_f1_measures_json(loop, executor, erp_client, invoices):
+    result = await loop.run_in_executor(
+        executor,
+        functools.partial(get_f1_measures_json, erp_client, invoices)
     )
     return result
 
