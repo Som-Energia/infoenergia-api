@@ -151,7 +151,8 @@ def get_contract_json(erp_client, contract):
         ),
         'tariffHistory': get_tariffHistory(
             erp_client,
-            contract['modcontractuals_ids']),
+            contract['modcontractuals_ids']
+        ),
         'power': int(contract['potencia'] * 1000),
         'power_': get_current_power(
             erp_client,
@@ -242,11 +243,10 @@ def get_contracts(request, id_contract=None):
         'modcontractuals_ids'
     ]
     if request.args:
-        logger.info('request.args: %s', request.args)
         filters = get_request_filters(
             request.app.erp_client,
-            request.args,
-            filters
+            request,
+            filters,
         )
     logger.info('Filter contracts by: %s', filters)
     if id_contract:
