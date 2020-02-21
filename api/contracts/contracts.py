@@ -19,11 +19,13 @@ class ContractsIdView(HTTPMethodView):
 
     async def get(self, request, contractId):
         app = request.app
+        sem = asyncio.Semaphore(app.config.MAX_TASKS)
         contract = await async_get_contracts(request, contractId)
         contract_json = await async_get_contract_json(
             app.loop,
             app.thread_pool,
             app.erp_client,
+            sem,
             contract
         )
         return json(contract_json)
