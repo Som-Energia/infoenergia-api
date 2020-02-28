@@ -1,14 +1,210 @@
-from unittest import TestCase
-
-from erppeek import Client
-from sanic.log import logger
-
-os.environ.setdefault('INFOENERGIA_MODULE_SETTINGS', 'config.settings.testing')
+import os
+from unittest import TestCase, skip
 
 from api import tasks
 from config import config
+from erppeek import Client
+from sanic.log import logger
+
+os.environ.setdefault('INFOENERGIA_MODULE_SETTINGS', 'config.settings.devel')
 
 
+class TestF1Measures(TestCase):
+
+    def setUp(self):
+        self.erp_client = Client(**config.ERP_CONF)
+
+    def test__get_f1_power_3X(self):
+        f1_power_json = tasks.get_f1_power(
+            self.erp_client,
+            [5195892, 5195890, 5195891, 5195894, 5195895, 5195893],
+            units='kW/dia'
+        )
+        self.assertListEqual(
+            f1_power_json,
+            [
+                {
+                    'period': 'P1',
+                    'excess': 0.0,
+                    'maximeter': 0.0,
+                    'units': 'kW/dia'
+                },
+                {
+                    'period': 'P2',
+                    'excess': 0.0,
+                    'maximeter': 2.0,
+                    'units': 'kW/dia'
+                },
+                {
+                    'period': 'P3',
+                    'excess': 0.0,
+                    'maximeter': 3.0,
+                    'units': 'kW/dia'
+                },
+                {
+                    'period': 'P4',
+                    'excess': 0.0,
+                    'maximeter': 0.0,
+                    'units': 'kW/dia'
+                },
+                {
+                    'period': 'P5',
+                    'excess': 0.0,
+                    'maximeter': 3.0,
+                    'units': 'kW/dia'
+                },
+                {
+                    'period': 'P6',
+                    'excess': 0.0,
+                    'maximeter': 3.0,
+                    'units': 'kW/dia'
+                }
+            ],
+        )
+
+    def test__get_f1_power_2X(self):
+        f1_power_json = tasks.get_f1_power(
+            self.erp_client,
+            [],
+            units='kW/dia'
+        )
+        self.assertListEqual(
+            f1_power_json,
+            [],
+        )
+
+    def test__get_f1_reactive_energy_3X(self):
+        f1_reactive_energy_json = tasks.get_f1_energy_measurements(
+            self.erp_client,
+            [9991237, 9991236, 9991235, 9991234, 9991233, 9991232, 9991231, 9991229, 9991228, 9991227, 9991226, 9991225],
+            'reactiva',
+            units='kVArh'
+        )
+        self.assertListEqual(
+            f1_reactive_energy_json,
+            [
+                {
+                    'source': 'Telemesura',
+                    'period': 'P1',
+                    'consum': 0,
+                    'units': 'kVArh'
+                },
+                {
+                    'source': 'Telemesura',
+                    'period': 'P2',
+                    'consum': 583,
+                    'units': 'kVArh'
+                },
+                {
+                    'source': 'Telemesura',
+                    'period': 'P3',
+                    'consum': 1198,
+                    'units': 'kVArh'
+                },
+                {
+                    'source': 'Telemesura',
+                    'period': 'P4',
+                    'consum': 0,
+                    'units': 'kVArh'
+                },
+                {
+                    'source': 'Telemesura',
+                    'period': 'P5',
+                    'consum': 250,
+                    'units': 'kVArh'
+                },
+                {
+                    'source': 'Telemesura',
+                    'period': 'P6',
+                    'consum': 520,
+                    'units': 'kVArh'
+                }
+            ]
+        )
+
+    def test__get_f1_active_energy_3X(self):
+        f1_active_energy_json = tasks.get_f1_energy_measurements(
+            self.erp_client,
+            [9991237, 9991236, 9991235, 9991234, 9991233, 9991232, 9991231, 9991229, 9991228, 9991227, 9991226, 9991225],
+            'activa',
+            units='kWh'
+        )
+        self.assertListEqual(
+            f1_active_energy_json,
+            [
+                {
+                    'source': 'Telemesura',
+                    'period': 'P1',
+                    'consum': 0,
+                    'units': 'kWh'
+                },
+                {
+                    'source': 'Telemesura',
+                    'period': 'P2',
+                    'consum': 144,
+                    'units': 'kWh'
+                },
+                {
+                    'source': 'Telemesura',
+                    'period': 'P3',
+                    'consum': 327,
+                    'units': 'kWh'
+                },
+                {
+                    'source': 'Telemesura',
+                    'period': 'P4',
+                    'consum': 0,
+                    'units': 'kWh'
+                },
+                {
+                    'source': 'Telemesura',
+                    'period': 'P5',
+                    'consum': 75,
+                    'units': 'kWh'
+                },
+                {
+                    'source': 'Telemesura',
+                    'period': 'P6',
+                    'consum': 146,
+                    'units': 'kWh'
+                }
+            ]
+
+        )
+
+    def test__get_f1_reactive_energy_2X(self):
+        f1_reactive_energy_json = tasks.get_f1_energy_measurements(
+            self.erp_client,
+            [10149986],
+            'reactiva',
+            units='kVArh'
+        )
+        self.assertListEqual(
+            f1_reactive_energy_json,
+            []
+        )
+
+    def test__get_f1_active_energy_2X(self):
+        f1_active_energy_json = tasks.get_f1_energy_measurements(
+            self.erp_client,
+            [10149986],
+            'activa',
+            units='kWh'
+        )
+        self.assertListEqual(
+            f1_active_energy_json,
+            [
+                {
+                    'source': 'Telegestió',
+                    'period': 'P1',
+                    'consum': 156,
+                    'units': 'kWh'
+                }
+            ]
+        )
+
+
+@skip
 class TestContracts(TestCase):
 
     def setUp(self):
@@ -101,7 +297,7 @@ class TestContracts(TestCase):
                 {
                     'dateStart': '2019-10-03T00:00:00-00:15Z',
                     'dateEnd': None,
-                    'deviceId': 'ee3f4996-788e-59b3-9530-0e02d99b45b7'
+                    'deviceId': '5fe0a4b4-8e6c-56d8-a74e-97f979411a62'
                 }
             ]
         )
@@ -114,7 +310,7 @@ class TestContracts(TestCase):
                 'city': 'Barcelona',
                 'cityCode': '08019',
                 'countryCode': 'ES',
-                'postalCode': '08036',
+                'postalCode': '08016',
                 'provinceCode': '08',
                 'province': 'Barcelona',
             }

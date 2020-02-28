@@ -29,27 +29,40 @@ def get_id_for_contract(obj, modcontract_ids):
     return wanted_id
 
 
-def get_request_filters(erp_client, arguments, filters):
-    if 'juridic_type' in arguments:
+def get_request_filters(erp_client, request, filters):
+    if 'juridic_type' in request.args:
         filters += get_juridic_filter(
-            arguments['juridic_type'][0],
+            request.args['juridic_type'][0],
         )
-    if 'tariff' in arguments:
+    if 'tariff' in request.args:
         tariff_type = erp_client.model('giscedata.polissa.tarifa')
         tariff = tariff_type.search(
             [
-                ('name', '=', arguments['tariff'][0])
+                ('name', '=', request.args['tariff'][0])
             ]
         )
-        filters += [('tarifa', '=', tariff[0])]
-    if 'from_' in arguments:
-        filters += [
-            ('data_alta', '>=', arguments['from_'][0])
-        ]
-    if 'to_' in arguments:
-        filters += [
-            ('data_alta', '<=', arguments['to_'][0])
-        ]
+        if 'contracts' in request.endpoint:
+            filters += [('tarifa', '=', tariff[0])]
+        elif 'f1' in request.endpoint:
+            filters += [('tarifa_acces_id', '=', tariff[0])]
+    if 'from_' in request.args:
+        if 'contracts' in request.endpoint:
+            filters += [
+                ('data_alta', '>=', request.args['from_'][0])
+            ]
+        elif 'f1' in request.endpoint:
+            filters += [
+                ('data_inici', '>=', request.args['from_'][0])
+            ]
+    if 'to_' in request.args:
+        if 'contracts' in request.endpoint:
+            filters += [
+                ('data_alta', '<=', request.args['from_'][0])
+            ]
+        elif 'f1' in request.endpoint:
+            filters += [
+                ('data_inici', '<=', request.args['from_'][0])
+            ]
     return filters
 
 

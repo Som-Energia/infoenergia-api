@@ -7,6 +7,7 @@ from sanic.log import logger
 from sanic_jwt import Initialize, exceptions
 
 from .contracts import bp_contracts
+from .f1_measures import bp_f1_measures
 from .registration.login import InvitationUrlToken, authenticate, extra_views
 from .registration.models import db
 
@@ -19,6 +20,7 @@ def build_app():
 
         Initialize(app, authenticate=authenticate, class_views=extra_views)
         app.blueprint(bp_contracts)
+        app.blueprint(bp_f1_measures)
 
         app.add_route(
             InvitationUrlToken.as_view(),

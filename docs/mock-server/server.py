@@ -58,6 +58,14 @@ def get_contracts(user, token_info, limit, from_, to_, tariff, juridic_type):
     return json4test['jsonList'][:limit]
 
 
+def get_f1_measures(user, token_info, limit, from_, to_, tariff):
+    return json4test['jsonF1'][:limit]
+
+
+def get_f1_measures_by_contract_id(user, token_info, limit, from_, to_, tariff, contractId):
+    return json4test['jsonF1byContractId']
+
+
 if __name__ == '__main__':
     api_extra_args = {}
     resolver = MockResolver(mock_all=False)
