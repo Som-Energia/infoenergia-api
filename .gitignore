@@ -102,3 +102,10 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+#config files
+configdb.py
+*.sqlite
+*.sqlite3
+#test files
+json4test.yaml
