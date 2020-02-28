@@ -1,17 +1,18 @@
 import os
+os.environ.setdefault('INFOENERGIA_MODULE_SETTINGS', 'config.settings.testing')
+
 import unittest
 from concurrent import futures
 from unittest import TestCase, skip
 
 import yaml
-from api import app
-from api.registration.models import User
 from passlib.hash import pbkdf2_sha256
 from pony.orm import db_session
 from sanic.log import logger
 from sanic_jwt.authentication import Authentication
 
-os.environ.setdefault('INFOENERGIA_MODULE_SETTINGS', 'config.settings.testing')
+from api import app
+from api.registration.models import User
 
 
 with open(os.path.join(app.config.BASE_DIR, 'tests/json4test.yaml')) as f:

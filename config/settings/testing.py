@@ -1,13 +1,15 @@
 from .base import *
 
 test_env = Env()
-test_env.read_env(os.path.join(BASE_DIR, 'tests'))
+test_env.read_env(os.path.join(BASE_DIR, 'tests/.env.test'), override=True)
 
 ERP_CONF = test_env.json('ERP_CONF')
 
 DB_CONF = test_env.json('DATABASE_CONF')
 
 MAX_THREADS = 10
+
+DATA_DIR = BASE_DIR
 
 SANIC_JWT_SECRET = SECRET_KEY
 INVITATION_EXP_DAYS = 1
