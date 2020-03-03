@@ -7,7 +7,7 @@ from sanic.response import json
 from sanic.views import HTTPMethodView
 from sanic_jwt.decorators import protected
 
-from ..tasks import assync_get_invoices, async_get_f1_measures_json
+from ..tasks import async_get_invoices, async_get_f1_measures_json
 
 bp_f1_measures = Blueprint('f1')
 
@@ -20,7 +20,7 @@ class F1MeasuresContractIdView(HTTPMethodView):
     async def get(self, request, contractId):
         app = request.app
         sem = asyncio.Semaphore(app.config.MAX_TASKS)
-        invoices = await assync_get_invoices(request, contractId)
+        invoices = await async_get_invoices(request, contractId)
         logger.info('There are %d invoices', len(invoices))
         logger.info('*' * 100)
         f1_measure_json = [
@@ -45,7 +45,7 @@ class F1MeasuresView(HTTPMethodView):
         app = request.app
         sem = asyncio.Semaphore(app.config.MAX_TASKS)
         result = []
-        invoices = await assync_get_invoices(request)
+        invoices = await async_get_invoices(request)
 
         to_do = [
             await async_get_f1_measures_json(

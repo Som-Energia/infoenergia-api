@@ -1,4 +1,6 @@
 import os
+os.environ.setdefault('INFOENERGIA_MODULE_SETTINGS', 'config.settings.testing')
+
 import unittest
 from concurrent import futures
 from unittest import TestCase, skip

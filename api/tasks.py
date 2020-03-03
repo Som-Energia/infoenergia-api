@@ -277,12 +277,13 @@ async def async_get_contract_json(loop, executor, erp_client, sem, contract):
     return result
 
 
-async def assync_get_invoices(request, id_contract=None):
+async def async_get_invoices(request, id_contract=None):
     try:
         result = await request.app.loop.run_in_executor(
             request.app.thread_pool,
             functools.partial(get_invoices, request, id_contract)
         )
+
     except Exception as e:
         raise e
     return result
