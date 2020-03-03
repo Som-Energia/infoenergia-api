@@ -19,6 +19,7 @@ class F1MeasuresContractIdView(HTTPMethodView):
 
     async def get(self, request, contractId):
         app = request.app
+        sem = asyncio.Semaphore(app.config.MAX_TASKS)
         invoices = await assync_get_invoices(request, contractId)
         logger.info('There are %d invoices', len(invoices))
         logger.info('*' * 100)
@@ -27,6 +28,7 @@ class F1MeasuresContractIdView(HTTPMethodView):
                 app.loop,
                 app.thread_pool,
                 app.erp_client,
+                sem,
                 invoice
             )
             for invoice in invoices
@@ -41,19 +43,32 @@ class F1MeasuresView(HTTPMethodView):
 
     async def get(self, request):
         app = request.app
+        sem = asyncio.Semaphore(app.config.MAX_TASKS)
+        result = []
         invoices = await assync_get_invoices(request)
-        logger.info('There are %d invoices', len(invoices))
-        logger.info('*' * 100)
-        f1_measure_json = [
+
+        to_do = [
             await async_get_f1_measures_json(
                 app.loop,
                 app.thread_pool,
                 app.erp_client,
+                sem,
                 invoice
             )
             for invoice in invoices
         ]
-        return json(f1_measure_json)
+        while to_do:
+            logger.info("%d invoices to anonymize", len(to_do))
+            done, to_do = await asyncio.wait(to_do, timeout=app.config.TASK_TIMEOUT)
+            for task in done:
+                try:
+                    f1_measure_json = task.result()
+                except Exception as e:
+                    logger.error("Reason: %s", str(e))
+                else:
+                    result.append(f1_measure_json)
+        print(result)
+        return json(result)
 
 
 bp_f1_measures.add_route(

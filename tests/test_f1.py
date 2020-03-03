@@ -69,7 +69,7 @@ class TestF1Base(BaseTestCace):
         user.delete()
 
     @db_session
-    def test__get_f1___auth_user(self):
+    def test__get_f1_measures(self):
         # TODO: Delete this
         def get_auth_token(username, password, email):
             auth_body = {

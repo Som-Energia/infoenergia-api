@@ -288,11 +288,12 @@ async def assync_get_invoices(request, id_contract=None):
     return result
 
 
-async def async_get_f1_measures_json(loop, executor, erp_client, invoices):
-    result = await loop.run_in_executor(
-        executor,
-        functools.partial(get_f1_measures_json, erp_client, invoices)
-    )
+async def async_get_f1_measures_json(loop, executor, erp_client, sem, invoices):
+    async with sem:
+        result = await loop.run_in_executor(
+            executor,
+            functools.partial(get_f1_measures_json, erp_client, invoices)
+        )
     return result
 
 
