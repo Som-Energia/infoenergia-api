@@ -28,7 +28,6 @@ class BaseTestCace(TestCase):
 
 
 class TestF1Base(BaseTestCace):
-    @skip
     @db_session
     def test__get_f1_by_contracts_id(self):
         # TODO: Delete this
@@ -96,7 +95,7 @@ class TestF1Base(BaseTestCace):
         )
         params = {
             'from_': '2019-09-01',
-            'to_': '2019-10-01',
+            'to_': '2019-09-01',
             'tariff': '3.1A',
         }
         request, response = self.client.get(

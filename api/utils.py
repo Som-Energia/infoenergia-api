@@ -57,11 +57,11 @@ def get_request_filters(erp_client, request, filters):
     if 'to_' in request.args:
         if 'contracts' in request.endpoint:
             filters += [
-                ('data_alta', '<=', request.args['from_'][0])
+                ('data_alta', '<=', request.args['to_'][0])
             ]
         elif 'f1' in request.endpoint:
             filters += [
-                ('data_inici', '<=', request.args['from_'][0])
+                ('data_inici', '<=', request.args['to_'][0])
             ]
     return filters
 

@@ -30,7 +30,6 @@ class BaseTestCace(TestCase):
 
 class TestLogin(BaseTestCace):
 
-    @skip
     @db_session
     def test__authenticate_user(self):
         user = User(
