@@ -48,7 +48,7 @@ class F1MeasuresView(HTTPMethodView):
         invoices = await async_get_invoices(request)
 
         to_do = [
-            await async_get_f1_measures_json(
+             async_get_f1_measures_json(
                 app.loop,
                 app.thread_pool,
                 app.erp_client,
@@ -67,7 +67,6 @@ class F1MeasuresView(HTTPMethodView):
                     logger.error("Reason: %s", str(e))
                 else:
                     result.append(f1_measure_json)
-        print(result)
         return json(result)
 
 

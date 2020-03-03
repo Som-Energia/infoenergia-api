@@ -3,17 +3,17 @@ os.environ.setdefault('INFOENERGIA_MODULE_SETTINGS', 'config.settings.testing')
 
 import unittest
 from concurrent import futures
-from unittest import TestCase, skip
+from unittest import TestCase, skip, mock
 
 import yaml
 from api import app
 from api.registration.models import User
 from passlib.hash import pbkdf2_sha256
-from pony.orm import db_session
+from pony.orm import db_session, commit
 from sanic.log import logger
 from sanic_jwt.authentication import Authentication
 
-os.environ.setdefault('INFOENERGIA_MODULE_SETTINGS', 'config.settings.testing')
+import api.tasks
 
 
 with open(os.path.join(app.config.BASE_DIR, 'tests/json4test.yaml')) as f:
@@ -26,35 +26,43 @@ class BaseTestCace(TestCase):
         self.client = app.test_client
         self.maxDiff = None
         if app.thread_pool._shutdown:
-            app.thread_pool = futures.ThreadPoolExecutor(app.config.MAX_THREADS)
+            APP.thread_pool = futures.ThreadPoolExecutor(app.config.MAX_THREADS)
+
+    @db_session
+    def get_or_create_user(self, username, password, email, partner_id, is_superuser):
+        user = User.get(username=username)
+        if not user:
+            user = User(
+                username=username,
+                password=pbkdf2_sha256.hash(password),
+                email=email,
+                id_partner=partner_id,
+                is_superuser=is_superuser
+            )
+            commit()
+        return user
+
+    @db_session
+    def delete_user(self, user):
+        user.delete()
+
+    @db_session
+    def get_auth_token(self, username, password):
+        auth_body = {
+            'username': username,
+            'password': password,
+        }
+        request, response = self.client.post('/auth', json=auth_body)
+        token = response.json.get('access_token', None)
+        return token
 
 
 class TestF1Base(BaseTestCace):
-    @db_session
+    @unittest.skip('not now')
     def test__get_f1_by_contracts_id(self):
         # TODO: Delete this
-        def get_auth_token(username, password, email):
-            auth_body = {
-                'username': username,
-                'password': password,
-                'email': email
-            }
-            request, response = self.client.post('/auth', json=auth_body)
-            token = response.json.get('access_token', None)
-            return token
 
-        user = User(
-            username='someone',
-            password=pbkdf2_sha256.hash("123412345"),
-            email='someone@somenergia.coop',
-            id_partner=1,
-            is_superuser=True
-        )
-        token = get_auth_token(
-            'someone',
-            '123412345',
-            'someone@somenergia.coop'
-        )
+        token = self.get_auth_token()
         request, response = self.client.get(
             '/f1/' + json4test['contractId2F1'],
             headers={
@@ -72,29 +80,22 @@ class TestF1Base(BaseTestCace):
 
     @db_session
     def test__get_f1_measures(self):
-        # TODO: Delete this
-        def get_auth_token(username, password, email):
-            auth_body = {
-                'username': username,
-                'password': password,
-                'email': email
-            }
-            request, response = self.client.post('/auth', json=auth_body)
-            token = response.json.get('access_token', None)
-            return token
+        patcher = mock.patch.object(
+            api.tasks,
+            'async_get_invoices',
+            new_callable=mock.PropertyMock(return_value=json4test['invoice'])
+        )
+        patcher.start()
 
-        user = User(
+        user = self.get_or_create_user(
             username='someone',
-            password=pbkdf2_sha256.hash("123412345"),
+            password='123412345',
             email='someone@somenergia.coop',
-            id_partner=1,
+            partner_id=1,
             is_superuser=True
         )
-        token = get_auth_token(
-            'someone',
-            '123412345',
-            'someone@somenergia.coop'
-        )
+        token = self.get_auth_token(user.username, "123412345")
+
         params = {
             'from_': '2019-09-01',
             'to_': '2019-09-01',
@@ -115,4 +116,5 @@ class TestF1Base(BaseTestCace):
             json4test['jsonF1']
 
         )
-        user.delete()
+        self.delete_user(user)
+        patcher.stop()
