@@ -58,13 +58,22 @@ class BaseTestCace(TestCase):
 
 
 class TestF1Base(BaseTestCace):
-    @unittest.skip('not now')
-    def test__get_f1_by_contracts_id(self):
-        # TODO: Delete this
 
-        token = self.get_auth_token()
+    @mock.patch('api.f1_measures.f1_measures.async_get_invoices')
+    @db_session
+    def test__get_f1_by_contracts_id(self, async_get_invoices_mock):
+        async_get_invoices_mock.return_value = json4test['f1_contract_id']['invoices']
+        user = self.get_or_create_user(
+            username='someone',
+            password='123412345',
+            email='someone@somenergia.coop',
+            partner_id=1,
+            is_superuser=True
+        )
+        token = self.get_auth_token(user.username, "123412345")
+
         request, response = self.client.get(
-            '/f1/' + json4test['contractId2F1'],
+            '/f1/' + json4test['f1_contract_id']['contractId'],
             headers={
                 'Authorization': 'Bearer {}'.format(token)
             },
@@ -74,19 +83,14 @@ class TestF1Base(BaseTestCace):
         self.assertEqual(response.status, 200)
         self.assertListEqual(
             response.json,
-            json4test['jsonF1_contractID']
+            json4test['f1_contract_id']['contract_data']
         )
-        user.delete()
+        self.delete_user(user)
 
+    @mock.patch('api.f1_measures.f1_measures.async_get_invoices')
     @db_session
-    def test__get_f1_measures(self):
-        patcher = mock.patch.object(
-            api.tasks,
-            'async_get_invoices',
-            new_callable=mock.PropertyMock(return_value=json4test['invoice'])
-        )
-        patcher.start()
-
+    def test__get_f1_measures(self, async_get_invoices_mock):
+        async_get_invoices_mock.return_value = json4test['f1_contracts']['invoices']
         user = self.get_or_create_user(
             username='someone',
             password='123412345',
@@ -113,8 +117,7 @@ class TestF1Base(BaseTestCace):
         self.assertEqual(response.status, 200)
         self.assertListEqual(
             response.json,
-            json4test['jsonF1']
+            json4test['f1_contracts']['contract_data']
 
         )
         self.delete_user(user)
-        patcher.stop()
