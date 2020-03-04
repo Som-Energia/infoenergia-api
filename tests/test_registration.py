@@ -30,3 +30,23 @@ class TestLogin(BaseTestCase):
 
         self.assertIsNotNone(token)
         user.delete()
+
+    @db_session
+    def test__authenticate_failed(self):
+        auth_body = {
+            'username': 'no_one',
+            'password': "12341234",
+        }
+
+        _, response = self.client.post('/auth', json=auth_body)
+        self.assertRaises(exceptions.AuthenticationFailed)
+
+    @db_session
+    def test__authenticate_missing_username(self):
+        auth_body = {
+            'username': '',
+            'password': "12341234",
+        }
+
+        _, response = self.client.post('/auth', json=auth_body)
+        self.assertRaises(exceptions.AuthenticationFailed)
