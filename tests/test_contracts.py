@@ -20,7 +20,7 @@ class TestContracts(BaseTestCase):
                 'password': password,
                 'email': email
             }
-            request, response = self.client.post('/auth', json=auth_body)
+            _, response = self.client.post('/auth', json=auth_body)
             token = response.json.get('access_token', None)
             return token
 
@@ -36,8 +36,8 @@ class TestContracts(BaseTestCase):
             '123412345',
             'someone@somenergia.coop'
         )
-        request, response = self.client.get(
-            '/contracts/' + json4test['contractId2A'],
+        _, response = self.client.get(
+            '/contracts/' + self.json4test['contractId2A'],
             headers={
                 'Authorization': 'Bearer {}'.format(token)
             },
@@ -60,7 +60,7 @@ class TestContracts(BaseTestCase):
                 'password': password,
                 'email': email
             }
-            request, response = self.client.post('/auth', json=auth_body)
+            _, response = self.client.post('/auth', json=auth_body)
             token = response.json.get('access_token', None)
             return token
 
@@ -82,7 +82,7 @@ class TestContracts(BaseTestCase):
             'tariff': '2.0DHS',
             'juridic_type': 'physical_person',
         }
-        request, response = self.client.get(
+        _, response = self.client.get(
             '/contracts',
             params=params,
             headers={
