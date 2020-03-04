@@ -12,32 +12,17 @@ from .base import BaseTestCase
 class TestContracts(BaseTestCase):
 
     @db_session
-    def test__get_contracts_by_id(self):
-        # TODO: Delete this
-        def get_auth_token(username, password, email):
-            auth_body = {
-                'username': username,
-                'password': password,
-                'email': email
-            }
-            _, response = self.client.post('/auth', json=auth_body)
-            token = response.json.get('access_token', None)
-            return token
-
-        user = User(
+    def test__get_contracts_by_id__2A(self):
+        user = self.get_or_create_user(
             username='someone',
-            password=pbkdf2_sha256.hash("123412345"),
+            password='123412345',
             email='someone@somenergia.coop',
-            id_partner=1,
+            partner_id=1,
             is_superuser=True
         )
-        token = get_auth_token(
-            'someone',
-            '123412345',
-            'someone@somenergia.coop'
-        )
+        token = self.get_auth_token(user.username, "123412345")
         _, response = self.client.get(
-            '/contracts/' + self.json4test['contractId2A'],
+            '/contracts/' + self.json4test['contract_id_2A']['contractId'],
             headers={
                 'Authorization': 'Bearer {}'.format(token)
             },
@@ -47,9 +32,9 @@ class TestContracts(BaseTestCase):
         self.assertEqual(response.status, 200)
         self.assertDictEqual(
             response.json,
-            self.json4test['jsonContractById2A']
+            self.json4test['contract_id_2A']['contract_data']
         )
-        user.delete()
+        self.delete_user(user)
 
     @db_session
     def test__get_contracts___auth_user(self):
