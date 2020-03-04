@@ -23,6 +23,7 @@ class F1MeasuresContractIdView(HTTPMethodView):
         invoices = await async_get_invoices(request, contractId)
         logger.info('There are %d invoices', len(invoices))
         logger.info('*' * 100)
+
         f1_measure_json = [
             await async_get_f1_measures_json(
                 app.loop,

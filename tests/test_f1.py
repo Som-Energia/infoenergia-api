@@ -13,8 +13,6 @@ from pony.orm import db_session, commit
 from sanic.log import logger
 from sanic_jwt.authentication import Authentication
 
-import api.tasks
-
 
 with open(os.path.join(app.config.BASE_DIR, 'tests/json4test.yaml')) as f:
     json4test = yaml.load(f.read())
@@ -99,12 +97,12 @@ class TestF1Base(BaseTestCace):
             is_superuser=True
         )
         token = self.get_auth_token(user.username, "123412345")
-
         params = {
             'from_': '2019-09-01',
             'to_': '2019-09-01',
             'tariff': '3.1A',
         }
+
         request, response = self.client.get(
             '/f1',
             params=params,
