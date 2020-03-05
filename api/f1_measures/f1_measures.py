@@ -7,7 +7,7 @@ from sanic.response import json
 from sanic.views import HTTPMethodView
 from sanic_jwt.decorators import protected
 
-from ..tasks import async_get_invoices, async_get_f1_measures_json
+from ..contrib.contrib_f1 import async_get_f1_measures_json, async_get_invoices
 
 bp_f1_measures = Blueprint('f1')
 

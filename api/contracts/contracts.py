@@ -7,7 +7,8 @@ from sanic.response import json
 from sanic.views import HTTPMethodView
 from sanic_jwt.decorators import protected
 
-from ..tasks import async_get_contract_json, async_get_contracts
+from ..contrib.contrib_contracts import (async_get_contract_json,
+                                         async_get_contracts)
 
 bp_contracts = Blueprint('contracts')
 
