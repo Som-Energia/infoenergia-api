@@ -204,7 +204,6 @@ class TestF1Measures(TestCase):
         )
 
 
-@skip
 class TestContracts(TestCase):
 
     def setUp(self):
@@ -310,7 +309,7 @@ class TestContracts(TestCase):
                 'city': 'Barcelona',
                 'cityCode': '08019',
                 'countryCode': 'ES',
-                'postalCode': '08016',
+                'postalCode': '08036',
                 'provinceCode': '08',
                 'province': 'Barcelona',
             }

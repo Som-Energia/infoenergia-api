@@ -65,7 +65,6 @@ def get_invoices(request, contractId=None):
             request,
             filters,
         )
-    logger.info('Filter invoices by: %s', filters)
     id_invoices = factura_obj.search(filters)
     return factura_obj.read(id_invoices) or []
 

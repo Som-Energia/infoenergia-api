@@ -5,10 +5,11 @@ from sanic.log import logger
 from ..tasks import (get_building_details, get_contract_address,
                      get_cups_to_climaticZone, get_current_power,
                      get_current_tariff, get_devices, get_eprofile,
-                     get_experimentalgroup, get_id_for_contract,
-                     get_powerHistory, get_report, get_service,
-                     get_tariffHistory, get_tertiaryPower, get_version)
-from ..utils import get_request_filters, make_utc_timestamp, make_uuid
+                     get_experimentalgroup, get_powerHistory, get_report,
+                     get_service, get_tariffHistory, get_tertiaryPower,
+                     get_version)
+from ..utils import (get_id_for_contract, get_request_filters,
+                     make_utc_timestamp, make_uuid)
 
 
 def get_contract_json(erp_client, contract):

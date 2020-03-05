@@ -1,5 +1,4 @@
 import asyncio
-import json as json_basic
 
 from sanic import Blueprint
 from sanic.log import logger
