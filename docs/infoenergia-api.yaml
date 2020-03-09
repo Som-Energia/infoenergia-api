@@ -233,7 +233,7 @@ paths:
       tags:
       - f1
       summary: Get all F1 by contractID
-      description: Returns a single F1 file
+      description: Returns all F1 files for a contract
       operationId: server.get_f1_measures_by_contract_id
       parameters:
       - name: contractId
@@ -248,7 +248,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/f1'
+                type: array
+                items:
+                  $ref: '#/components/schemas/f1'
         400:
           description: Invalid ID supplied
           content: {}
@@ -257,7 +259,7 @@ paths:
           content: {}
       security:
         - jwt: []
-  /user/login:
+  /auth:
     post:
       tags:
       - user
@@ -328,6 +330,60 @@ components:
           type: string
           description: payer ID (should be the same as the owner id)
           example: signerId-123
+        dateStart:
+          type: string
+          format: date-time
+          description: contract activation date
+          example: "2013-10-11T16:37:05Z"
+        dateEnd:
+          type: string
+          nullable: true
+          description: contract cancelation date
+          example: null
+        tariffId:
+          type: string
+          description: contracted tariff id
+          example:  "tariffID-123"
+        tariff_:
+          type: object
+          description: tariff information
+          items:
+            type: object
+            properties:
+              tariff:
+                type: string
+              dateStart:
+                type: string
+                format: date-time
+              dateEnd:
+                type: string
+                format: date-time
+          example:
+              {
+                "tariff":"2.0A",
+                "dateStart": "2019-08-11T00:00:00Z",
+                "dateEnd": null
+              }
+        tariffHistory:
+          type: array
+          description: tariff history
+          items:
+            type: object
+            properties:
+              tariff:
+                type: string
+              dateStart:
+                type: string
+                format: date-time
+              dateEnd:
+                type: string
+                format: date-time
+          example:
+              {
+                "tariff": "2.0A",
+                "dateStart": "2019-08-11T00:00:00Z",
+                "dateEnd": "2019-08-11T00:00:00Z",
+              }
         power:
           type: integer
           format: int64
@@ -386,28 +442,14 @@ components:
               p3:
                 type: integer
           example: {"p1": 20000, "p2": 20000, "p3": 20000}
-        dateStart:
-          type: string
-          format: date-time
-          description: contract activation date
-          example: "2013-10-11T16:37:05Z"
-        dateEnd:
-          type: string
-          nullable: true
-          description: contract cancelation date
-          example: null
         climaticZone:
           type: string
           description:  climatic zone code
           example: "climaticZone-1"
-        experimentalGroupUser:
-          type: boolean
-          description: set to true if the contract is in an experimental group
-          example: true
-        experimentalGroupUserTest:
-          type: boolean
-          description: set to true if it is a test
-          example: true
+        activityCode:
+          type: string
+          description: activity code plus description
+          example: "activityCode - activityCodeDescription"
         customer:
           type: object
           description: contract owner
@@ -439,6 +481,97 @@ components:
                       type: string
                     parcelNumber:
                       type: string
+              meteringPointId:
+                type: string
+                description: metering point ID
+              buildingData:
+                type: object
+                description: details on building conditions
+                items:
+                  type: object
+                  properties:
+                    buildingConstructionYear:
+                      type: integer
+                      format: date
+                      description: construction year
+                    dwellingArea:
+                      type: integer
+                      description: area of residence
+                    propertyType:
+                      type: string
+                      description: type of residence
+                    buildingType:
+                      type: string
+                      description: type of building
+                    dwellingPositionInBuilding:
+                      type: string
+                      description: residence floor
+                    dwellingOrientation:
+                      type: string
+                      description: orientation
+                    buildingWindowsType:
+                      type: string
+                      description: type of windows
+                    buildingWindowsFrame:
+                      type: string
+                      description: type of windows frame
+                    buildingCoolingSource:
+                      type: string
+                      description: cooling source
+                    buildingHeatingSource:
+                      type: string
+                      description: heating source
+                    buildingHeatingSourceDhw:
+                      type: string
+                      description: type of dwh heating source
+                    buildingSolarSystem:
+                      type: string
+                      description: type of solar installation
+              profile:
+                type: object
+                description: details on residents
+                items:
+                  type: object
+                  properties:
+                    totalPersonsNumber:
+                      type: integer
+                      description: total number of persons
+                    minorsPersonsNumber:
+                      type: integer
+                      description: number of minors
+                    workingAgePersonsNumber:
+                      type: integer
+                      description: number of working persons
+                    retiredAgePersonsNumber:
+                      type: integer
+                      description: number of retired persons
+                    malePersonsNumber:
+                      type: integer
+                      description: number of male persons
+                    femalePersonsNumber:
+                      type: integer
+                      description: number of female persons
+                    educationLevel:
+                      type: object
+                      description: education level of residents
+                      items:
+                        type: object
+                        properties:
+                          edu_prim:
+                            type: integer
+                          edu_sec:
+                            type: integer
+                          edu_uni:
+                            type: integer
+                          edu_noStudies:
+                            type: integer
+              customisedServiceParameters:
+                type: object
+                items:
+                  type: object
+                  properties:
+                    OT701:
+                      type: string
           example:
                 {
                 "customerId": "customerId-123",
@@ -453,109 +586,23 @@ components:
                   "province": "Barcelona",
                   "provinceCode": "provinceCode-123",
                   "parcelNumber": "parcelNumber-123",
-                  }
-                }
-        buildingData:
-          type: object
-          description: details on building conditions
-          items:
-            type: object
-            properties:
-              buildingConstructionYear:
-                type: integer
-                format: date
-                description: construction year
-              dwellingArea:
-                type: integer
-                description: area of residence
-              propertyType:
-                type: string
-                description: type of residence
-              buildingType:
-                type: string
-                description: type of building
-              dwellingPositionInBuilding:
-                type: string
-                description: residence floor
-              dwellingOrientation:
-                type: string
-                description: orientation
-              buildingWindowsType:
-                type: string
-                description: type of windows
-              buildingWindowsFrame:
-                type: string
-                description: type of windows frame
-              buildingCoolingSource:
-                type: string
-                description: cooling source
-              buildingHeatingSource:
-                type: string
-                description: heating source
-              buildingHeatingSourceDhw:
-                type: string
-                description: type of dwh heating source
-              buildingSolarSystem:
-                type: string
-                description: type of solar installation
-          example:
-                 {
-                  "buildingData":
+                  },
+                "meteringPointId": "c1759810-90f3-012e-0404-34159e211070",
+                "buildingData":
                   {
-                    "buildingConstructionYear": 2014,
-                    "dwellingArea": 196,
-                    "propertyType": "primary",
-                    "buildingType": "Apartment",
-                    "dwellingPositionInBuilding": "first_floor",
-                    "dwellingOrientation": "SE",
-                    "buildingWindowsType": "double_panel",
-                    "buildingWindowsFrame": "PVC",
-                    "buildingCoolingSource": "electricity",
-                    "buildingHeatingSource": "district_heating",
-                    "buildingHeatingSourceDhw": "gasoil",
-                    "buildingSolarSystem": "solar_thermal_heating"
-                  }
-                }
-        profile:
-          type: object
-          description: details on residents
-          items:
-            type: object
-            properties:
-              totalPersonsNumber:
-                type: integer
-                description: total number of persons
-              minorsPersonsNumber:
-                type: integer
-                description: number of minors
-              workingAgePersonsNumber:
-                type: integer
-                description: number of working persons
-              retiredAgePersonsNumber:
-                type: integer
-                description: number of retired persons
-              malePersonsNumber:
-                type: integer
-                description: number of male persons
-              femalePersonsNumber:
-                type: integer
-                description: number of female persons
-              educationLevel:
-                type: object
-                description: education level of residents
-                items:
-                  type: object
-                  properties:
-                    edu_prim:
-                      type: integer
-                    edu_sec:
-                      type: integer
-                    edu_uni:
-                      type: integer
-                    edu_noStudies:
-                      type: integer
-          example:
-                {
+                  "buildingConstructionYear": 2014,
+                  "dwellingArea": 196,
+                  "propertyType": "primary",
+                  "buildingType": "Apartment",
+                  "dwellingPositionInBuilding": "first_floor",
+                  "dwellingOrientation": "SE",
+                  "buildingWindowsType": "double_panel",
+                  "buildingWindowsFrame": "PVC",
+                  "buildingCoolingSource": "electricity",
+                  "buildingHeatingSource": "district_heating",
+                  "buildingHeatingSourceDhw": "gasoil",
+                  "buildingSolarSystem": "solar_thermal_heating"
+                  },
                 "profile":
                   {
                   "totalPersonsNumber": 3,
@@ -571,51 +618,12 @@ components:
                     "edu_uni": 1,
                     "edu_noStudies": 1
                     }
-                  }
-                }
-        customisedGroupingCriteria:
-          type: object
-          description: Group a contract by criteria
-          items:
-            type: object
-            properties:
-              criteria_1:
-                type: string
-                description: criteria id
-              criteria_2:
-                type: string
-                description: detail on criteria
-              criteria_3:
-                type: string
-                description: detail on criteria
-          example:
-                {
-                "customisedGroupingCriteria":
-                  {
-                  "criteria_1": "CLASS 1",
-                  "criteria_2": "XXXXXXX",
-                  "criteria_3": "YYYYYYY"
                   },
-                }
-        customisedServiceParameters:
-          type: object
-          description: customised service parameters
-          items:
-            type: object
-            properties:
-              OT701:
-                type: string
-          example:
-                {
                 "customisedServiceParameters":
                   {
                   "OT701": "p1;p2;px"
                   }
                 }
-        meteringPointId:
-          type: string
-          description: metering point ID
-          example: "c1759810-90f3-012e-0404-34159e211070"
         devices:
           type: array
           description: metering device
@@ -640,18 +648,6 @@ components:
               "dateEnd": null,
               "deviceId": "c1810810-0381-012d-25a8-0017f2cd3574"
               }]
-        version:
-          type: integer
-          description: Contract modification's name
-          example: 1
-        activityCode:
-          type: string
-          description: activity code plus description
-          example: "activityCode - activityCodeDescription"
-        tariffId:
-          type: string
-          description: tariff id
-          example:  "tariffID-123"
         report:
           type: object
           description: report
@@ -670,6 +666,18 @@ components:
               "initialMonth": "201902",
               "language": "ES"
             }
+        version:
+          type: integer
+          description: Contract modification's name
+          example: 1
+        experimentalGroupUser:
+          type: boolean
+          description: set to true if the contract is in an experimental group
+          example: true
+        experimentalGroupUserTest:
+          type: boolean
+          description: set to true if it is a test
+          example: true
     f1:
       type: object
       properties:

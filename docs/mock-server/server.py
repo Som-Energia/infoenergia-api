@@ -51,19 +51,19 @@ def decode_token(token):
 
 
 def get_contract_by_id(user, token_info, contractId):
-    return json4test['jsonContractById']
+    return json4test['contract_id_2A']['contract_data']
 
 
 def get_contracts(user, token_info, limit, from_, to_, tariff, juridic_type):
-    return json4test['jsonList'][:limit]
+    return json4test['contracts_20DHS']['contract_data'][:limit]
 
 
 def get_f1_measures(user, token_info, limit, from_, to_, tariff):
-    return json4test['jsonF1'][:limit]
+    return json4test['f1_contracts']['contract_data'][:limit]
 
 
-def get_f1_measures_by_contract_id(user, token_info, limit, from_, to_, tariff, contractId):
-    return json4test['jsonF1byContractId']
+def get_f1_measures_by_contract_id(user, token_info, contractId):
+    return json4test['f1_contract_id']['contract_data']
 
 
 if __name__ == '__main__':
