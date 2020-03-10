@@ -141,7 +141,7 @@ def get_contracts(request, id_contract=None):
             request,
             filters,
         )
-    logger.info('Filter contracts by: %s', filters)
+    logger.debug('Filter contracts by: %s', filters)
     if id_contract:
         return contract_obj.read(
             contract_obj.search([('name', '=', id_contract)]), fields

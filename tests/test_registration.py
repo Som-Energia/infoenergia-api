@@ -1,12 +1,8 @@
-import os
-os.environ.setdefault('INFOENERGIA_MODULE_SETTINGS', 'config.settings.testing')
-
-from api.registration.models import User
 from passlib.hash import pbkdf2_sha256
 from pony.orm import db_session
 from sanic_jwt import BaseEndpoint, exceptions
 
-from .base import BaseTestCase
+from tests.base import BaseTestCase, User
 
 
 class TestLogin(BaseTestCase):

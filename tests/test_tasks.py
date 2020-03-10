@@ -1,12 +1,12 @@
 import os
-from unittest import TestCase, skip
+os.environ.setdefault('INFOENERGIA_MODULE_SETTINGS', 'config.settings.testing')
 
-from api import tasks
-from config import config
+from unittest import TestCase
+
 from erppeek import Client
-from sanic.log import logger
 
-os.environ.setdefault('INFOENERGIA_MODULE_SETTINGS', 'config.settings.devel')
+from config import config
+from infoenergia_api import tasks
 
 
 class TestF1Measures(TestCase):

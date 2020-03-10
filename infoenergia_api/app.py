@@ -4,12 +4,13 @@ from concurrent import futures
 from erppeek import Client
 from sanic import Sanic
 from sanic.log import logger
-from sanic_jwt import Initialize, exceptions
+from sanic_jwt import Initialize
 
-from .contracts import bp_contracts
-from .f1_measures import bp_f1_measures
-from .registration.login import InvitationUrlToken, authenticate, extra_views
-from .registration.models import db
+from infoenergia_api.api.contracts import bp_contracts
+from infoenergia_api.api.f1_measures import bp_f1_measures
+from infoenergia_api.api.registration.login import (InvitationUrlToken,
+                                                    authenticate, extra_views)
+from infoenergia_api.api.registration.models import db
 
 
 def build_app():

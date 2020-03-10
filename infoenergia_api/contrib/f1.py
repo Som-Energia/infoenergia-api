@@ -2,8 +2,8 @@ import functools
 
 from sanic.log import logger
 
-from ..tasks import get_devices, get_f1_energy_measurements, get_f1_power
-from ..utils import get_request_filters, make_utc_timestamp, make_uuid
+from infoenergia_api.tasks import get_devices, get_f1_energy_measurements, get_f1_power
+from infoenergia_api.utils import get_request_filters, make_utc_timestamp, make_uuid
 
 
 def get_f1_measures_json(erp_client, invoice):

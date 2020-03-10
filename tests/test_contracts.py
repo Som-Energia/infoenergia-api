@@ -1,12 +1,7 @@
-import os
-os.environ.setdefault('INFOENERGIA_MODULE_SETTINGS', 'config.settings.testing')
-
 from passlib.hash import pbkdf2_sha256
 from pony.orm import db_session
 
-from api.registration.models import User
-
-from .base import BaseTestCase
+from tests.base import BaseTestCase
 
 
 class TestContracts(BaseTestCase):

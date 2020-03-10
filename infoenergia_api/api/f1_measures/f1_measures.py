@@ -6,7 +6,7 @@ from sanic.response import json
 from sanic.views import HTTPMethodView
 from sanic_jwt.decorators import protected
 
-from ..contrib.contrib_f1 import async_get_f1_measures_json, async_get_invoices
+from infoenergia_api.contrib.f1 import async_get_f1_measures_json, async_get_invoices
 
 bp_f1_measures = Blueprint('f1')
 
@@ -20,8 +20,7 @@ class F1MeasuresContractIdView(HTTPMethodView):
         app = request.app
         sem = asyncio.Semaphore(app.config.MAX_TASKS)
         invoices = await async_get_invoices(request, contractId)
-        logger.info('There are %d invoices', len(invoices))
-        logger.info('*' * 100)
+        logger.debug('There are %d invoices', len(invoices))
 
         f1_measure_json = [
             await async_get_f1_measures_json(
@@ -58,7 +57,7 @@ class F1MeasuresView(HTTPMethodView):
             for invoice in invoices
         ]
         while to_do:
-            logger.info("%d invoices to anonymize", len(to_do))
+            logger.debug("%d invoices to anonymize", len(to_do))
             done, to_do = await asyncio.wait(to_do, timeout=app.config.TASK_TIMEOUT)
             for task in done:
                 try:

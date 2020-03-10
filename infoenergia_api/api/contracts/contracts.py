@@ -6,8 +6,8 @@ from sanic.response import json
 from sanic.views import HTTPMethodView
 from sanic_jwt.decorators import protected
 
-from ..contrib.contrib_contracts import (async_get_contract_json,
-                                         async_get_contracts)
+from infoenergia_api.contrib.contracts import (async_get_contract_json,
+                                               async_get_contracts)
 
 bp_contracts = Blueprint('contracts')
 
@@ -41,7 +41,7 @@ class ContractsView(HTTPMethodView):
         sem = asyncio.Semaphore(app.config.MAX_TASKS)
         result = []
         contracts = await async_get_contracts(request)
-        logger.info("how many contracts: %d", len(contracts))
+        logger.debug("how many contracts: %d", len(contracts))
 
         to_do = [
             async_get_contract_json(
@@ -50,7 +50,7 @@ class ContractsView(HTTPMethodView):
             for contract in contracts
         ]
         while to_do:
-            logger.info("%d contracts to anonymize", len(to_do))
+            logger.debug("%d contracts to anonymize", len(to_do))
             done, to_do = await asyncio.wait(to_do, timeout=app.config.TASK_TIMEOUT)
             for task in done:
                 try:

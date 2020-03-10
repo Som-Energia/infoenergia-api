@@ -1,16 +1,13 @@
-import os
-os.environ.setdefault('INFOENERGIA_MODULE_SETTINGS', 'config.settings.testing')
-
 from unittest import mock
 
 from pony.orm import db_session
 
-from .base import BaseTestCase
+from tests.base import BaseTestCase
 
 
 class TestF1Base(BaseTestCase):
 
-    @mock.patch('api.f1_measures.f1_measures.async_get_invoices')
+    @mock.patch('infoenergia_api.api.f1_measures.f1_measures.async_get_invoices')
     @db_session
     def test__get_f1_by_contracts_id(self, async_get_invoices_mock):
         async_get_invoices_mock.return_value = self.json4test['f1_contract_id']['invoices']
@@ -38,7 +35,7 @@ class TestF1Base(BaseTestCase):
         )
         self.delete_user(user)
 
-    @mock.patch('api.f1_measures.f1_measures.async_get_invoices')
+    @mock.patch('infoenergia_api.api.f1_measures.f1_measures.async_get_invoices')
     @db_session
     def test__get_f1_measures(self, async_get_invoices_mock):
         async_get_invoices_mock.return_value = self.json4test['f1_contracts']['invoices']

@@ -1,4 +1,6 @@
 import os
+os.environ.setdefault('INFOENERGIA_MODULE_SETTINGS', 'config.settings.testing')
+
 from concurrent import futures
 from unittest import TestCase
 
@@ -6,9 +8,8 @@ import yaml
 from passlib.hash import pbkdf2_sha256
 from pony.orm import commit, db_session
 
-from api import app
-from api.registration.models import User
-
+from infoenergia_api import app
+from infoenergia_api.api.registration.models import User
 
 
 class BaseTestCase(TestCase):

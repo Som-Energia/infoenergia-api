@@ -1,8 +1,8 @@
 import re
 from datetime import datetime
 
-from .climatic_zones import ine_to_zc
-from .postal_codes import ine_to_dp
+from infoenergia_api.contrib.climatic_zones import ine_to_zc
+from infoenergia_api.contrib.postal_codes import ine_to_dp
 from .utils import make_utc_timestamp, make_uuid
 
 
