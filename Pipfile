@@ -21,6 +21,7 @@ pytz = "*"
 passlib = "*"
 pony = "*"
 environs = "*"
+uvicorn = "*"
 
 [requires]
 python_version = "3.8"

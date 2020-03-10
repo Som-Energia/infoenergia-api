@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "0aaac185cdb1fe32eb41a9627f65e643c770d7b3057bb6ce1636c52b76117083"
+            "sha256": "bd8c0dc62d243215486843a2e7f2549bf3f8aec963c3c094ad09367ffd504dec"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -138,6 +138,7 @@
                 "sha256:fa3cd71e31436911a44620473e873a256851e1f53dee56669dae403ba41756a4",
                 "sha256:fea04e126014169384dee76a153d4573d90d0cbd1d12185da089f73c78390437"
             ],
+            "markers": "sys_platform != 'win32' and sys_platform != 'cygwin' and platform_python_implementation != 'PyPy'",
             "version": "==0.1.1"
         },
         "httpx": {
@@ -401,6 +402,14 @@
             ],
             "version": "==1.25.8"
         },
+        "uvicorn": {
+            "hashes": [
+                "sha256:0f58170165c4495f563d8224b2f415a0829af0412baa034d6f777904613087fd",
+                "sha256:6fdaf8e53bf1b2ddf0fe9ed06079b5348d7d1d87b3365fe2549e6de0d49e631c"
+            ],
+            "index": "pypi",
+            "version": "==0.11.3"
+        },
         "uvloop": {
             "hashes": [
                 "sha256:08b109f0213af392150e2fe6f81d33261bb5ce968a288eb698aad4f46eb711bd",
@@ -413,7 +422,7 @@
                 "sha256:e7514d7a48c063226b7d06617cbb12a14278d4323a065a8d46a7962686ce2e95",
                 "sha256:f07909cd9fc08c52d294b1570bba92186181ca01fe3dc9ffba68955273dd7362"
             ],
-            "markers": "sys_platform != 'win32' and implementation_name == 'cpython'",
+            "markers": "sys_platform != 'win32' and sys_platform != 'cygwin' and platform_python_implementation != 'PyPy'",
             "version": "==0.14.0"
         },
         "websockets": {
