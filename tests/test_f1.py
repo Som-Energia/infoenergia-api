@@ -1,13 +1,16 @@
-from passlib.hash import pbkdf2_sha256
+from unittest import mock
+
 from pony.orm import db_session
 
 from tests.base import BaseTestCase
 
 
-class TestContracts(BaseTestCase):
+class TestF1Base(BaseTestCase):
 
+    @mock.patch('infoenergia_api.api.f1_measures.f1_measures.async_get_invoices')
     @db_session
-    def test__get_contracts_by_id__2A(self):
+    def test__get_f1_by_contracts_id(self, async_get_invoices_mock):
+        async_get_invoices_mock.return_value = self.json4test['f1_contract_id']['invoices']
         user = self.get_or_create_user(
             username='someone',
             password='123412345',
@@ -16,8 +19,9 @@ class TestContracts(BaseTestCase):
             is_superuser=True
         )
         token = self.get_auth_token(user.username, "123412345")
+
         _, response = self.client.get(
-            '/contracts/' + self.json4test['contract_id_2A']['contractId'],
+            '/f1/' + self.json4test['f1_contract_id']['contractId'],
             headers={
                 'Authorization': 'Bearer {}'.format(token)
             },
@@ -25,14 +29,16 @@ class TestContracts(BaseTestCase):
         )
 
         self.assertEqual(response.status, 200)
-        self.assertDictEqual(
+        self.assertListEqual(
             response.json,
-            self.json4test['contract_id_2A']['contract_data']
+            self.json4test['f1_contract_id']['contract_data']
         )
         self.delete_user(user)
 
+    @mock.patch('infoenergia_api.api.f1_measures.f1_measures.async_get_invoices')
     @db_session
-    def test__get_contracts__20DHS(self):
+    def test__get_f1_measures(self, async_get_invoices_mock):
+        async_get_invoices_mock.return_value = self.json4test['f1_contracts']['invoices']
         user = self.get_or_create_user(
             username='someone',
             password='123412345',
@@ -42,13 +48,13 @@ class TestContracts(BaseTestCase):
         )
         token = self.get_auth_token(user.username, "123412345")
         params = {
-            'from_': '2019-10-03',
-            'to_': '2019-10-09',
-            'tariff': '2.0DHS',
-            'juridic_type': 'physical_person',
+            'from_': '2019-09-01',
+            'to_': '2019-09-01',
+            'tariff': '3.1A',
         }
+
         _, response = self.client.get(
-            '/contracts',
+            '/f1',
             params=params,
             headers={
                 'Authorization': 'Bearer {}'.format(token)
@@ -59,8 +65,7 @@ class TestContracts(BaseTestCase):
         self.assertEqual(response.status, 200)
         self.assertListEqual(
             response.json,
-            self.json4test['contracts_20DHS']['contract_data']
+            self.json4test['f1_contracts']['contract_data']
 
         )
         self.delete_user(user)
-

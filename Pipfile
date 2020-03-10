@@ -4,12 +4,24 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
+ipython = "*"
+pyflakes = "*"
+autopep8 = "*"
+pylint = "*"
+coverage = "*"
+pytest = "*"
 
 [packages]
 connexion = "*"
 python-jose = "*"
 sanic = "*"
 erppeek = "*"
+sanic-jwt = "*"
+pytz = "*"
+passlib = "*"
+pony = "*"
+environs = "*"
+uvicorn = "*"
 
 [requires]
-python_version = "3.7"
+python_version = "3.8"

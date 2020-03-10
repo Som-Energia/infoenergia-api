@@ -1,0 +1,16 @@
+[fcgi-program:infoenergia_api]
+socket=unix:///path_to_socket/api.sock
+directory=/opt/infoenergia-api
+command=venv/bin/uvicorn --loop=uvloop --workers=4 infoenergia_api:app
+numprocs=1
+user=infoenergia_user
+autostart=true
+process_name=infoenergia_api-%(process_num)d
+redirect_stderr=true
+stdout_logfile=/var/log/infoenergia_api/api.log
+stdout_logfile_maxbytes=1MB
+stdout_logfile_backups=15
+stdout_events_enabled=false
+stderr_logfile=/var/log/infoenergia_api/api.err.log
+stderr_logfile_maxbytes=1MB
+stderr_logfile_backups=15
