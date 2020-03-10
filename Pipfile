@@ -9,6 +9,7 @@ pyflakes = "*"
 autopep8 = "*"
 pylint = "*"
 coverage = "*"
+pytest = "*"
 
 [packages]
 connexion = "*"
