@@ -1,9 +1,10 @@
 import functools
 
+from infoenergia_api.tasks import (get_devices, get_f1_energy_measurements,
+                                   get_f1_power)
+from infoenergia_api.utils import (get_request_filters, make_utc_timestamp,
+                                   make_uuid)
 from sanic.log import logger
-
-from infoenergia_api.tasks import get_devices, get_f1_energy_measurements, get_f1_power
-from infoenergia_api.utils import get_request_filters, make_utc_timestamp, make_uuid
 
 
 def get_f1_measures_json(erp_client, invoice):
@@ -51,12 +52,23 @@ def get_invoices(request, contractId=None):
     factura_obj = request.app.erp_client.model('giscedata.facturacio.factura')
     filters = [
         ('polissa_state', '=', 'activa'),
-        ('type', '=', 'in_invoice')
+        ('type', '=', 'in_invoice'),
+        ('polissa_id.empowering_profile_id', '=', 1),
     ]
+    fields = [
+        'polissa_id',
+        'data_inici',
+        'data_final',
+        'cups_id',
+        'comptadors',
+        'lectures_potencia_ids',
+        'lectures_energia_ids'
+    ]
+
     if contractId:
         filters.append(('polissa_id', '=', contractId))
         return factura_obj.read(
-            factura_obj.search(filters)
+            factura_obj.search(filters, fields)
         ) or []
 
     if request.args:
@@ -66,7 +78,7 @@ def get_invoices(request, contractId=None):
             filters,
         )
     id_invoices = factura_obj.search(filters)
-    return factura_obj.read(id_invoices) or []
+    return factura_obj.read(id_invoices, fields) or []
 
 
 async def async_get_invoices(request, id_contract=None):

@@ -117,8 +117,9 @@ def get_contracts(request, id_contract=None):
     contract_obj = request.app.erp_client.model('giscedata.polissa')
 
     filters = [
-        ("active", "=", True),
-        ("state", "=", "activa")
+        ('active', '=', True),
+        ('state', '=', 'activa'),
+        ('empowering_profile_id', '=', 1)
     ]
     fields = [
         'name',

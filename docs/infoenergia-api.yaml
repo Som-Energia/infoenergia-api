@@ -180,7 +180,7 @@ paths:
             - 6.1B
       - name: from_
         in: query
-        description: Filter F1 with date from this date on. In format YYYY-MM-DD
+        description: Filter all F1 from this date on. Format YYYY-MM-DD
         required: false
         style: form
         explode: true
@@ -191,7 +191,7 @@ paths:
           example: '2019-08-01'
       - name: to_
         in: query
-        description: Filter F1 with date until this date. In format YYYY-MM-DD
+        description: Filter all F1 until this date. Format YYYY-MM-DD
         required: false
         style: form
         explode: true

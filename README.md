@@ -38,6 +38,11 @@ Now our api is ready to run. You can simply execute `pipenv run python run.py` a
 
 #### Usage
 
+#### Changes
+
+### 1.0.1
+- Add extra filter to contract and f1 endpoints
+
 #### Contact
 If you want to contact with us, feel free to send an email to <info@somenergia.coop>.
 
