@@ -64,12 +64,10 @@ def get_invoices(request, contractId=None):
         'lectures_potencia_ids',
         'lectures_energia_ids'
     ]
-
     if contractId:
-        filters.append(('polissa_id', '=', contractId))
-        return factura_obj.read(
-            factura_obj.search(filters, fields)
-        ) or []
+        filters.append(
+            ('polissa_id.name', '=', contractId)
+        )
 
     if request.args:
         filters = get_request_filters(
