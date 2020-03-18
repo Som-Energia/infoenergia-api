@@ -20,7 +20,7 @@ class TestF1Base(BaseTestCase):
         )
         token = self.get_auth_token(user.username, "123412345")
 
-        _, response = self.client.get(
+        request, response = self.client.get(
             '/f1/' + self.json4test['f1_contract_id']['contractId'],
             headers={
                 'Authorization': 'Bearer {}'.format(token)
@@ -53,7 +53,7 @@ class TestF1Base(BaseTestCase):
             'tariff': '3.1A',
         }
 
-        _, response = self.client.get(
+        request, response = self.client.get(
             '/f1',
             params=params,
             headers={
@@ -68,4 +68,5 @@ class TestF1Base(BaseTestCase):
             self.json4test['f1_contracts']['contract_data']
 
         )
+        async_get_invoices_mock.assert_called_with(request)
         self.delete_user(user)
