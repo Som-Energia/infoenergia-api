@@ -4,15 +4,15 @@ Api to exchange measurements and curves information
 #### Prerequisites
 
 Before you begin, ensure you have met the following requirements:
-* You have at least `python 3.8`. You can get this python version through `pyenv`. See more here -> https://github.com/pyenv/pyenv#installation
-* You have installed `pipenv`. Instructions here -> https://pipenv.readthedocs.io/en/latest/#install-pipenv-today
-* You have a `Linux/Mac` machine. Windows is not supported and we are not thinking in it.
+* You must have at least `python 3.8`. You can get this python version through `pyenv`. See more here -> https://github.com/pyenv/pyenv#installation
+* You should have installed `pipenv`. Instructions here -> https://pipenv.readthedocs.io/en/latest/#install-pipenv-today
+* You should have a `Linux/Mac` machine. Windows is not supported and we are not thinking in it.
 * An `nginx` installation
 * Optionally, an user with sudo permissions
 
-#### Installation 
+#### Installation
 
-First choose a directory where you want to install the api. We recommend install under `/opt` directory. This guide will use it as base directory installation 
+First choose a directory where you want to install the api. We recommend install under `/opt` directory. This guide will use it as base directory installation
 
 After that, clone repository from github:
 
@@ -39,6 +39,10 @@ Now our api is ready to run. You can simply execute `pipenv run python run.py` a
 #### Usage
 
 #### Changes
+
+### 1.0.2
+- Fix F1 filter by contractId
+- Now we can filter invoices by date when getting when filtering by contractId
 
 ### 1.0.1
 - Add extra filter to contract and f1 endpoints
