@@ -39,7 +39,8 @@ Now our api is ready to run. You can simply execute `pipenv run python run.py` a
 #### Usage
 
 #### Changes
-
+### 1.1.0
+- Add endpoint for contractual modifications
 ### 1.0.1
 - Add extra filter to contract and f1 endpoints
 
