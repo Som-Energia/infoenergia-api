@@ -19,6 +19,8 @@ tags:
   description: All information about a contract
 - name: modcontracts
   description: All information about contract modifications
+- name: f1
+  description: All information about contract f1 measurements
 - name: measurements
   description: All information about contract energy measurements
 paths:
@@ -326,6 +328,28 @@ paths:
         required: true
         schema:
           type: string
+      - name: from_
+        in: query
+        description: Filter all F1 from this date on. Format YYYY-MM-DD
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          format: date
+          default: None
+          example: '2019-08-01'
+      - name: to_
+        in: query
+        description: Filter all F1 until this date. Format YYYY-MM-DD
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          format: date
+          default: None
+          example: '2019-08-10'
       responses:
         200:
           description: successful operation
