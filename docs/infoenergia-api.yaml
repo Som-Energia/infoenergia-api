@@ -19,6 +19,8 @@ tags:
   description: All information about a contract
 - name: modcontracts
   description: All information about contract modifications
+- name: f1
+  description: All information about contract f1 measurements
 - name: measurements
   description: All information about contract energy measurements
 paths:
@@ -146,6 +148,90 @@ paths:
           content: {}
       security:
         - jwt: []
+  /modcontracts:
+    get:
+      tags:
+      - modcontracts
+      summary: Obtain all contracts with contract amendments.
+      description: Get all contracts one or more contract amendments by date and type.
+      operationId: server.get_modcontracts
+      parameters:
+      - name: modtype
+        in: query
+        description: Filter by different types of contract modification
+        required: false
+        style: form
+        explode: false
+        schema:
+          type: array
+          items:
+            type: string
+            enum:
+              - canceled
+              - tariff_power
+      - name: from_
+        in: query
+        description: Filter contract amendments from this date on. Format YYYY-MM-DD.
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: string
+          format: date
+          default: None
+          example: '2019-08-01'
+      - name: to_
+        in: query
+        description: Filter contract amendments until this date. Format YYYY-MM-DD
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          format: date
+          default: None
+          example: '2019-08-10'
+      - name: juridic_type
+        in: query
+        description: Filter contract amendments by juridic type (physical_person or juridic_person).
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          default: None
+          enum:
+            - None
+            - physical_person
+            - juridic_person
+      - name: limit
+        in: query
+        description: How many contracts to return at one time (max 100)
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          default: 100
+      responses:
+        200:
+          description: successful operation
+          # links:
+          #   x-next:
+          #     description: A link to the next page of responses
+          #     operationId: server.get_contracts
+          #     parameters:
+          #       limit: '$response.page_results#/contracts'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/contracts'
+        400:
+          description: Invalid status value
+          content: {}
+      security:
+        - jwt: []
   /f1:
     get:
       tags:
@@ -242,6 +328,28 @@ paths:
         required: true
         schema:
           type: string
+      - name: from_
+        in: query
+        description: Filter all F1 from this date on. Format YYYY-MM-DD
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          format: date
+          default: None
+          example: '2019-08-01'
+      - name: to_
+        in: query
+        description: Filter all F1 until this date. Format YYYY-MM-DD
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          format: date
+          default: None
+          example: '2019-08-10'
       responses:
         200:
           description: successful operation
@@ -310,7 +418,6 @@ components:
           type: string
         active:
           type: boolean
-  schemas:
     contracts:
       type: object
       properties:

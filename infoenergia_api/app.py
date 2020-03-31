@@ -8,6 +8,7 @@ from sanic_jwt import Initialize
 
 from infoenergia_api.api.contracts import bp_contracts
 from infoenergia_api.api.f1_measures import bp_f1_measures
+from infoenergia_api.api.modcontracts import bp_modcontracts
 from infoenergia_api.api.registration.login import (InvitationUrlToken,
                                                     authenticate, extra_views)
 from infoenergia_api.api.registration.models import db
@@ -22,6 +23,7 @@ def build_app():
         Initialize(app, authenticate=authenticate, class_views=extra_views)
         app.blueprint(bp_contracts)
         app.blueprint(bp_f1_measures)
+        app.blueprint(bp_modcontracts)
 
         app.add_route(
             InvitationUrlToken.as_view(),

@@ -58,6 +58,11 @@ def get_contracts(user, token_info, limit, from_, to_, tariff, juridic_type):
     return json4test['contracts_20DHS']['contract_data'][:limit]
 
 
+def get_modcontracts(user, token_info, limit, type, from_, to_, juridic_type):
+    for modtype in type:
+        return json4test['contracts_20DHS']['contract_data'][:limit]
+
+
 def get_f1_measures(user, token_info, limit, from_, to_, tariff):
     return json4test['f1_contracts']['contract_data'][:limit]
 
