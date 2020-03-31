@@ -40,6 +40,9 @@ Now our api is ready to run. You can simply execute `pipenv run python run.py` a
 
 #### Changes
 
+### 1.1.0
+- New endpoint to get all contractual modifications
+
 ### 1.0.2
 - Fix F1 filter by contractId
 - Now we can filter invoices by date when getting when filtering by contractId
