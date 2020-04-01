@@ -29,8 +29,7 @@ def get_f1_measures_json(erp_client, invoice):
         'power_measurements': get_f1_power(
             erp_client,
             invoice['lectures_potencia_ids'],
-            units.read([('id', '=', 10)])[0]['name']
-
+            'kW'
         ),
         'reactive_energy_measurements': get_f1_energy_measurements(
             erp_client,
