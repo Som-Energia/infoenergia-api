@@ -17,6 +17,7 @@ def get_f1_measures_json(erp_client, invoice):
         ),
         'dateStart': make_utc_timestamp(invoice['data_inici']),
         'dateEnd': make_utc_timestamp(invoice['data_final']),
+        'tariffId': invoice['tarifa_acces_id'][1],
         'meteringPointId': make_uuid(
             'giscedata.cups.ps',
             invoice['cups_id'][1]
@@ -28,8 +29,7 @@ def get_f1_measures_json(erp_client, invoice):
         'power_measurements': get_f1_power(
             erp_client,
             invoice['lectures_potencia_ids'],
-            units.read([('id', '=', 10)])[0]['name']
-
+            'kW'
         ),
         'reactive_energy_measurements': get_f1_energy_measurements(
             erp_client,
@@ -62,7 +62,8 @@ def get_invoices(request, contractId=None):
         'cups_id',
         'comptadors',
         'lectures_potencia_ids',
-        'lectures_energia_ids'
+        'lectures_energia_ids',
+        'tarifa_acces_id',
     ]
     if contractId:
         filters.append(

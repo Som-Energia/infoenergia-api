@@ -800,6 +800,20 @@ components:
           type: string
           description: invoide ID
           example: invoiceId-123
+        dateStart:
+          type: string
+          nullable: true
+          format: date-time
+          description: invoice start datetime
+        dateEnd:
+          type: string
+          nullable: true
+          format: date-time
+          description: invoice end date
+        tariffId:
+          type: string
+          description: contracted tariff id
+          example: 2.0A
         meteringPointId:
           type: string
           description: metering point ID
@@ -819,7 +833,7 @@ components:
                 nullable: true
                 format: date-time
                 description: deactivation date
-              devideId:
+              deviceId:
                 type: string
                 description: metering device id
           example:
