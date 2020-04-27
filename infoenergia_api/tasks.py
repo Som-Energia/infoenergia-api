@@ -6,50 +6,6 @@ from infoenergia_api.contrib.postal_codes import ine_to_dp
 from .utils import make_utc_timestamp, make_uuid
 
 
-def get_f1_power(erp_client, power_readings_ids, units):
-    """
-    Readings F1:
-    "power_measurements": {
-      "period": "P1",
-      "excess": "0.0",
-      "maximeter": "2",
-      "units": "kW/dia"
-    }
-    """
-
-    power_obj = erp_client.model('giscedata.facturacio.lectures.potencia')
-    f1_power = power_obj.read([('id', 'in', power_readings_ids)])
-    return [
-        {
-            'period': power['name'],
-            'excess': power['exces'],
-            'maximeter': power['pot_maximetre'],
-            'units': units
-        } for power in f1_power]
-
-
-def get_f1_energy_measurements(erp_client, energy_readings_ids, energy_type, units):
-    """
-    Readings F1:
-    "energy_measurements": {
-      "energyType": activa/reactiva
-      "source": telegestión/real
-      "period": "P1",
-      "consum": "2",
-      "units": "kWh"
-    }
-    """
-    measures_obj = erp_client.model('giscedata.facturacio.lectures.energia')
-    measures = measures_obj.read([('id', 'in', energy_readings_ids)])
-    return [
-        {
-            'source': 'Not informed' if isinstance(measure['origen_id'], bool) else measure['origen_id'][1],
-            'period': re.split('[()]', measure['name'])[1],
-            'consum': int(measure['consum']),
-            'units': units
-        } for measure in measures if measure['tipus'] == energy_type]
-
-
 def find_changes(erp_client, modcons_id, field):
     modcon_obj = erp_client.model('giscedata.polissa.modcontractual')
     fields = ['data_inici', 'data_final', 'potencia', 'tarifa']

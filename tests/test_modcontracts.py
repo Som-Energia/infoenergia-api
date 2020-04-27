@@ -37,7 +37,6 @@ class TestModContracts(BaseTestCase):
         self.assertListEqual(
             response.json,
             self.json4test['contracts_canceled']['contract_data']
-
         )
         self.delete_user(user)
 
@@ -72,3 +71,4 @@ class TestModContracts(BaseTestCase):
 
         )
         self.delete_user(user)
+

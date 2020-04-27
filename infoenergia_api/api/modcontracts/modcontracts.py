@@ -40,7 +40,6 @@ class ModContractsView(HTTPMethodView):
                     logger.error("Reason: %s", str(e))
                 else:
                     result.append(contract_json)
-        print(json(result))
         return json(result)
 
 
