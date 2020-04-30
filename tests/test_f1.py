@@ -12,7 +12,9 @@ class TestF1Base(BaseTestCase):
     @mock.patch('infoenergia_api.api.f1_measures.f1_measures.async_get_invoices')
     @db_session
     def test__get_f1_measures_by_contract_id(self, async_get_invoices_mock):
-        async_get_invoices_mock.return_value = InvoiceList(self.json4test['invoices_f1_by_contract_id'])
+        async_get_invoices_mock.return_value = InvoiceList([
+            self.json4test['invoices_f1_by_contract_id']['contractId']
+        ])
         user = self.get_or_create_user(
             username='someone',
             password='123412345',
@@ -33,7 +35,7 @@ class TestF1Base(BaseTestCase):
         self.assertEqual(response.status, 200)
         self.assertListEqual(
             response.json,
-            self.json4test['f1_contract_id']['contract_data']
+            self.json4test['invoices_f1_by_contract_id']['contract_data']
         )
         self.delete_user(user)
 
