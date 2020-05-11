@@ -1,10 +1,13 @@
+import asyncio
 import os
 from concurrent import futures
 
+import aioredis
 from erppeek import Client
 from sanic import Sanic
 from sanic.log import logger
 from sanic_jwt import Initialize
+from sanic_session import Session, AIORedisSessionInterface
 
 from infoenergia_api.api.contracts import bp_contracts
 from infoenergia_api.api.f1_measures import bp_f1_measures
@@ -14,7 +17,7 @@ from infoenergia_api.api.registration.login import (InvitationUrlToken,
 from infoenergia_api.api.registration.models import db
 
 
-def build_app():
+async def build_app():
     from config import config
     app = Sanic('infoenergia-api')
     try:
@@ -33,6 +36,9 @@ def build_app():
 
         app.thread_pool = futures.ThreadPoolExecutor(app.config.MAX_THREADS)
         app.erp_client = Client(**app.config.ERP_CONF)
+        app.redis = await aioredis.create_redis_pool(app.config.REDIS_CONF)
+        Session(app, interface=AIORedisSessionInterface(app.redis))
+
         db.bind(
             provider='sqlite',
             filename=os.path.join(
@@ -43,6 +49,7 @@ def build_app():
         )
         db.generate_mapping(create_tables=True)
         app.db = db
+        app.pagination_requests = dict()
 
     except Exception as e:
         msg = "An error ocurred building Infoenergia API: %s"
@@ -53,7 +60,9 @@ def build_app():
         return app
 
 
-app = build_app()
+loop = asyncio.get_event_loop()
+
+app = loop.run_until_complete(build_app())
 
 
 # @app.listener('after_server_stop')

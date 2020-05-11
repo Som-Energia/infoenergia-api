@@ -6,6 +6,9 @@ ERP_CONF = env.json('ERP_CONF')
 # DATABASE configuration
 DB_CONF = env.json('DATABASE_CONF')
 
+# Redis configuration
+REDIS_CONF = env.str('REDIS_CONF')
+
 MAX_THREADS = 10
 
 INVITATION_EXP_DAYS = 1
@@ -37,4 +40,3 @@ LOGGING = {
         },
     }
 }
-
