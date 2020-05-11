@@ -6,7 +6,7 @@ from sanic.response import json
 from sanic.views import HTTPMethodView
 from sanic_jwt.decorators import protected
 
-from infoenergia_api.contrib.f1 import async_get_invoices
+from infoenergia_api.contrib.f1 import async_get_invoices, Pagination
 
 bp_f1_measures = Blueprint('f1')
 
@@ -17,9 +17,13 @@ class F1MeasuresContractIdView(HTTPMethodView):
     ]
 
     async def get(self, request, contractId):
-        invoices = await async_get_invoices(request, contractId)
+        invoices, cursor, results = await async_get_invoices(request, contractId)
         f1_measure_json = [invoice.f1_measures for invoice in invoices]
-        return json(f1_measure_json)
+        return json({
+            'count': results,
+            'links': cursor,
+            'data': f1_measure_json
+        })
 
 
 class F1MeasuresView(HTTPMethodView):
@@ -28,9 +32,15 @@ class F1MeasuresView(HTTPMethodView):
     ]
 
     async def get(self, request):
-        invoices = await async_get_invoices(request)
+        invoices, cursor, results = await async_get_invoices(request)
+        print(cursor)
+
         f1_measure_json = [invoice.f1_measures for invoice in invoices]
-        return json(f1_measure_json)
+        return json({
+            'count': results,
+            'links': cursor,
+            'data': f1_measure_json
+        })
 
 
 bp_f1_measures.add_route(

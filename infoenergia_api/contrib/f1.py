@@ -1,5 +1,10 @@
 import functools
 import re
+import json
+from zlib import compress, decompress
+from base64 import urlsafe_b64encode, urlsafe_b64decode
+from sanic.request import RequestParameters
+from sanic.log import logger
 
 from infoenergia_api.utils import (get_request_filters, make_utc_timestamp,
                                    make_uuid)
@@ -143,7 +148,7 @@ class Invoice(object):
 
 class InvoiceList(object):
 
-    def __init__(self, invoice_ids):
+    def __init__(self, request, invoice_ids):
         self._elems = (Invoice(invoice_id) for invoice_id in invoice_ids)
 
     def __iter__(self):
@@ -151,7 +156,42 @@ class InvoiceList(object):
             yield invoice
 
 
+class Pagination(object):
+
+    def __init__(self, request, ids=[]):
+        self.args = RequestParameters(request.args)
+        self.request = request
+        self.max_results = 100
+
+        if self.args.get('cursor'):
+            self.encoded_cursor = self.args.get('cursor')
+            ids = self.decode_cursor()
+        self.ids = ids
+
+    def page(self):
+        limit = self.args.get('limit') or self.max_results
+        self.limit = int(limit)
+        if self.limit >= self.max_results:
+            self.limit = self.max_results
+        return self.ids[:self.limit]
+
+    def encode_cursor(self):
+        if len(self.ids[self.limit:])> 0:
+            compressed_cursor = compress(json.dumps(self.ids[self.limit:]).encode('ascii'))
+            return urlsafe_b64encode(compressed_cursor).decode('utf8')
+
+    def decode_cursor(self):
+        return json.loads(decompress(urlsafe_b64decode(self.encoded_cursor)))
+
+    def link_nextcursor(self):
+        if self.encode_cursor():
+            absolute_url = self.request.url.split('?')
+            return '?'.join([absolute_url[0], 'cursor='+self.encode_cursor()])
+        return ''
+
+
 def get_invoices(request, contractId=None):
+    args = RequestParameters(request.args)
     factura_obj = request.app.erp_client.model('giscedata.facturacio.factura')
     filters = [
         ('polissa_state', '=', 'activa'),
@@ -163,15 +203,22 @@ def get_invoices(request, contractId=None):
             ('polissa_id.name', '=', contractId)
         )
 
-    if request.args:
+    if args:
         filters = get_request_filters(
             request.app.erp_client,
             request,
             filters,
         )
+    if args.get('cursor'):
+        paged_ids = Pagination(request)
+        paged_invoices_ids = paged_ids.page()
+    else:
+        invoices_ids = factura_obj.search(filters)
+        paged_ids = Pagination(request, invoices_ids)
+        paged_invoices_ids = paged_ids.page()
 
-    invoices_ids = factura_obj.search(filters)
-    return InvoiceList(invoices_ids)
+    cursor_link = paged_ids.link_nextcursor()
+    return InvoiceList(request, paged_invoices_ids), cursor_link, len(paged_invoices_ids)
 
 
 async def async_get_invoices(request, id_contract=None):

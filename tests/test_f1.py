@@ -194,3 +194,72 @@ class TestInvoiceList(BaseTestCase):
 
         for invoice in invoice_list:
             self.assertIsInstance(invoice, Invoice)
+
+
+class TestF1Pagination(BaseTestCase):
+
+    @db_session
+    def test__get_one_invoice(self):
+        user = self.get_or_create_user(
+            username='someone',
+            password='123412345',
+            email='someone@somenergia.coop',
+            partner_id=1,
+            is_superuser=True
+        )
+        token = self.get_auth_token(user.username, "123412345")
+        params = {
+            'from_': '2019-09-01',
+            'to_': '2019-09-01',
+            'tariff': '3.1A',
+            'limit': 1
+        }
+
+        request, response = self.client.get(
+            '/f1',
+            params=params,
+            headers={
+                'Authorization': 'Bearer {}'.format(token)
+            },
+            timeout=None
+        )
+
+        self.assertEqual(response.status, 200)
+        self.assertDictEqual(
+            response.json,
+            {
+                'count': 1,
+                'links': 'http://127.0.0.1:42101/f1?cursor=eJw1zcsNwDAIA9BVOkAPfAyGWaruv0YTokocnmwED0MTXvfFEBfNBZQEdIMtlEH1D3MO1pwknDZwZh0AvZGdNjuwKjsIYiDsOljhhlfqPF3nbCpPQN8PH-0fxQ==',
+                'data': [self.json4test['f1pagination']['contract_data'][0]]
+            }
+        )
+        self.delete_user(user)
+
+    @db_session
+    def test__get_cursor(self):
+        user = self.get_or_create_user(
+            username='someone',
+            password='123412345',
+            email='someone@somenergia.coop',
+            partner_id=1,
+            is_superuser=True
+        )
+        token = self.get_auth_token(user.username, "123412345")
+        request, response = self.client.get(
+            '/f1?cursor=eJw1zcsNwDAIA9BVOkAPfAyGWaruv0YTokocnmwED0MTXvfFEBfNBZQEdIMtlEH1D3MO1pwknDZwZh0AvZGdNjuwKjsIYiDsOljhhlfqPF3nbCpPQN8PH-0fxQ==',
+            headers={
+                'Authorization': 'Bearer {}'.format(token)
+            },
+            timeout=None
+        )
+
+        self.assertEqual(response.status, 200)
+        self.assertDictEqual(
+            response.json,
+            {
+                'count': 1,
+                'links': 'http://127.0.0.1:42101/f1?cursor=eJw1zcsNwDAIA9BVOkAPfBwMs1Tdf40moEocnmwED5e4aNwXkbKgByyhNLJ-mLOxZ5LltIYzcgDUQVRY78AybbCIhrBysMMDz9B-us9ZVx6Avh8KsB4H',
+                'data': [self.json4test['f1pagination']['contract_data'][1]]
+            }
+        )
+        self.delete_user(user)
