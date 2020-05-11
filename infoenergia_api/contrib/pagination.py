@@ -28,7 +28,7 @@ class Pagination(object):
         return self._elems[self._cursor:self._cursor + self.page_size]
 
     @property
-    def next_page(self):
+    def next_cursor(self):
         '''
         return next page of the pagination
         '''

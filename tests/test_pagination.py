@@ -44,35 +44,31 @@ class PaginationTest(TestCase):
         page = pagination_list.page('MTA=')
         self.assertListEqual(page, element_list[8:10])
 
-    def test__next_page(self):
+    def test__next_cursor(self):
         element_list = [num for num in range(0, 10)]
         pagination_list = Pagination(element_list, 2)
 
-        page_one = pagination_list.next_page
-        self.assertListEqual(page_one, element_list[2:4])
+        next_cursor = pagination_list.next_cursor
+        self.assertEqual(next_cursor, 'Mg==')
 
-    def test__next_last_page(self):
+    def test__next_cursor_last_page(self):
         element_list = [num for num in range(0, 4)]
         pagination_list = Pagination(element_list, 2)
 
-        last_page = pagination_list.next_page
-        self.assertListEqual(last_page, element_list[2:4])
+        next_cursor = pagination_list.next_cursor
+        last_cursor = pagination_list.next_cursor
+        self.assertFalse(last_cursor)
 
-        next_page = pagination_list.next_page
-        self.assertFalse(next_page)
-
-    def test__next_last_page__odd(self):
+    def test__next_last_cursor__odd(self):
         element_list = [num for num in range(0, 5)]
         pagination_list = Pagination(element_list, 2)
 
-        next_page = pagination_list.next_page
-        self.assertListEqual(next_page, element_list[2:4])
+        next_cursor = pagination_list.next_cursor
+        next_cursor = pagination_list.next_cursor
+        self.assertEqual(len(pagination_list.page(next_cursor)), 1)
 
-        next_page = pagination_list.next_page
-        self.assertEqual(len(next_page), 1)
-
-        next_page = pagination_list.next_page
-        self.assertFalse(next_page)
+        last_cursor = pagination_list.next_cursor
+        self.assertFalse(last_cursor)
 
     def test__encode_cursor(self):
         element_list = [num for num in range(0, 5)]
