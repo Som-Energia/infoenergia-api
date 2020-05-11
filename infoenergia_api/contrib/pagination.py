@@ -50,9 +50,3 @@ class Pagination(object):
             return int(urlsafe_b64decode(cursor))
         except ValueError:
             raise DecodeException(f'{cursor} is not a valid value to decode')
-
-    def link_nextcursor(self):
-        if self.encode_cursor():
-            absolute_url = self.request.url.split('?')
-            return '?'.join([absolute_url[0], 'cursor='+self.encode_cursor()])
-        return ''
