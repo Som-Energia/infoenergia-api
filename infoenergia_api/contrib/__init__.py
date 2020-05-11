@@ -1,1 +1,2 @@
-from .f1 import Invoice, InvoiceList, get_invoices, Pagination
+from .f1 import Invoice, InvoiceList, get_invoices
+from .pagination import  Pagination
