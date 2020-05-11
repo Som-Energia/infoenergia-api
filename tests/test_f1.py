@@ -229,7 +229,8 @@ class TestF1Pagination(BaseTestCase):
             response.json,
             {
                 'count': 1,
-                'links': 'http://127.0.0.1:42101/f1?cursor=eJw1zcsNwDAIA9BVOkAPfAyGWaruv0YTokocnmwED0MTXvfFEBfNBZQEdIMtlEH1D3MO1pwknDZwZh0AvZGdNjuwKjsIYiDsOljhhlfqPF3nbCpPQN8PH-0fxQ==',
+                'cursor': 'MQ==',
+                'next_page': 'http://127.0.0.1:42101/f1?cursor=MQ==&limit=1',
                 'data': [self.json4test['f1pagination']['contract_data'][0]]
             }
         )

@@ -148,11 +148,14 @@ class Invoice(object):
 class InvoiceList(object):
 
     def __init__(self, invoice_ids):
-        self._elems = (Invoice(invoice_id) for invoice_id in invoice_ids)
+        self._elems = [Invoice(invoice_id) for invoice_id in invoice_ids]
 
     def __iter__(self):
         for invoice in self._elems:
             yield invoice
+
+    def __len__(self):
+        return len(self._elems)
 
 
 def get_invoices(request, contractId=None):
@@ -174,16 +177,9 @@ def get_invoices(request, contractId=None):
             request,
             filters,
         )
-    if args.get('cursor'):
-        paged_ids = Pagination(request)
-        paged_invoices_ids = paged_ids.page()
-    else:
-        invoices_ids = factura_obj.search(filters)
-        paged_ids = Pagination(request, invoices_ids)
-        paged_invoices_ids = paged_ids.page()
 
-    cursor_link = paged_ids.link_nextcursor()
-    return InvoiceList(request, paged_invoices_ids), cursor_link, len(paged_invoices_ids)
+    invoices_ids = factura_obj.search(filters)
+    return InvoiceList(invoices_ids)
 
 
 async def async_get_invoices(request, id_contract=None):
@@ -192,7 +188,7 @@ async def async_get_invoices(request, id_contract=None):
             request.app.thread_pool,
             functools.partial(get_invoices, request, id_contract)
         )
-
     except Exception as e:
         raise e
+
     return invoices

@@ -15,7 +15,7 @@ class Pagination(object):
         self._cursor = 0
         self.len = len(elems)
 
-    def page(self, cursor):
+    def page(self, cursor=None):
         '''
         return page pointed by cursor
         '''
