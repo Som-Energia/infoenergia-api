@@ -3,7 +3,6 @@ import os
 from concurrent import futures
 
 
-import aioredis
 from erppeek import Client
 from sanic import Sanic
 from sanic.log import logger

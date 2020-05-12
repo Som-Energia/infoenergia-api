@@ -22,7 +22,6 @@ passlib = "*"
 pony = "*"
 environs = "*"
 uvicorn = "*"
-python-language-server = {extras = ["all"],version = "*"}
 sanic-session = "*"
 aioredis = "*"
 
