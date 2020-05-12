@@ -17,7 +17,7 @@ from infoenergia_api.api.registration.login import (InvitationUrlToken,
 from infoenergia_api.api.registration.models import db
 
 
-async def build_app():
+def build_app():
     from config import config
     app = Sanic('infoenergia-api')
     try:
@@ -58,9 +58,8 @@ async def build_app():
         return app
 
 
-loop = asyncio.get_event_loop()
+app = build_app()
 
-app = loop.run_until_complete(build_app())
 
 
 # @app.listener('after_server_stop')
