@@ -182,19 +182,6 @@ class TestInvoice(BaseTestCase):
         self.assertDictEqual(f1_measures, self.json4test['invoices_f1_by_contract_id']['contract_data'][0])
 
 
-class TestInvoiceList(BaseTestCase):
-
-    def test__create_invoice_list(self):
-        invoice_list = InvoiceList([8174595, 7568406])
-
-        self.assertIsInstance(invoice_list, InvoiceList)
-
-    def test__create_invoice_list(self):
-        invoice_list = InvoiceList([8174595, 7568406])
-
-        for invoice in invoice_list:
-            self.assertIsInstance(invoice, Invoice)
-
 
 class TestF1Pagination(BaseTestCase):
 

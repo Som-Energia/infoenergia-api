@@ -142,20 +142,6 @@ class Invoice(object):
         }
 
 
-class InvoiceList(object):
-
-    def __init__(self, invoice_ids):
-        self._elems = (Invoice(invoice_id) for invoice_id in invoice_ids)
-        self._len = len(invoice_ids)
-
-    def __iter__(self):
-        for invoice in self._elems:
-            yield invoice
-
-    def __len__(self):
-        return self._len
-
-
 def get_invoices(request, contractId=None):
     args = RequestParameters(request.args)
     factura_obj = request.app.erp_client.model('giscedata.facturacio.factura')
@@ -177,7 +163,7 @@ def get_invoices(request, contractId=None):
         )
 
     invoices_ids = factura_obj.search(filters)
-    return InvoiceList(invoices_ids)
+    return invoices_ids
 
 
 async def async_get_invoices(request, id_contract=None):
