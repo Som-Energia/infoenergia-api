@@ -2,12 +2,12 @@ import asyncio
 import os
 from concurrent import futures
 
+
 import aioredis
 from erppeek import Client
 from sanic import Sanic
 from sanic.log import logger
 from sanic_jwt import Initialize
-from sanic_session import Session, AIORedisSessionInterface
 
 from infoenergia_api.api.contracts import bp_contracts
 from infoenergia_api.api.f1_measures import bp_f1_measures
@@ -36,8 +36,7 @@ async def build_app():
 
         app.thread_pool = futures.ThreadPoolExecutor(app.config.MAX_THREADS)
         app.erp_client = Client(**app.config.ERP_CONF)
-        app.redis = await aioredis.create_redis_pool(app.config.REDIS_CONF)
-        Session(app, interface=AIORedisSessionInterface(app.redis))
+        app.session = dict()
 
         db.bind(
             provider='sqlite',

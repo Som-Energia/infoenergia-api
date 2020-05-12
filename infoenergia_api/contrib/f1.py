@@ -1,9 +1,6 @@
 import functools
 import re
-import json
-from zlib import compress, decompress
 from sanic.request import RequestParameters
-from sanic.log import logger
 
 from infoenergia_api.utils import (get_request_filters, make_utc_timestamp,
                                    make_uuid)
