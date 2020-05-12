@@ -16,7 +16,9 @@ bp_f1_measures = Blueprint('f1')
 
 class PaginationLinksMixin:
 
-    async def _pagination_links(self, request, request_id, contract_id, pagination_list):
+    async def _pagination_links(self, request, request_id, pagination_list, endpoint_name, **kwargs):
+
+        url = request.url_for(endpoint_name, **kwargs)
         cursor_list = pagination_list.next_cursor
         next_cursor = urlsafe_b64encode(
             '{request_id}:{cursor}'.format(
@@ -26,9 +28,7 @@ class PaginationLinksMixin:
         ).decode() if cursor_list else ''
 
         next_page = '{url}?cursor={cursor}&limit={limit}'.format(
-            url=request.url_for(
-                'f1.get_f1_measures_by_contract_id', contractId=contract_id
-            ),
+            url=url,
             cursor=next_cursor,
             limit=pagination_list.page_size
         ) if next_cursor else False
@@ -58,7 +58,8 @@ class F1MeasuresContractIdView(PaginationLinksMixin, HTTPMethodView):
             invoices_pagination = request.app.session[request_id]
             invoices = invoices_pagination.page(cursor)
             links = await self._pagination_links(
-                request, request_id, contractId, invoices_pagination
+                request, request_id, invoices_pagination,  'f1.get_f1_measures_by_contract_id',
+                contractId=contractId
             )
         else:
             invoices = await async_get_invoices(request, contractId)
@@ -67,7 +68,8 @@ class F1MeasuresContractIdView(PaginationLinksMixin, HTTPMethodView):
                 invoices_pagination = Pagination(list(invoices), page_size)
                 invoices = invoices_pagination.page(invoices_pagination.cursor)
                 links = await self._pagination_links(
-                    request, request_id, contractId, invoices_pagination
+                    request, request_id, invoices_pagination, 'f1.get_f1_measures_by_contract_id',
+                    contractId=contractId
                 )
                 request.app.session[request_id] = invoices_pagination
 
@@ -80,46 +82,36 @@ class F1MeasuresContractIdView(PaginationLinksMixin, HTTPMethodView):
         return json(response)
 
 
-class F1MeasuresView(HTTPMethodView):
+class F1MeasuresView(PaginationLinksMixin, HTTPMethodView):
     decorators = [
         protected(),
     ]
-
-    async def _pagination_links(self, request, request_id, pagination_list):
-        next_cursor = urlsafe_b64encode(
-            '{request_id}:{cursor}'.format(
-                request_id=request_id,
-                cursor=pagination_list.next_cursor
-            ).encode()
-        ).decode()
-
-        return dict(
-            cursor=next_cursor,
-            next_page='{url}?cursor={cursor}&limit={limit}'.format(
-                url=request.url_for('f1.get_f1_measures'),
-                cursor=next_cursor,
-                limit=pagination_list.page_size
-            )
-        )
 
     async def get(self, request):
         args = request.args
         page_size = int(args.get('limit', request.app.get('MAX_RESULT_SIZE', 50)))
         links = {}
-
+        logger.info(f"Getting f1 measures for {args}")
         if 'cursor' in args:
-            request_id, cursor = urlsafe_b64decode(args['cursor']).split(':')
-            invoices_pagination = request['session'][request_id]
+            request_id, cursor = urlsafe_b64decode(
+                args.get('cursor').encode()
+            ).decode().split(':')
+            invoices_pagination = request.app.session[request_id]
             invoices = invoices_pagination.page(cursor)
-            links = await self._pagination_links(request, request_id, invoices_pagination)
+            links = await self._pagination_links(
+                request, request_id, invoices_pagination, 'f1.get_f1_measures'
+            )
         else:
             invoices = await async_get_invoices(request)
+            logger.info(f"There are {len(invoices)} invoices to process")
             if len(invoices) > page_size:
                 request_id = make_uuid(str(datetime.now()), id(request))
                 invoices_pagination = Pagination(list(invoices), page_size)
                 invoices = invoices_pagination.page(invoices_pagination.cursor)
-                links = await self._pagination_links(request, request_id, invoices_pagination)
-                request['session'][request_id] = invoices_pagination
+                links = await self._pagination_links(
+                    request, request_id, invoices_pagination,'f1.get_f1_measures'
+                )
+                request.app.session[request_id] = invoices_pagination
 
         f1_measure_json = [invoice.f1_measures for invoice in invoices]
         response = {
@@ -127,7 +119,6 @@ class F1MeasuresView(HTTPMethodView):
             'data': f1_measure_json
         }
         response.update(links)
-
         return json(response)
 
 

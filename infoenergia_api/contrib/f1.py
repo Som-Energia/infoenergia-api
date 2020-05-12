@@ -145,14 +145,15 @@ class Invoice(object):
 class InvoiceList(object):
 
     def __init__(self, invoice_ids):
-        self._elems = [Invoice(invoice_id) for invoice_id in invoice_ids]
+        self._elems = (Invoice(invoice_id) for invoice_id in invoice_ids)
+        self._len = len(invoice_ids)
 
     def __iter__(self):
         for invoice in self._elems:
             yield invoice
 
     def __len__(self):
-        return len(self._elems)
+        return self._len
 
 
 def get_invoices(request, contractId=None):

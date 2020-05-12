@@ -48,7 +48,6 @@ async def build_app():
         )
         db.generate_mapping(create_tables=True)
         app.db = db
-        app.pagination_requests = dict()
 
     except Exception as e:
         msg = "An error ocurred building Infoenergia API: %s"
