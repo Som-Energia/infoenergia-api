@@ -10,6 +10,7 @@ autopep8 = "*"
 pylint = "*"
 coverage = "*"
 pytest = "*"
+requests = "*"
 
 [packages]
 connexion = "*"
@@ -22,7 +23,6 @@ passlib = "*"
 pony = "*"
 environs = "*"
 uvicorn = "*"
-sanic-session = "*"
 aioredis = "*"
 
 [requires]

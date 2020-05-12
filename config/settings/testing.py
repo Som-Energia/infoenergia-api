@@ -7,6 +7,9 @@ ERP_CONF = test_env.json('ERP_CONF')
 
 DB_CONF = test_env.json('DATABASE_CONF')
 
+# Redis configuration
+REDIS_CONF = env.str('REDIS_CONF')
+
 MAX_THREADS = 10
 
 DATA_DIR = BASE_DIR

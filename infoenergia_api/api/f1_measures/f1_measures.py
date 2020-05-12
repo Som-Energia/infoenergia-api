@@ -1,3 +1,4 @@
+import pickle
 from datetime import datetime
 from base64 import urlsafe_b64encode, urlsafe_b64decode
 
@@ -47,7 +48,9 @@ class PaginationLinksMixin:
             request_id, cursor = urlsafe_b64decode(
                 args.get('cursor').encode()
             ).decode().split(':')
-            invoices_pagination = request.app.session[request_id]
+            invoices_pagination = pickle.loads(
+                await request.app.redis.get(request_id)
+            )
             invoices_ids = invoices_pagination.page(cursor)
             links = await self._pagination_links(
                 request, request_id, invoices_pagination, **kwargs
@@ -64,7 +67,10 @@ class PaginationLinksMixin:
                 links = await self._pagination_links(
                     request, request_id, invoices_pagination, **kwargs
                 )
-                request.app.session[request_id] = invoices_pagination
+                await request.app.redis.set(
+                    request_id, pickle.dumps(invoices_pagination)
+                )
+                await request.app.redis.expire(request_id, 3600 * 6)
 
         return invoices_ids, links
 
