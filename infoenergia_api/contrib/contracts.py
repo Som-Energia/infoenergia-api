@@ -1,13 +1,12 @@
 import functools
+from datetime import datetime
 
 from sanic.log import logger
 
-from ..tasks import (get_building_details, get_contract_address,
-                     get_cups_to_climaticZone, get_current_power,
-                     get_current_tariff, get_devices, get_eprofile,
-                     get_experimentalgroup, get_powerHistory, get_report,
-                     get_service, get_tariffHistory, get_tertiaryPower,
-                     get_version)
+from infoenergia_api.contrib.climatic_zones import ine_to_zc
+from infoenergia_api.contrib.postal_codes import ine_to_dp
+
+from ..tasks import find_changes
 from ..utils import (get_id_for_contract, get_request_filters,
                      make_utc_timestamp, make_uuid)
 
@@ -116,12 +115,8 @@ def get_contract_json(erp_client, contract):
 def get_contracts(request, id_contract=None):
     contract_obj = request.app.erp_client.model('giscedata.polissa')
 
-    filters = [
-        ('active', '=', True),
-        ('state', '=', 'activa'),
-        ('empowering_profile_id', '=', 1)
-    ]
-    fields = [
+    FIELDS = [
+        'id',
         'name',
         'titular',
         'data_alta',
@@ -134,8 +129,52 @@ def get_contracts(request, id_contract=None):
         'cups',
         'soci',
         'cnae',
-        'modcontractuals_ids'
+        'modcontractuals_ids',
+        'autoconsumo',
+        'persona_fisica',
+        'titular_nif'
     ]
+
+    def __init__(self, contract_id):
+        from infoenergia_api.app import app
+
+        self._erp = app.erp_client
+        self._Polissa= self._erp.model('giscedata.polissa')
+        for name, value in self._Polissa.read(contract_id, self.FIELDS).items():
+            setattr(self, name, value)
+
+    @property
+    def currentTariff(self):
+        """
+        Current tariff:
+        "tariff_": {
+          "tariffId": "tariffID-123",
+          "dateStart": "2014-10-11T00:00:00Z",
+          "dateEnd": null,
+        }
+        """
+        modcon = find_changes(self._erp, self.modcontractual_activa[0], 'tarifa')[-1]
+
+        return {
+            "tariffId": modcon['tarifa'][1],
+            "dateStart": make_utc_timestamp(modcon['data_inici']),
+            "dateEnd": make_utc_timestamp(modcon['data_final'])
+        }
+
+    @property
+    def contracts(self):
+        return {
+            'contractId': self.name,
+            'ownerId': make_uuid('res.partner', self.titular[0]),
+            'payerId': make_uuid('res.partner', self.pagador[0]),
+            'dateStart': make_utc_timestamp(self.data_alta),
+            'dateEnd': make_utc_timestamp(self.data_baixa),
+            'tariffId': self.tarifa[1],
+            'tariff_': self.currentTariff,
+        }
+
+
+
     if request.args:
         filters = get_request_filters(
             request.app.erp_client,

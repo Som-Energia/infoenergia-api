@@ -3,8 +3,10 @@ from pony.orm import db_session
 
 from tests.base import BaseTestCase
 
+from infoenergia_api.contrib import Contract
 
-class TestContracts(BaseTestCase):
+
+class TestBaseContracts(BaseTestCase):
 
     @db_session
     def test__get_contracts_by_id__2A(self):
@@ -57,10 +59,35 @@ class TestContracts(BaseTestCase):
         )
 
         self.assertEqual(response.status, 200)
-        self.assertListEqual(
+        self.assertDictEqual(
             response.json,
-            self.json4test['contracts_20DHS']['contract_data']
-
+            {
+                'count': 2,
+                'data': self.json4test['contracts_20DHS']['contract_data'],
+            }
         )
         self.delete_user(user)
+
+
+class TestContracts(BaseTestCase):
+
+    contract_id = 4
+    contract_id_3X = 158697
+
+    def test__create_invoice(self):
+        contract = Contract(self.contract_id)
+
+        self.assertIsInstance(contract, Contract)
+
+    def test__get_current_tariff(self):
+        contract = Contract(self.contract_id)
+        tariff = contract.currentTariff
+        self.assertDictEqual(
+            tariff,
+            {
+              'dateEnd': '2020-11-21T00:00:00-00:15Z',
+              'dateStart': '2019-09-02T00:00:00-00:15Z',
+              'tariffId': '2.0A'
+            }
+        )
 
