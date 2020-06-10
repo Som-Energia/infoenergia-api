@@ -6,41 +6,40 @@ from sanic.response import json
 from sanic.views import HTTPMethodView
 from sanic_jwt.decorators import protected
 
-from infoenergia_api.contrib.contracts import async_get_contract_json
+from infoenergia_api.contrib.contracts import Contract
 from infoenergia_api.contrib.modcontracts import async_get_modcontracts
+from infoenergia_api.contrib import Pagination, PaginationLinksMixin
+
 
 bp_modcontracts = Blueprint('modcontracts')
 
 
-class ModContractsView(HTTPMethodView):
+class ModContractsView(PaginationLinksMixin, HTTPMethodView):
     decorators = [
         protected(),
     ]
 
-    async def get(self, request):
-        app = request.app
-        sem = asyncio.Semaphore(app.config.MAX_TASKS)
-        result = []
-        contracts = await async_get_modcontracts(request)
-        logger.debug("how many contracts: %d", len(contracts))
+    endpoint_name = 'modcontracts.get_modcontracts'
 
-        to_do = [
-            async_get_contract_json(
-                app.loop, app.thread_pool, app.erp_client, sem, contract
-            )
-            for contract in contracts
+    async def get(self, request):
+        logger.info("Getting contractual modifications")
+        contracts_ids, links = await self.paginate_results(
+            request,
+            function=async_get_modcontracts
+        )
+
+        contracts_json = [
+            await request.app.loop.run_in_executor(
+                request.app.thread_pool, lambda: Contract(contract_id).contracts
+            ) for contract_id in contracts_ids
         ]
-        while to_do:
-            logger.debug("%d contracts to anonymize", len(to_do))
-            done, to_do = await asyncio.wait(to_do, timeout=app.config.TASK_TIMEOUT)
-            for task in done:
-                try:
-                    contract_json = task.result()
-                except Exception as e:
-                    logger.error("Reason: %s", str(e))
-                else:
-                    result.append(contract_json)
-        return json(result)
+
+        response = {
+            'count': len(contracts_json),
+            'data': contracts_json
+        }
+        response.update(links)
+        return json(response)
 
 
 bp_modcontracts.add_route(

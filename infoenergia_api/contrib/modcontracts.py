@@ -16,22 +16,6 @@ def get_modcontracts(request):
     modcon_obj =  request.app.erp_client.model('giscedata.polissa.modcontractual')
     contract_obj = request.app.erp_client.model('giscedata.polissa')
 
-    fields4contracts = [
-        'name',
-        'titular',
-        'data_alta',
-        'data_baixa',
-        'potencia',
-        'tarifa',
-        'pagador',
-        'modcontractual_activa',
-        'comptadors',
-        'cups',
-        'soci',
-        'cnae',
-        'modcontractuals_ids'
-    ]
-
     filters = [
         ('tipus', '=', 'mod'),
         ('polissa_id.empowering_profile_id', '=', 1),
@@ -51,11 +35,11 @@ def get_modcontracts(request):
         else:
             filters.extend([('active', '=', True), ('state', '=', 'actiu')])
     modcontract_ids = modcon_obj.search(filters, context={'active_test': False})
-    id_contracts = contract_obj.search([('modcontractual_activa', 'in', modcontract_ids)], context={'active_test': False})
-    return contract_obj.read(id_contracts, fields4contracts) or []
+    contracts_ids = contract_obj.search([('modcontractual_activa', 'in', modcontract_ids)], context={'active_test': False})
+    return contracts_ids
 
 
-async def async_get_modcontracts(request):
+async def async_get_modcontracts(request, id_contract=None):
     try:
         result = await request.app.loop.run_in_executor(
             request.app.thread_pool,
