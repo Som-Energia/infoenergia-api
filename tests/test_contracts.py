@@ -29,7 +29,10 @@ class TestBaseContracts(BaseTestCase):
         self.assertEqual(response.status, 200)
         self.assertDictEqual(
             response.json,
-            self.json4test['contract_id_2A']['contract_data']
+            {
+                'count': 1,
+                'data': [self.json4test['contract_id_2A']['contract_data']],
+            }
         )
         self.delete_user(user)
 

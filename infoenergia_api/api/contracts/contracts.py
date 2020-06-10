@@ -6,61 +6,64 @@ from sanic.response import json
 from sanic.views import HTTPMethodView
 from sanic_jwt.decorators import protected
 
-from infoenergia_api.contrib.contracts import (async_get_contract_json,
-                                               async_get_contracts)
+from infoenergia_api.contrib.contracts import async_get_contracts, Contract
+from infoenergia_api.contrib import Pagination, PaginationLinksMixin
 
 bp_contracts = Blueprint('contracts')
 
 
-class ContractsIdView(HTTPMethodView):
+class ContractsIdView(PaginationLinksMixin, HTTPMethodView):
     decorators = [
         protected(),
     ]
+
+    endpoint_name = 'contracts.get_contract_by_id'
 
     async def get(self, request, contractId):
-        app = request.app
-        sem = asyncio.Semaphore(app.config.MAX_TASKS)
-        contract = await async_get_contracts(request, contractId)
-        contract_json = await async_get_contract_json(
-            app.loop,
-            app.thread_pool,
-            app.erp_client,
-            sem,
-            contract
+        logger.info("Getting contracts")
+        contracts_ids, links = await self.paginate_results(
+            request, function=async_get_contracts, contractId=contractId
         )
-        return json(contract_json)
+
+        contract_json = [await request.app.loop.run_in_executor(
+                request.app.thread_pool, lambda: Contract(contract_id).contracts
+            ) for contract_id in contracts_ids
+        ]
+
+        response = {
+            'count': len(contract_json),
+            'data': contract_json
+        }
+        response.update(links)
+        return json(response)
 
 
-class ContractsView(HTTPMethodView):
+class ContractsView(PaginationLinksMixin, HTTPMethodView):
     decorators = [
         protected(),
     ]
 
+    endpoint_name = 'contracts.get_contracts'
+
     async def get(self, request):
-        app = request.app
-        sem = asyncio.Semaphore(app.config.MAX_TASKS)
-        result = []
-        contracts = await async_get_contracts(request)
-        logger.debug("how many contracts: %d", len(contracts))
+        logger.info("Getting contracts")
+        contracts_ids, links = await self.paginate_results(
+            request,
+            function=async_get_contracts
+        )
 
-        to_do = [
-            async_get_contract_json(
-                app.loop, app.thread_pool, app.erp_client, sem, contract
-            )
-            for contract in contracts
+        contracts_json = [
+            await request.app.loop.run_in_executor(
+                request.app.thread_pool, lambda: Contract(contract_id).contracts
+            ) for contract_id in contracts_ids
         ]
-        while to_do:
-            logger.debug("%d contracts to anonymize", len(to_do))
-            done, to_do = await asyncio.wait(to_do, timeout=app.config.TASK_TIMEOUT)
-            for task in done:
-                try:
-                    contract_json = task.result()
-                except Exception as e:
-                    logger.error("Reason: %s", str(e))
-                else:
-                    result.append(contract_json)
 
-        return json(result)
+        response = {
+            'count': len(contracts_json),
+            'data': contracts_json
+        }
+        response.update(links)
+        return json(response)
 
 
 bp_contracts.add_route(
