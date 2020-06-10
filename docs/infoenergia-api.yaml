@@ -93,27 +93,45 @@ paths:
             - juridic_person
       - name: limit
         in: query
-        description: How many contracts to return at one time (max 100)
+        description: How many contracts to return at one time
         required: false
         schema:
           type: integer
           minimum: 0
-          default: 100
+          default: 50
+          maximum: 500
+      - name: cursor
+        in: query
+        description: Actual cursor for this search
+        required: false
+        schema:
+          type: string
+          format: byte
+          default: None
+          example: 'dXNlcjpXMDdRQ1JQQTQ='
       responses:
         200:
           description: successful operation
-          # links:
-          #   x-next:
-          #     description: A link to the next page of responses
-          #     operationId: server.get_contracts
-          #     parameters:
-          #       limit: '$response.page_results#/contracts'
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/contracts'
+                type: object
+                properties:
+                  count:
+                    type: integer
+                    description: number of results
+                    example: 234
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/contracts'
+                  links:
+                    type: object
+                    properties:
+                      next:
+                        type: string
+                        description: url of next results. If null, you are in the last page
+                        example: "https://apinertgia.somenergia.coop/contracts?limit=5&cursor=dXNlcjpVMEc5V0ZYTlo"
         400:
           description: Invalid status value
           content: {}
@@ -139,12 +157,18 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/contracts'
+                type: object
+                properties:
+                  count:
+                    type: integer
+                    description: number of results
+                    example: 234
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/contracts'
         400:
-          description: Invalid ID supplied
-          content: {}
-        404:
-          description: Contract not found
+          description: Invalid status value
           content: {}
       security:
         - jwt: []
@@ -206,27 +230,45 @@ paths:
             - juridic_person
       - name: limit
         in: query
-        description: How many contracts to return at one time (max 100)
+        description: How many contracts to return at one time
         required: false
         schema:
           type: integer
           minimum: 0
-          default: 100
+          default: 50
+          maximum: 500
+      - name: cursor
+        in: query
+        description: Actual cursor for this search
+        required: false
+        schema:
+          type: string
+          format: byte
+          default: None
+          example: 'dXNlcjpXMDdRQ1JQQTQ='
       responses:
         200:
           description: successful operation
-          # links:
-          #   x-next:
-          #     description: A link to the next page of responses
-          #     operationId: server.get_contracts
-          #     parameters:
-          #       limit: '$response.page_results#/contracts'
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/contracts'
+                type: object
+                properties:
+                  count:
+                    type: integer
+                    description: number of results
+                    example: 234
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/contracts'
+                  links:
+                    type: object
+                    properties:
+                      next:
+                        type: string
+                        description: url of next results. If null, you are in the last page
+                        example: "https://apinertgia.somenergia.coop/modcontracts?limit=5&cursor=dXNlcjpVMEc5V0ZYTlo"
         400:
           description: Invalid status value
           content: {}
