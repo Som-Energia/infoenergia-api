@@ -1,20 +1,18 @@
-from unittest import mock
+from unittest import mock, skip
 
 from pony.orm import db_session
 
-from infoenergia_api.contrib import Invoice, InvoiceList, get_invoices
+from infoenergia_api.contrib import Invoice, get_invoices
 
 from tests.base import BaseTestCase
 
 
-class TestF1Base(BaseTestCase):
+class TestF1(BaseTestCase):
 
-    @mock.patch('infoenergia_api.api.f1_measures.f1_measures.async_get_invoices')
+    @mock.patch('infoenergia_api.contrib.f1.get_invoices')
     @db_session
-    def test__get_f1_measures_by_contract_id(self, async_get_invoices_mock):
-        async_get_invoices_mock.return_value = InvoiceList([
-            self.json4test['invoices_f1_by_contract_id']['contractId']
-        ])
+    def test__get_f1_measures_by_contract_id(self, get_invoices_mock):
+        get_invoices_mock.return_value = [8174595]
         user = self.get_or_create_user(
             username='someone',
             password='123412345',
@@ -25,7 +23,7 @@ class TestF1Base(BaseTestCase):
         token = self.get_auth_token(user.username, "123412345")
 
         request, response = self.client.get(
-            '/f1/' + self.json4test['invoices_f1_by_contract_id']['contractId'],
+            '/f1/{}?limit=1'.format(self.json4test['invoices_f1_by_contract_id']['contractId']),
             headers={
                 'Authorization': 'Bearer {}'.format(token)
             },
@@ -33,16 +31,19 @@ class TestF1Base(BaseTestCase):
         )
 
         self.assertEqual(response.status, 200)
-        self.assertListEqual(
+        self.assertDictEqual(
             response.json,
-            self.json4test['invoices_f1_by_contract_id']['contract_data']
+            {
+                'count': 1,
+                'data': [self.json4test['invoices_f1_by_contract_id']['contract_data'][0]],
+            }
         )
         self.delete_user(user)
 
-    @mock.patch('infoenergia_api.api.f1_measures.f1_measures.async_get_invoices')
+    @mock.patch('infoenergia_api.contrib.f1.get_invoices')
     @db_session
     def test__get_f1_measures(self, async_get_invoices_mock):
-        async_get_invoices_mock.return_value = InvoiceList(self.json4test['invoices_f1'])
+        async_get_invoices_mock.return_value = [7568406]
         user = self.get_or_create_user(
             username='someone',
             password='123412345',
@@ -55,6 +56,7 @@ class TestF1Base(BaseTestCase):
             'from_': '2019-09-01',
             'to_': '2019-09-01',
             'tariff': '3.1A',
+            'limit': 1
         }
 
         request, response = self.client.get(
@@ -67,12 +69,88 @@ class TestF1Base(BaseTestCase):
         )
 
         self.assertEqual(response.status, 200)
-        self.assertListEqual(
+        self.assertDictEqual(
             response.json,
-            self.json4test['f1_contracts']['contract_data']
-
+            {
+                'count': 1,
+                'data': self.json4test['invoices_f1']['contract_data'],
+            }
         )
-        async_get_invoices_mock.assert_called_with(request)
+        self.delete_user(user)
+
+    @mock.patch('infoenergia_api.contrib.f1.get_invoices')
+    @mock.patch('infoenergia_api.contrib.pagination.PaginationLinksMixin._next_cursor')
+    @db_session
+    def test__get_f1_measure_pagination(self, next_cursor_mock, get_invoices_mock):
+        get_invoices_mock.return_value = [7590942, 7730323, 8174595]
+        next_cursor_mock.return_value = 'N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0='
+        user = self.get_or_create_user(
+            username='someone',
+            password='123412345',
+            email='someone@somenergia.coop',
+            partner_id=1,
+            is_superuser=True
+        )
+        token = self.get_auth_token(user.username, "123412345")
+        params = {
+            'from_': '2019-09-01',
+            'to_': '2019-09-01',
+            'tariff': '3.1A',
+            'limit': 1
+        }
+
+        request, response = self.client.get(
+            '/f1',
+            params=params,
+            headers={
+                'Authorization': 'Bearer {}'.format(token)
+            },
+            timeout=None
+        )
+
+        self.assertEqual(response.status, 200)
+        self.assertDictEqual(
+            response.json,
+            {
+                'count': 1,
+                'cursor': 'N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=',
+                'next_page': 'http://{}/f1?cursor=N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=&limit=1'.format(response.url.authority),
+                'data': [self.json4test['f1pagination']['contract_data'][0]]
+            }
+        )
+        self.delete_user(user)
+
+    @skip('review pagination process in PaginationLinksMixin')
+    @mock.patch('infoenergia_api.contrib.f1.get_invoices')
+    @mock.patch('infoenergia_api.contrib.pagination.PaginationLinksMixin._next_cursor')
+    @db_session
+    def test__get_f1_measure_pagination_with_cursor(self, next_cursor_mock, get_invoices_mock):
+        user = self.get_or_create_user(
+            username='someone',
+            password='123412345',
+            email='someone@somenergia.coop',
+            partner_id=1,
+            is_superuser=True
+        )
+        token = self.get_auth_token(user.username, "123412345")
+        request, response = self.client.get(
+            'http://127.0.0.1:54167/f1?cursor=N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=&limit=1',
+            headers={
+                'Authorization': 'Bearer {}'.format(token)
+            },
+            timeout=None
+        )
+
+        self.assertEqual(response.status, 200)
+        self.assertDictEqual(
+            response.json,
+            {
+                'count': 1,
+                'cursor': 'N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=',
+                'next_page': 'http://{}/f1?cursor=N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=&limit=1'.format(response.url.authority),
+                'data': [self.json4test['f1pagination']['contract_data'][0]]
+            }
+        )
         self.delete_user(user)
 
 
@@ -180,74 +258,3 @@ class TestInvoice(BaseTestCase):
         f1_measures = invoice.f1_measures
 
         self.assertDictEqual(f1_measures, self.json4test['invoices_f1_by_contract_id']['contract_data'][0])
-
-
-
-class TestF1Pagination(BaseTestCase):
-
-    @db_session
-    def test__get_one_invoice(self):
-        user = self.get_or_create_user(
-            username='someone',
-            password='123412345',
-            email='someone@somenergia.coop',
-            partner_id=1,
-            is_superuser=True
-        )
-        token = self.get_auth_token(user.username, "123412345")
-        params = {
-            'from_': '2019-09-01',
-            'to_': '2019-09-01',
-            'tariff': '3.1A',
-            'limit': 1
-        }
-
-        request, response = self.client.get(
-            '/f1',
-            params=params,
-            headers={
-                'Authorization': 'Bearer {}'.format(token)
-            },
-            timeout=None
-        )
-
-        self.assertEqual(response.status, 200)
-        self.assertDictEqual(
-            response.json,
-            {
-                'count': 1,
-                'cursor': 'MQ==',
-                'next_page': 'http://127.0.0.1:42101/f1?cursor=MQ==&limit=1',
-                'data': [self.json4test['f1pagination']['contract_data'][0]]
-            }
-        )
-        self.delete_user(user)
-
-    @db_session
-    def test__get_cursor(self):
-        user = self.get_or_create_user(
-            username='someone',
-            password='123412345',
-            email='someone@somenergia.coop',
-            partner_id=1,
-            is_superuser=True
-        )
-        token = self.get_auth_token(user.username, "123412345")
-        request, response = self.client.get(
-            '/f1?cursor=eJw1zcsNwDAIA9BVOkAPfAyGWaruv0YTokocnmwED0MTXvfFEBfNBZQEdIMtlEH1D3MO1pwknDZwZh0AvZGdNjuwKjsIYiDsOljhhlfqPF3nbCpPQN8PH-0fxQ==',
-            headers={
-                'Authorization': 'Bearer {}'.format(token)
-            },
-            timeout=None
-        )
-
-        self.assertEqual(response.status, 200)
-        self.assertDictEqual(
-            response.json,
-            {
-                'count': 1,
-                'links': 'http://127.0.0.1:42101/f1?cursor=eJw1zcsNwDAIA9BVOkAPfBwMs1Tdf40moEocnmwED5e4aNwXkbKgByyhNLJ-mLOxZ5LltIYzcgDUQVRY78AybbCIhrBysMMDz9B-us9ZVx6Avh8KsB4H',
-                'data': [self.json4test['f1pagination']['contract_data'][1]]
-            }
-        )
-        self.delete_user(user)

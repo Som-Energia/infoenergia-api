@@ -60,25 +60,27 @@ class Pagination(object):
 
 class PaginationLinksMixin:
 
-    async def _pagination_links(self, request, request_id, pagination_list, **kwargs):
-
-        url = request.url_for(self.endpoint_name, **kwargs)
-        cursor_list = pagination_list.next_cursor
-        next_cursor = urlsafe_b64encode(
+    async def _next_cursor(self, request_id, cursor):
+        return urlsafe_b64encode(
             '{request_id}:{cursor}'.format(
                 request_id=request_id,
-                cursor=cursor_list
+                cursor=cursor
             ).encode()
         ).decode() if cursor_list else ''
 
+    async def _pagination_links(self, request, request_id, pagination_list, **kwargs):
+
+        url = request.url_for(self.endpoint_name, **kwargs)
+        url_cursor = await self._next_cursor(request_id, pagination_list.next_cursor)
+
         next_page = '{url}?cursor={cursor}&limit={limit}'.format(
             url=url,
-            cursor=next_cursor,
+            cursor=url_cursor,
             limit=pagination_list.page_size
-        ) if next_cursor else False
+        ) if url_cursor else False
 
         return dict(
-            cursor=next_cursor,
+            cursor=url_cursor,
             next_page=next_page
         )
 
