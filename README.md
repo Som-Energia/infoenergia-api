@@ -39,6 +39,8 @@ Now our api is ready to run. You can simply execute `pipenv run python run.py` a
 #### Usage
 
 #### Changes
+### 1.2.1
+- Fixed minor bugs
 
 ### 1.2.0
 - Implemented pagination results for all endpoints
