@@ -1,4 +1,4 @@
-__version__ = VERSION = '1.1.1'
+__version__ = VERSION = '1.2.0'
 
 from .api import contracts, f1_measures, modcontracts, registration
 from .app import app

@@ -40,6 +40,9 @@ Now our api is ready to run. You can simply execute `pipenv run python run.py` a
 
 #### Changes
 
+### 1.2.0
+- Implemented pagination results for all endpoints
+
 ### 1.1.1
 - Add tariff to the f1 object
 - kW/day -> kW
