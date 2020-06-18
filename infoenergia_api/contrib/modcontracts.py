@@ -18,7 +18,7 @@ def get_modcontracts(request):
     filters = [
         ('tipus', '=', 'mod'),
         ('polissa_id.empowering_profile_id', '=', 1),
-        ('data_inici', '>=', request.args.get('from_', [str(date.today())])[0])
+        ('data_inici', '>=', request.args.get('from_', str(date.today())))
     ]
 
     if 'to_' in request.args:
