@@ -1,5 +1,5 @@
 import functools
-
+from datetime import date
 from sanic.log import logger
 
 from ..tasks import (get_building_details, get_contract_address,
@@ -11,7 +11,6 @@ from ..tasks import (get_building_details, get_contract_address,
 from ..utils import get_juridic_filter
 
 
-
 def get_modcontracts(request):
     modcon_obj =  request.app.erp_client.model('giscedata.polissa.modcontractual')
     contract_obj = request.app.erp_client.model('giscedata.polissa')
@@ -19,7 +18,7 @@ def get_modcontracts(request):
     filters = [
         ('tipus', '=', 'mod'),
         ('polissa_id.empowering_profile_id', '=', 1),
-        ('data_inici', '>=', request.args['from_'][0])
+        ('data_inici', '>=', request.args.get('from_', [str(date.today())])[0])
     ]
 
     if 'to_' in request.args:

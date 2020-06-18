@@ -66,7 +66,7 @@ class PaginationLinksMixin:
                 request_id=request_id,
                 cursor=cursor
             ).encode()
-        ).decode() if cursor_list else ''
+        ).decode() if cursor else ''
 
     async def _pagination_links(self, request, request_id, pagination_list, **kwargs):
 
@@ -115,6 +115,8 @@ class PaginationLinksMixin:
                 await request.app.redis.set(
                     request_id, pickle.dumps(results_pagination)
                 )
-                await request.app.redis.expire(request_id, 3600 * 6)
+                await request.app.redis.expire(
+                    request_id, request.app.config.get('RESULTS_TTL', 60)
+                )
 
         return results_ids, links
