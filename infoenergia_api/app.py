@@ -1,6 +1,7 @@
 import os
 from concurrent import futures
 
+import aioredis
 from erppeek import Client
 from sanic import Sanic
 from sanic.log import logger
@@ -33,6 +34,7 @@ def build_app():
 
         app.thread_pool = futures.ThreadPoolExecutor(app.config.MAX_THREADS)
         app.erp_client = Client(**app.config.ERP_CONF)
+
         db.bind(
             provider='sqlite',
             filename=os.path.join(
@@ -56,7 +58,12 @@ def build_app():
 app = build_app()
 
 
-# @app.listener('after_server_stop')
-# def shutdown_app(app, loop):
-#     logger.info("Shuting down api... ")
-#     app.thread_pool.shutdown()
+@app.listener('before_server_start')
+async def server_init(app, loop):
+    app.redis = await aioredis.create_redis_pool(app.config.REDIS_CONF)
+
+
+@app.listener('after_server_stop')
+def shutdown_app(app, loop):
+    logger.info("Shuting down api... ")
+    app.thread_pool.shutdown()

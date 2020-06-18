@@ -34,10 +34,12 @@ class TestModContracts(BaseTestCase):
         )
 
         self.assertEqual(response.status, 200)
-        self.assertListEqual(
+        self.assertDictEqual(
             response.json,
-            self.json4test['contracts_canceled']['contract_data']
-
+            {
+                'count': 2,
+                'data': self.json4test['contracts_canceled']['contract_data']
+            }
         )
         self.delete_user(user)
 
@@ -66,9 +68,11 @@ class TestModContracts(BaseTestCase):
         )
 
         self.assertEqual(response.status, 200)
-        self.assertListEqual(
+        self.assertDictEqual(
             response.json,
-            self.json4test['contracts_mod_tariff_power']['contract_data']
-
+            {
+                'count': 2,
+                'data': self.json4test['contracts_mod_tariff_power']['contract_data']
+            }
         )
         self.delete_user(user)

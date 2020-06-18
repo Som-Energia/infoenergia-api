@@ -10,6 +10,7 @@ autopep8 = "*"
 pylint = "*"
 coverage = "*"
 pytest = "*"
+requests = "*"
 
 [packages]
 connexion = "*"
@@ -22,7 +23,7 @@ passlib = "*"
 pony = "*"
 environs = "*"
 uvicorn = "*"
-python-language-server = {extras = ["all"],version = "*"}
+aioredis = "*"
 
 [requires]
 python_version = "3.8"
