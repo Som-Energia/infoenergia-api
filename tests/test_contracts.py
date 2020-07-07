@@ -76,6 +76,7 @@ class TestContracts(BaseTestCase):
 
     contract_id = 4
     contract_id_3X = 158697
+    contract_id_noCIF = 82433
 
     def test__create_invoice(self):
         contract = Contract(self.contract_id)
@@ -273,4 +274,12 @@ class TestContracts(BaseTestCase):
         self.assertEqual(
             juridic_person,
             'juridicPerson-ESH'
+        )
+
+    def test__get_juridicType_juridic_personNoCIF(self):
+        contract = Contract(self.contract_id_noCIF)
+        juridic_person = contract.juridicType
+        self.assertEqual(
+            juridic_person,
+            'juridicPerson-ES7'
         )
