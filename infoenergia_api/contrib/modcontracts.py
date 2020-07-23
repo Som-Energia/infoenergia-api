@@ -26,6 +26,7 @@ def get_modcontracts(request):
 
     if 'juridic_type' in request.args:
         filters += get_juridic_filter(
+            request.app.erp_client,
             request.args['juridic_type'][0],
         )
     if 'type' in request.args:
