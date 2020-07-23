@@ -32,6 +32,7 @@ def get_id_for_contract(obj, modcontract_ids):
 def get_request_filters(erp_client, request, filters):
     if 'juridic_type' in request.args:
         filters += get_juridic_filter(
+            erp_client,
             request.args['juridic_type'][0],
         )
     if 'tariff' in request.args:
@@ -66,47 +67,50 @@ def get_request_filters(erp_client, request, filters):
     return filters
 
 
-def get_juridic_filter(juridic_type):
+def get_juridic_filter(erp_client, juridic_type):
+    person_type = erp_client.model('res.partner')
     if juridic_type == 'physical_person':
-        juridic_filters = [
-            '&',
-            '!', ('titular_nif', 'ilike', 'ESA'),
-            '!', ('titular_nif', 'ilike', 'ESB'),
-            '!', ('titular_nif', 'ilike', 'ESC'),
-            '!', ('titular_nif', 'ilike', 'ESD'),
-            '!', ('titular_nif', 'ilike', 'ESE'),
-            '!', ('titular_nif', 'ilike', 'ESF'),
-            '!', ('titular_nif', 'ilike', 'ESH'),
-            '!', ('titular_nif', 'ilike', 'ESJ'),
-            '!', ('titular_nif', 'ilike', 'ESN'),
-            '!', ('titular_nif', 'ilike', 'ESP'),
-            '!', ('titular_nif', 'ilike', 'ESQ'),
-            '!', ('titular_nif', 'ilike', 'ESR'),
-            '!', ('titular_nif', 'ilike', 'ESS'),
-            '!', ('titular_nif', 'ilike', 'ESU'),
-            '!', ('titular_nif', 'ilike', 'ESV'),
-            '!', ('titular_nif', 'ilike', 'ESW'),
-            ('cnae', '=', 986)
-        ]
+        physical_person = person_type.search([
+            '&','&','&', '&','&','&', '&','&','&', '&','&','&', '&','&','&',
+            ('vat', 'not ilike', 'ESA'),
+            ('vat', 'not ilike', 'ESB'),
+            ('vat', 'not ilike', 'ESC'),
+            ('vat', 'not ilike', 'ESD'),
+            ('vat', 'not ilike', 'ESE'),
+            ('vat', 'not ilike', 'ESF'),
+            ('vat', 'not ilike', 'ESH'),
+            ('vat', 'not ilike', 'ESJ'),
+            ('vat', 'not ilike', 'ESN'),
+            ('vat', 'not ilike', 'ESP'),
+            ('vat', 'not ilike', 'ESQ'),
+            ('vat', 'not ilike', 'ESR'),
+            ('vat', 'not ilike', 'ESS'),
+            ('vat', 'not ilike', 'ESU'),
+            ('vat', 'not ilike', 'ESV'),
+            ('vat', 'not ilike', 'ESW')
+        ])
+        juridic_filters = [('titular', 'in', physical_person), ('cnae', '=', 986)]
     else:
-        juridic_filters = [
-            '|',
-            ('titular_nif', 'ilike', 'ESA'),
-            ('titular_nif', 'ilike', 'ESB'),
-            ('titular_nif', 'ilike', 'ESC'),
-            ('titular_nif', 'ilike', 'ESD'),
-            ('titular_nif', 'ilike', 'ESE'),
-            ('titular_nif', 'ilike', 'ESF'),
-            ('titular_nif', 'ilike', 'ESH'),
-            ('titular_nif', 'ilike', 'ESJ'),
-            ('titular_nif', 'ilike', 'ESN'),
-            ('titular_nif', 'ilike', 'ESP'),
-            ('titular_nif', 'ilike', 'ESQ'),
-            ('titular_nif', 'ilike', 'ESR'),
-            ('titular_nif', 'ilike', 'ESS'),
-            ('titular_nif', 'ilike', 'ESU'),
-            ('titular_nif', 'ilike', 'ESV'),
-            ('titular_nif', 'ilike', 'ESW'),
-        ]
+        juridic_person = person_type.search([
+            '|','|','|', '|','|','|', '|','|','|', '|','|','|', '|','|','|',
+            ('vat', 'ilike', 'ESA'),
+            ('vat', 'ilike', 'ESB'),
+            ('vat', 'ilike', 'ESC'),
+            ('vat', 'ilike', 'ESD'),
+            ('vat', 'ilike', 'ESE'),
+            ('vat', 'ilike', 'ESF'),
+            ('vat', 'ilike', 'ESH'),
+            ('vat', 'ilike', 'ESJ'),
+            ('vat', 'ilike', 'ESN'),
+            ('vat', 'ilike', 'ESP'),
+            ('vat', 'ilike', 'ESQ'),
+            ('vat', 'ilike', 'ESR'),
+            ('vat', 'ilike', 'ESS'),
+            ('vat', 'ilike', 'ESU'),
+            ('vat', 'ilike', 'ESV'),
+            ('vat', 'ilike', 'ESW')
+        ])
+        juridic_filters = [('titular', 'in', juridic_person)]
+
 
     return juridic_filters
