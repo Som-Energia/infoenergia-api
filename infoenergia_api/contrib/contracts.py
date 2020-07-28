@@ -30,7 +30,8 @@ class Contract(object):
         'modcontractuals_ids',
         'autoconsumo',
         'persona_fisica',
-        'titular_nif'
+        'titular_nif',
+        'llista_preu'
     ]
 
     def __init__(self, contract_id):
@@ -433,7 +434,7 @@ class Contract(object):
             'dateEnd': make_utc_timestamp(self.data_baixa),
             'autoconsumo': self.selfConsumption,
             'juridicType': self.juridicType,
-            'tariffId': self.tarifa[1],
+            'tariffId': self.llista_preu[0],
             'tariff_': self.currentTariff,
             'tariffHistory': self.tariffHistory,
             'power': int(self.potencia * 1000),
