@@ -1,4 +1,7 @@
+import functools
+from sanic.log import logger
 
+from ..utils import (get_request_filters, make_uuid)
 
 class Tariff(object):
     FIELDS = [
@@ -76,3 +79,26 @@ class Tariff(object):
                 'priceHistory': self.priceDetail,
             }
 
+def get_tariff_prices(request):
+    tariff_obj = request.app.erp_client.model('giscedata.polissa.tarifa')
+    contract_obj = request.app.erp_client.model('giscedata.polissa')
+    filters = [
+        ('active', '=', True),
+    ]
+
+    if request.args:
+        filters = get_request_filters(
+            request.app.erp_client,
+            request,
+            filters,
+        )
+
+async def async_get_tariff_prices(request):
+    try:
+        tariff = await request.app.loop.run_in_executor(
+            request.app.thread_pool,
+            functools.partial(get_tariff_prices, request)
+        )
+    except Exception as e:
+        raise e
+    return tariff
