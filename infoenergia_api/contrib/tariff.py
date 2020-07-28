@@ -14,7 +14,6 @@ class Tariff(object):
         self._erp = app.erp_client
         self._Pricelist = self._erp.model('product.pricelist')
         for name, value in self._Pricelist.read(price_id,
-            #[('id', '=', price_id), ('type', '=', 'sale')],
              self.FIELDS).items():
             setattr(self, name, value)
 
@@ -70,8 +69,10 @@ class Tariff(object):
 
     @property
     def tariff(self):
-        return {
-            'tariff': self.name,
-            'tariffId': self.id,
-            'price': self.price,
-        }
+        if self.type == 'sale':
+            return {
+                'tariffId': self.id,
+                'price': self.priceDetail[-1],
+                'priceHistory': self.priceDetail,
+            }
+
