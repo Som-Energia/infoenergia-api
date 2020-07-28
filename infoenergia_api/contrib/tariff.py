@@ -18,14 +18,15 @@ class Tariff(object):
              self.FIELDS).items():
             setattr(self, name, value)
 
-    def term(self, items_id, energy_type, units):
+
+    def termPrice(self, items_id, term_type, units):
         """
         Term price
          [{
-         'name':
-         'period':
-         'price':
-         'units':
+         'name': P1-POTENCIA-20A_SOM
+         'period': P1
+         'price': 0.12
+         'units': kWh/year
          }]
         """
         fields = [
@@ -34,20 +35,18 @@ class Tariff(object):
             'price_surcharge',
         ]
         priceitem_obj = self._erp.model('product.pricelist.item')
-        energy_price = priceitem_obj.read(items_id, fields)
-        print(energy_price)
+        term_price = priceitem_obj.read(items_id, fields)
         return [{
             'name': ep['name'],
             'period': ep['name'].split('_')[0],
             'price': ep['price_surcharge'],
             'units': units
-            } for ep in energy_price
-            if ep['product_id']
-            if ep['name'].split('_')[1].casefold() == energy_type
+            } for ep in term_price
+            if ep['name'].find(term_type) > 0
         ]
 
     @property
-    def price(self):
+    def priceDetail(self):
         """
         Tariff prices
          2020-06-01
@@ -63,10 +62,10 @@ class Tariff(object):
         return [{
             'dateStart': price['date_start'],
             'dateEnd': price['date_end'],
-            'activeEnergy': self.term(price['items_id'], 'energia', 'kWh/day'),
-            'reactiveEnergy': self.term(price['items_id'], 'reactiva', 'kWh/day'),
-            'power': self.term(price['items_id'], 'potencia', 'kW/year'),
-            'GkWh': self.term(price['items_id'], 'GKWh', 'kWh')
+            'activeEnergy': self.termPrice(price['items_id'], 'ENERGIA', 'kWh/day'),
+            'reactiveEnergy': self.termPrice(price['items_id'], 'REACTIVA', 'kWh/day'),
+            'power': self.termPrice(price['items_id'], 'POTENCIA', 'kW/year'),
+            'GKWh': self.termPrice(price['items_id'], 'GKWh', 'kWh/day'),
             } for price in prices]
 
     @property
