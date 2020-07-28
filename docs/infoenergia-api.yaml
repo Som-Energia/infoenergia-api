@@ -23,6 +23,8 @@ tags:
   description: All information about contract f1 measurements
 - name: measurements
   description: All information about contract energy measurements
+- name: tariff
+  description: Tariff pricelist
 paths:
   /contracts:
     get:
@@ -459,6 +461,116 @@ paths:
           content: {}
       security:
         - jwt: []
+  /tariff:
+    get:
+      tags:
+      - tariff
+      summary: Obtain tariff prices
+      description: 'Get detailed prices for each tariff depending on date'
+      operationId: server.get_tariff
+      parameters:
+      - name: tariff
+        in: query
+        description: Choose a tariff to filter
+        required: false
+        style: form
+        explode: false
+        schema:
+          type: string
+          default: None
+          enum:
+            - None
+            - 2.0A
+            - 2.1A
+            - 2.0DHA
+            - 2.0DHS
+            - 2.1DHA
+            - 2.1DHS
+            - 3.0A
+            - 3.1A
+            - 3.1A-LB
+            - 6.1
+            - 6.1A
+            - 6.1B
+      - name: contractId
+        in: query
+        description: Get tariff history for a specific contract.
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          default: None
+          example: '1234'
+      - name: from_
+        in: query
+        description: Filter tariff price by date (format YYYY-MM-DD). Price applied to a tariff from this date on.
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          format: date
+          default: None
+          example: '2019-08-01'
+      - name: to_
+        in: query
+        description: Filter tariff price by date (format YYYY-MM-DD). Price applied to a tariff until this date.
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          format: date
+          default: None
+          example: '2019-08-10'
+      - name: limit
+        in: query
+        description: How many f1 to return at one time
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          default: 50
+          maximum: 500
+      - name: cursor
+        in: query
+        description: Actual cursor for this search
+        required: false
+        schema:
+          type: string
+          format: byte
+          default: None
+          example: 'dXNlcjpXMDdRQ1JQQTQ='
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                    description: number of results
+                    example: 234
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/tariff'
+                  links:
+                    type: object
+                    properties:
+                      next:
+                        type: string
+                        description: url of next results. If null, you are in the last page
+                        example: "https://apinertgia.somenergia.coop/f1?limit=5&cursor=dXNlcjpVMEc5V0ZYTlo"
+        400:
+          description: Invalid status value
+          content: {}
+      security:
+        - jwt: []
+
   /auth:
     post:
       tags:
@@ -540,7 +652,7 @@ components:
           description: contract cancelation date
           example: null
         tariffId:
-          type: string
+          type: integer
           description: contracted tariff id
           example:  "tariffID-123"
         tariff_:
@@ -1032,6 +1144,252 @@ components:
                   units: 'kWh'
                 },
               ]
+    tariff:
+      type: object
+      properties:
+        page_results:
+          type: integer
+          description: number of tariffs per page
+          example: 100
+        data:
+          type: array
+          description: list of prices by tariff
+          items:
+            type: object
+            properties:
+              tariffId:
+                type: integer
+                description: Tariff ID
+                example: 123
+              dateStart:
+                type: string
+                format: date
+                description: Tariff price starting date
+              dateEnd:
+                type: string
+                format: date
+                description: Tariff price ending date
+              price:
+                type: object
+                description: Current price for all tariff terms
+                properties:
+                  activeEnergy:
+                    type: array
+                    description: energy price by period
+                    items:
+                      type: object
+                      properties:
+                        period:
+                          type: string
+                        price:
+                          type: number
+                          format: float
+                        units:
+                          type: string
+                      example:
+                  reactiveEnergy:
+                    type: array
+                    description: energy price by period
+                    items:
+                      type: object
+                      properties:
+                        period:
+                          type: string
+                        price:
+                          type: number
+                          format: float
+                        units:
+                          type: string
+                      example:
+                  power:
+                    type: array
+                    description: power price by period
+                    items:
+                      type: object
+                      properties:
+                        period:
+                          type: string
+                        price:
+                          type: number
+                          format: float
+                        units:
+                          type: string
+                  GkWh:
+                    type: array
+                    description: power price by period
+                    items:
+                      type: object
+                      properties:
+                        period:
+                          type: string
+                        price:
+                          type: number
+                          format: float
+                        units:
+                          type: string
+                example:
+                  {
+                    'activeEnergy': [
+                          {
+                            period: P1,
+                            price: 0.0,
+                            units: '€/kWh'
+                          },
+                          {
+                            period: P2,
+                            price: 0.0,
+                            units: '€/kWh'
+                          }
+                        ],
+                    'reactiveEnergy': [
+                          {
+                            period: P1,
+                            price: 0.0,
+                            units: '€/kWh'
+                          },
+                          {
+                            period: P2,
+                            price: 0.0,
+                            units: '€/kWh'
+                          }
+                        ],
+                    'power': [
+                          {
+                            period: P1,
+                            price: 0.0,
+                            units: '€/kW any'
+                          },
+                          {
+                            period: P2,
+                            price: 0.0,
+                            units: '€/kW any'
+                          }
+                        ],
+                    'GKWh': [
+                          {
+                            period: P1,
+                            price: 0.0,
+                            units: '€/kW day'
+                          },
+                          {
+                            period: P2,
+                            price: 0.0,
+                            units: '€/kW day'
+                          }
+                        ],
+                  }
+              priceHistory:
+                type: array
+                description: History of  all prices for all tariff terms.
+                items:
+                  type: object
+                  properties:
+                    activeEnergy:
+                      type: array
+                      description: energy price by period
+                      items:
+                        type: object
+                        properties:
+                          period:
+                            type: string
+                          price:
+                            type: number
+                            format: float
+                          units:
+                            type: string
+                        example:
+                    reactiveEnergy:
+                      type: array
+                      description: energy price by period
+                      items:
+                        type: object
+                        properties:
+                          period:
+                            type: string
+                          price:
+                            type: number
+                            format: float
+                          units:
+                            type: string
+                        example:
+                    power:
+                      type: array
+                      description: power price by period
+                      items:
+                        type: object
+                        properties:
+                          period:
+                            type: string
+                          price:
+                            type: number
+                            format: float
+                          units:
+                            type: string
+                    GkWh:
+                      type: array
+                      description: power price by period
+                      items:
+                        type: object
+                        properties:
+                          period:
+                            type: string
+                          price:
+                            type: number
+                            format: float
+                          units:
+                            type: string
+                  example:
+                    [{
+                      'activeEnergy': [
+                            {
+                              period: P1,
+                              price: 0.0,
+                              units: '€/kWh'
+                            },
+                            {
+                              period: P2,
+                              price: 0.0,
+                              units: '€/kWh'
+                            }
+                          ],
+                      'reactiveEnergy': [
+                            {
+                              period: P1,
+                              price: 0.0,
+                              units: '€/kWh'
+                            },
+                            {
+                              period: P2,
+                              price: 0.0,
+                              units: '€/kWh'
+                            }
+                          ],
+                      'power': [
+                            {
+                              period: P1,
+                              price: 0.0,
+                              units: '€/kW any'
+                            },
+                            {
+                              period: P2,
+                              price: 0.0,
+                              units: '€/kW any'
+                            }
+                          ],
+                      'GKWh': [
+                            {
+                              period: P1,
+                              price: 0.0,
+                              units: '€/kW day'
+                            },
+                            {
+                              period: P2,
+                              price: 0.0,
+                              units: '€/kW day'
+                            }
+                          ],
+                    }]
+
     Error:
       type: object
       required:
