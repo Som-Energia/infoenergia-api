@@ -46,6 +46,8 @@ def get_request_filters(erp_client, request, filters):
             filters += [('tarifa', '=', tariff[0])]
         elif 'f1' in request.endpoint:
             filters += [('tarifa_acces_id', '=', tariff[0])]
+        elif 'tariff' in request.endpoint:
+            filters += [('name', '=', request.args['tariff'][0])]
     if 'from_' in request.args:
         if 'contracts' in request.endpoint:
             filters += [
