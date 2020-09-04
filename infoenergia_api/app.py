@@ -13,6 +13,7 @@ from infoenergia_api.api.modcontracts import bp_modcontracts
 from infoenergia_api.api.registration.login import (InvitationUrlToken,
                                                     authenticate, extra_views)
 from infoenergia_api.api.registration.models import db
+from infoenergia_api.api.tariff import bp_tariff
 
 
 def build_app():
@@ -25,6 +26,7 @@ def build_app():
         app.blueprint(bp_contracts)
         app.blueprint(bp_f1_measures)
         app.blueprint(bp_modcontracts)
+        app.blueprint(bp_tariff)
 
         app.add_route(
             InvitationUrlToken.as_view(),
