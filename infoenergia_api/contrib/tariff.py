@@ -25,27 +25,66 @@ class Tariff(object):
         """
         Term price
          [{
-         'name': P1-POTENCIA-20A_SOM
+         'name': P1-ENERGIA-20A_SOM
          'period': P1
-         'price': 0.12
-         'units': kWh/year
+         'price': 0.139
+         'units': €/kWh
          }]
         """
         fields = [
             'product_id',
             'name',
             'price_surcharge',
+            'price_version_id'
         ]
         priceitem_obj = self._erp.model('product.pricelist.item')
         term_price = priceitem_obj.read(items_id, fields)
+
         return [{
-            'name': ep['name'],
-            'period': ep['name'].split('_')[0],
-            'price': ep['price_surcharge'],
+            'name': tp['name'],
+            'period': tp['name'].split('_')[0],
+            'price': tp['price_surcharge'],
             'units': units
-            } for ep in term_price
-            if ep['name'].find(term_type) > 0
+            } for tp in term_price
+            if tp['name'].find(term_type) > 0
         ]
+
+    def reactiveEnergyPrice(self, price_version_id, name):
+        priceitem_obj = self._erp.model('product.pricelist.item')
+
+        return priceitem_obj.read(
+            [
+                ('name', 'like', '%Cos%'),
+                ('base_pricelist_id', '=', 3),
+                ('price_version_id', '=', price_version_id),
+                ('name', '=', name),
+            ]
+        )[0]['price_surcharge']
+
+
+    @property
+    def reactiveEnergy(self):
+        fields = [
+            'product_id',
+            'name',
+            'price_surcharge',
+            'price_version_id'
+        ]
+        priceitem_obj = self._erp.model('product.pricelist.item')
+        reactive_price = priceitem_obj.read(
+            [
+                ('name', 'like', '%Cos%'),
+                ('base_pricelist_id', '=', 3),
+            ], fields , order='price_version_id'
+        )
+        return [{
+                'BOE': rp.get('price_version_id')[1],
+                'price33': self.reactiveEnergyPrice(rp['price_version_id'][0], str('Cos(fi) 0.80 - 0.95')),
+                'price75': self.reactiveEnergyPrice(rp['price_version_id'][0], str('Cos(fi) 0 - 0.80')),
+                'units': '€/kVArh'
+                } for rp in reactive_price
+            ] or []
+
 
     @property
     def priceDetail(self):
@@ -56,30 +95,31 @@ class Tariff(object):
         fields = [
             'date_start',
             'date_end',
-            'items_id'
+            'items_id',
+            'id',
+            'name',
         ]
         priceversion_obj = self._erp.model('product.pricelist.version')
         prices = priceversion_obj.read(self.version_id, fields)
-
         return [{
             'dateStart': price['date_start'],
             'dateEnd': price['date_end'],
-            'activeEnergy': self.termPrice(price['items_id'], 'ENERGIA', 'kWh/day'),
-            'reactiveEnergy': self.termPrice(price['items_id'], 'REACTIVA', 'kWh/day'),
-            'power': self.termPrice(price['items_id'], 'POTENCIA', 'kW/year'),
-            'GKWh': self.termPrice(price['items_id'], 'GKWh', 'kWh/day'),
+            'activeEnergy': self.termPrice(price['items_id'], 'ENERGIA', '€/kWh'),
+            'power': self.termPrice(price['items_id'], 'POTENCIA', '€/kW year'),
+            'GKWh': self.termPrice(price['items_id'], 'GKWh', '€/kWh'),
             } for price in prices]
 
     @property
     def tariff(self):
-        if self.type == 'sale':
-            return {
-                'tariffId': self.id,
-                'price': self.priceDetail[-1],
-                'priceHistory': self.priceDetail,
-            }
+        return {
+            'tariffId': self.id,
+            'price': self.priceDetail[0],
+            'priceReactiveEnergy': self.reactiveEnergy[-1],
+            'priceHistory': self.priceDetail,
+            'priceReactiveEnergyHistory': self.reactiveEnergy
+        }
 
-def get_tariff_prices(request):
+def get_tariff_prices(request, contractId=None):
     tariff_obj = request.app.erp_client.model('giscedata.polissa.tarifa')
     contract_obj = request.app.erp_client.model('giscedata.polissa')
     filters = [
@@ -92,12 +132,23 @@ def get_tariff_prices(request):
             request,
             filters,
         )
+    if contractId:
+        tariffId =contract_obj.read(
+            [('name', '=', contractId)],
+            ['tarifa']
+        )[0]['tarifa'][1]
+        filters.append(('name', '=', tariffId))
+    tariff_id = tariff_obj.search(filters)
+    tariff_price_ids = tariff_obj.read(tariff_id)[0]['llistes_preus_comptatibles']
 
-async def async_get_tariff_prices(request):
+    return tariff_price_ids
+
+
+async def async_get_tariff_prices(request, contractId=None):
     try:
         tariff = await request.app.loop.run_in_executor(
             request.app.thread_pool,
-            functools.partial(get_tariff_prices, request)
+            functools.partial(get_tariff_prices, request, contractId)
         )
     except Exception as e:
         raise e
