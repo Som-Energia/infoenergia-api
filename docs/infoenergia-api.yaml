@@ -21,6 +21,8 @@ tags:
   description: All information about contract modifications
 - name: f1
   description: All information about contract f1 measurements
+- name: cch
+  description: cch curves
 - name: measurements
   description: All information about contract energy measurements
 paths:
@@ -456,6 +458,105 @@ paths:
           content: {}
         404:
           description: Contract not found
+          content: {}
+      security:
+        - jwt: []
+  /cch/f5d:
+    get:
+      tags:
+      - cch
+      summary: Obtain F5D cch curves
+      description: Get F5D curves information depending on some date and tariff parameters
+      operationId: server.get_f5d
+      parameters:
+      - name: tariff
+        in: query
+        description: Tariff of the contract to filter
+        required: false
+        style: form
+        explode: false
+        schema:
+          type: string
+          default: None
+          enum:
+            - None
+            - 2.0A
+            - 2.1A
+            - 2.0DHA
+            - 2.0DHS
+            - 2.1DHA
+            - 2.1DHS
+            - 3.0A
+            - 3.1A
+            - 3.1A-LB
+            - 6.1
+            - 6.1A
+            - 6.1B
+      - name: from_
+        in: query
+        description: Get all F5D from this date on. In format YYYY-MM-DD
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          format: date
+          default: None
+          example: '2019-08-01'
+      - name: to_
+        in: query
+        description: Get all F5D until this date. In format YYYY-MM-DD
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          format: date
+          default: None
+          example: '2019-08-10'
+      - name: limit
+        in: query
+        description: How many contracts to return at one time
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          default: 50
+          maximum: 500
+      - name: cursor
+        in: query
+        description: Actual cursor for this search
+        required: false
+        schema:
+          type: string
+          format: byte
+          default: None
+          example: 'dXNlcjpXMDdRQ1JQQTQ='
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                    description: number of results
+                    example: 234
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/f5d'
+                  links:
+                    type: object
+                    properties:
+                      next:
+                        type: string
+                        description: url of next results. If null, you are in the last page
+                        example: "https://apinertgia.somenergia.coop/contracts?limit=5&cursor=dXNlcjpVMEc5V0ZYTlo"
+        400:
+          description: Invalid status value
           content: {}
       security:
         - jwt: []
@@ -1032,6 +1133,83 @@ components:
                   units: 'kWh'
                 },
               ]
+    f5d:
+      type: object
+      properties:
+        contractId:
+          type: string
+          description: contract ID
+          example: contractId-123
+        meteringPointId:
+          type: string
+          description: cups
+          example: "c1759810-90f3-012e-0404-34159e211070"
+        season:
+          type: number
+          format: integer
+          description: current season. 0 if it's winter and 1 if it's or summer
+          example: 0
+        r1:
+          type: number
+          format: float
+          description: first quadrant of reactive energy mesurement (Wh)
+          example: 0
+        r2:
+          type: number
+          format: float
+          description: second quadrant of reactive energy mesurement (Wh)
+          example: 0
+        r3:
+          type: number
+          format: float
+          description: third quadrant of reactive energy mesurement (Wh)
+          example: 0
+        r4:
+          type: number
+          format: float
+          description: fourth quadrant of reactive energy mesurement (Wh)
+          example: 0
+        ai:
+          type: number
+          format: float
+          description: Input of active energy mesurement (Wh)
+          example: 0
+        ao:
+          type: number
+          format: float
+          description: Ouput of active energy mesurement (Wh)
+          example: 0
+        source:
+          type: number
+          format: integer
+          description: "Data collection method.
+            It could have the following values:
+            1 (Medida real válida);
+            2 (Medida perfilada correspondiente a un cierre real);
+            3 (Medida real ajustada a un cierre real);
+            4 (Medida perfilada correspondiente a auto-lectura de cliente);
+            5 (Estimación por consumo histórico del año anterior perfilado);
+            6 (Estimación por factor de utilización perfilado)"
+          example: 1
+        validated:
+          type: boolean
+          description: True if measurement is validated, False otherwise
+          example: True
+        date:
+          type: string
+          format: date
+          description: measurement date.
+          example: "2020-09-01T16:37:05Z"
+        dateDownload:
+          type: string
+          format: date
+          description: file dowloaded at this date
+          example: "2020-09-01T16:37:05Z"
+        dateUpdate:
+          type: string
+          format: date
+          description: file updated at this date
+          example: "2020-09-01T16:37:05Z"
     Error:
       type: object
       required:
