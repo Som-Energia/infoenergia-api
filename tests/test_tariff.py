@@ -6,31 +6,81 @@ from infoenergia_api.contrib import Tariff
 
 from tests.base import BaseTestCase
 
+class TestBaseTariff(BaseTestCase):
+
+    def test__get_tariff_2A(self):
+        user = self.get_or_create_user(
+            username='someone',
+            password='123412345',
+            email='someone@somenergia.coop',
+            partner_id=1,
+            is_superuser=True
+        )
+        token = self.get_auth_token(user.username, "123412345")
+        params = {
+            'from_': '2019-10-03',
+            'to_': '2019-10-09',
+            'tariff': '2.0A',
+        }
+        _, response = self.client.get(
+            '/tariff',
+            headers={
+                'Authorization': 'Bearer {}'.format(token)
+            },
+            timeout=None
+        )
+
+        self.assertEqual(response.status, 200)
+        self.assertDictEqual(
+            response.json,
+            {
+                'count': 1,
+                'data': [self.json4test['contract_id_2A']['contract_data']],
+            }
+        )
+        self.delete_user(user)
+
 
 
 class TestTariff(BaseTestCase):
 
     tariff_id_2x = 4
     tariff_id_3x = 12
+    tariff_id_3X_reactiva = 3
     items_id_2019_2X = [4955, 4956, 4959, 4960, 4957, 5318, 4958]
+    items_id_2012_2X = [621, 622, 623, 624]
     items_id_2019_3X = [5057, 5058, 5059, 5060, 5061, 5062, 5066, 5067, 5068, 5069, 5063, 5064, 5324, 5325, 5326, 5065]
-
+    items_id_reactiva = [572, 1524, 314, 1881, 457, 2125, 747, 3524, 93, 4472, 1222, 5220, 199, 5221, 94, 315, 458, 573, 200, 748, 1223, 1525, 1882, 2126, 3525, 4473]
 
     def test__create_tariff(self):
         tariff = Tariff(self.tariff_id_2x)
 
         self.assertIsInstance(tariff, Tariff)
 
-    def test__get_active_energy_price2X(self):
+
+    def test__get_active_energy_2019price2X(self):
         tariff = Tariff(self.tariff_id_2x)
-        energy = tariff.termPrice(self.items_id_2019_2X, 'ENERGIA', 'kWh/day')
+        energy = tariff.termPrice(self.items_id_2019_2X, 'ENERGIA', '€/kWh')
 
         self.assertEqual(energy, [{
             'name': 'P1_ENERGIA_20ASOM',
             'period': 'P1',
             'price': 0.139,
-            'units': 'kWh/day'}]
+            'units': '€/kWh'}]
         )
+
+
+    def test__get_active_energy_2012price2X(self):
+        tariff = Tariff(self.tariff_id_2x)
+        energy = tariff.termPrice(self.items_id_2012_2X, 'ENERGIA', '€/kWh')
+
+        self.assertEqual(energy, [{
+            'name': 'P1_ENERGIA_20ASOM',
+            'period': 'P1',
+            'price': 0.144722,
+            'units': '€/kWh'}]
+        )
+
 
     def test__get_active_energy_price3X(self):
         tariff = Tariff(self.tariff_id_3x)
@@ -58,115 +108,115 @@ class TestTariff(BaseTestCase):
             ]
         )
 
-    def test__get_reactive_energy_price3X(self):
-        tariff = Tariff(self.tariff_id_3x)
-        energy = tariff.termPrice(self.items_id_2019_3X, 'REACTIVA', 'kWh/day')
 
-        self.assertEqual(energy,[
-            {
-                'name': 'P1_REACTIVA_3.0A',
-                'period': 'P1',
-                'price': 0.0,
-                'units': 'kWh/day'
-            },
-            {
-                'name': 'P2_REACTIVA_3.0A',
-                'period': 'P2',
-                'price': 0.0,
-                'units': 'kWh/day'
-            }
-            ]
-        )
-
-    def test__get_reactive_energy_price2X(self):
+    def test__get_power_2019price2X(self):
         tariff = Tariff(self.tariff_id_2x)
-        energy = tariff.termPrice(self.items_id_2019_2X, 'REACTIVA', 'kWh/day')
-
-        self.assertEqual(energy, [{
-            'name': 'P1_REACTIVA_20ASOM',
-            'period': 'P1',
-            'price': 0.0,
-            'units': 'kWh/day'}]
-        )
-
-    def test__get_power_price2X(self):
-        tariff = Tariff(self.tariff_id_2x)
-        energy = tariff.termPrice(self.items_id_2019_2X, 'POTENCIA', 'kW/year')
+        energy = tariff.termPrice(self.items_id_2019_2X, 'POTENCIA', '€/kW year')
 
         self.assertEqual(energy, [{
             'name': 'P1_POTENCIA_20ASOM',
             'period': 'P1',
             'price': 38.043426,
-            'units': 'kW/year'}]
+            'units': '€/kW year'}]
         )
+
+
+    def test__get_power_2012price2X(self):
+        tariff = Tariff(self.tariff_id_2x)
+        energy = tariff.termPrice(self.items_id_2012_2X, 'POTENCIA', '€/kW year')
+
+        self.assertEqual(energy, [{
+            'name': 'P1_POTENCIA_20ASOM',
+            'period': 'P1',
+            'price': 19.893189,
+            'units': '€/kW year'}]
+        )
+
 
     def test__get_power_price3X(self):
         tariff = Tariff(self.tariff_id_3x)
-        energy = tariff.termPrice(self.items_id_2019_3X, 'POTENCIA', 'kW/year')
+        energy = tariff.termPrice(self.items_id_2019_3X, 'POTENCIA', '€/kW year')
 
         self.assertEqual(energy, [
             {
                 'name': 'P1_POTENCIA_3.0A',
                 'period': 'P1',
                 'price': 40.728885,
-                'units': 'kW/year'
+                'units': '€/kW year'
             },
             {
                 'name': 'P2_POTENCIA_3.0A',
                 'period': 'P2',
                 'price': 24.43733,
-                'units': 'kW/year'
+                'units': '€/kW year'
             },
             {
                 'name': 'P3_POTENCIA_3.0A',
                 'period': 'P3',
                 'price': 16.291555,
-                'units': 'kW/year'
+                'units': '€/kW year'
             },
             ]
         )
 
-    def test__get_GkWh_price2X(self):
+
+    def test__get_GkWh_2019price2X(self):
         tariff = Tariff(self.tariff_id_2x)
-        energy = tariff.termPrice(self.items_id_2019_2X, 'GKWh', 'kWh/day')
+        energy = tariff.termPrice(self.items_id_2019_2X, 'GKWh', '€/kWh')
 
         self.assertEqual(energy, [{
             'name': 'P1_GKWh_20A_SOM',
             'period': 'P1',
             'price': 0.116,
-            'units': 'kWh/day'}]
+            'units': '€/kWh'}]
         )
 
-    def test__get_GkWh_price_3X(self):
+
+    def test__get_GkWh_2012price2X(self):
+        tariff = Tariff(self.tariff_id_2x)
+        energy = tariff.termPrice(self.items_id_2012_2X, 'GKWh', '€/kWh')
+
+        self.assertEqual(energy, [])
+
+
+    def test__get_GkWh_price3X(self):
         tariff = Tariff(self.tariff_id_3x)
-        energy = tariff.termPrice(self.items_id_2019_3X, 'GKWh', 'kWh/day')
+        energy = tariff.termPrice(self.items_id_2019_3X, 'GKWh', '€/kWh')
 
         self.assertEqual(energy, [
             {
                 'name': 'P1_GKWh_30A_SOM',
                 'period': 'P1',
                 'price': 0.092,
-                'units': 'kWh/day'
+                'units': '€/kWh'
             },
             {
                 'name': 'P2_GKWh_30A_SOM',
                 'period': 'P2',
                 'price': 0.081,
-                'units': 'kWh/day'
+                'units': '€/kWh'
             },
             {
                 'name': 'P3_GKWh_30A_SOM',
                 'period': 'P3',
                 'price': 0.064,
-                'units': 'kWh/day'
+                'units': '€/kWh'
             }]
         )
+
 
     def test__get_tariff_historical_prices_2X(self):
         tariff = Tariff(self.tariff_id_2x)
         prices = tariff.priceDetail
 
         self.assertEqual(prices, self.json4test['tariff2X']['priceHistory'])
+
+
+    def test__get_reactive_energy(self):
+        tariff = Tariff(self.tariff_id_2x)
+        energy = tariff.reactiveEnergy
+
+        self.assertEqual(energy, self.json4test['reactiveEnergy'])
 
 
     def test__get_tariff_2X(self):
