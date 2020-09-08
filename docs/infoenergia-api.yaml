@@ -182,7 +182,7 @@ paths:
       description: Get all contracts one or more contract amendments by date and type.
       operationId: server.get_modcontracts
       parameters:
-      - name: modtype
+      - name: type
         in: query
         description: Filter by different types of contract modification
         required: false
@@ -652,9 +652,14 @@ components:
           description: contract cancelation date
           example: null
         tariffId:
-          type: integer
+          type: string
           description: contracted tariff id
           example:  "tariffID-123"
+        tariffCostId:
+          type: number
+          format: integer
+          description: cost id for contracted tariff
+          example:  "123"
         tariff_:
           type: object
           description: tariff information
@@ -663,6 +668,9 @@ components:
             properties:
               tariff:
                 type: string
+              tariffCostId:
+                type: number
+                format: integer
               dateStart:
                 type: string
                 format: date-time
@@ -672,6 +680,7 @@ components:
           example:
               {
                 "tariff":"2.0A",
+                "tariffCostId": 123,
                 "dateStart": "2019-08-11T00:00:00Z",
                 "dateEnd": null
               }
@@ -1157,7 +1166,7 @@ components:
           items:
             type: object
             properties:
-              tariffId:
+              tariffCostId:
                 type: integer
                 description: Tariff ID
                 example: 123
@@ -1174,20 +1183,6 @@ components:
                 description: Current price for all tariff terms
                 properties:
                   activeEnergy:
-                    type: array
-                    description: energy price by period
-                    items:
-                      type: object
-                      properties:
-                        period:
-                          type: string
-                        price:
-                          type: number
-                          format: float
-                        units:
-                          type: string
-                      example:
-                  reactiveEnergy:
                     type: array
                     description: energy price by period
                     items:
@@ -1241,18 +1236,6 @@ components:
                             units: '€/kWh'
                           }
                         ],
-                    'reactiveEnergy': [
-                          {
-                            period: P1,
-                            price: 0.0,
-                            units: '€/kWh'
-                          },
-                          {
-                            period: P2,
-                            price: 0.0,
-                            units: '€/kWh'
-                          }
-                        ],
                     'power': [
                           {
                             period: P1,
@@ -1277,6 +1260,30 @@ components:
                             units: '€/kW day'
                           }
                         ],
+                  }
+              priceReactiveEnergy:
+                type: object
+                description: Current price of reactive energy. Price not applied in the off-peak period (P3 of rate 3.X and P6 of rate 6.X).
+                properties:
+                  BOE:
+                    type: string
+                    description: BOE number and date from where these prices are taken
+                  price33:
+                    type: number
+                    format: float
+                    description: price used when reactive energy exceeds 33% of the active energy.
+                  price75:
+                    type: number
+                    format: float
+                    description: price used when reactive energy exceeds 75% of the active energy.
+                  units:
+                    type: string
+                example:
+                  {
+                    'BOE': 'BOE núm. 312 - 28/12/2018',
+                    'price33': 0.041554,
+                    'price75': 0.062332,
+                    'units': '€/kVArh'
                   }
               priceHistory:
                 type: array
@@ -1389,7 +1396,45 @@ components:
                             }
                           ],
                     }]
-
+              priceReactiveEnergyHistory:
+                type: array
+                description: History of  reactive energy prices.
+                items:
+                  properties:
+                    BOE:
+                      type: string
+                      description: BOE number and date from where these prices are taken
+                    price33:
+                      type: number
+                      format: float
+                      description: price used when reactive energy exceeds 33% of the active energy.
+                    price75:
+                      type: number
+                      format: float
+                      description: price used when reactive energy exceeds 75% of the active energy.
+                    units:
+                      type: string
+                  example:
+                    [
+                      {
+                        'BOE': 'BOE núm. 236 - 30/09/2011',
+                        'price33': 0.041554,
+                        'price75': 0.062332,
+                        'units': '€/kVArh'
+                      },
+                     {
+                       'BOE': 'BOE núm. 236 - 30/09/2011',
+                        'price33': 0.041554,
+                        'price75': 0.062332,
+                        'units': '€/kVArh'
+                     },
+                     {
+                       'BOE': 'BOE núm. 315 - 31/12/2011',
+                        'price33': 0.041554,
+                        'price75': 0.062332,
+                        'units': '€/kVArh'
+                     }
+                    ]
     Error:
       type: object
       required:
