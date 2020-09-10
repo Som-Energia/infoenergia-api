@@ -3,6 +3,7 @@ from concurrent import futures
 
 import aioredis
 from erppeek import Client
+from pymongo import MongoClient
 from sanic import Sanic
 from sanic.log import logger
 from sanic_jwt import Initialize
@@ -34,6 +35,8 @@ def build_app():
 
         app.thread_pool = futures.ThreadPoolExecutor(app.config.MAX_THREADS)
         app.erp_client = Client(**app.config.ERP_CONF)
+        app.mongo_client = MongoClient(app.config.MONGO_CONF)
+
 
         db.bind(
             provider='sqlite',
