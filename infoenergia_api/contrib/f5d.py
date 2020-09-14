@@ -92,10 +92,10 @@ def get_f5d(request, contractId=None):
 
 async def async_get_f5d(request, id_contract=None):
     try:
-        contracts = await request.app.loop.run_in_executor(
+        f5ds = await request.app.loop.run_in_executor(
             request.app.thread_pool,
             functools.partial(get_f5d, request, id_contract)
         )
     except Exception as e:
         raise e
-    return contracts
+    return f5ds

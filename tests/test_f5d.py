@@ -6,26 +6,85 @@ from tests.base import BaseTestCase
 from infoenergia_api.contrib import F5D
 
 
+class TestBaseF5D(BaseTestCase):
+
+    @db_session
+    def test__get_f5d_by_id__2A(self):
+        user = self.get_or_create_user(
+            username='someone',
+            password='123412345',
+            email='someone@somenergia.coop',
+            partner_id=1,
+            is_superuser=True
+        )
+        token = self.get_auth_token(user.username, "123412345")
+        _, response = self.client.get(
+            '/f5d/' + self.json4test['f5d']['contractId'],
+            headers={
+                'Authorization': 'Bearer {}'.format(token)
+            },
+            timeout=None
+        )
+
+        self.assertEqual(response.status, 200)
+        self.assertDictEqual(
+            response.json,
+            {
+                'count': 1,
+                'data': [self.json4test['contract_id_2A']['contract_data']],
+            }
+        )
+        self.delete_user(user)
+
+    @db_session
+    def test__get_f5d__20DHS(self):
+        user = self.get_or_create_user(
+            username='someone',
+            password='123412345',
+            email='someone@somenergia.coop',
+            partner_id=1,
+            is_superuser=True
+        )
+        token = self.get_auth_token(user.username, "123412345")
+        params = {
+            'from_': '2019-10-03',
+            'to_': '2019-10-09',
+        }
+        _, response = self.client.get(
+            '/f5d',
+            params=params,
+            headers={
+                'Authorization': 'Bearer {}'.format(token)
+            },
+            timeout=None
+        )
+
+        self.assertEqual(response.status, 200)
+        self.assertDictEqual(
+            response.json,
+            {
+                'count': 2,
+                'data': self.json4test['f5d']['cch_data'],
+            }
+        )
+        self.delete_user(user)
 
 
 class TestF5D(BaseTestCase):
 
-    contract_id = 4
-    contract_id_cch = 132850
-    contract_id_3X = 158697
-
+    f5d_id_empty = 4
     f5d_id = 1806168064
 
     def test__create_f5d(self):
         f5d = F5D(self.f5d_id)
-
         self.assertIsInstance(f5d, F5D)
+
 
     def test__get_measurements(self):
         f5d = F5D(self.f5d_id)
-        metering_point = f5d.measurements
+        data = f5d.measurements
         self.assertDictEqual(
-            metering_point,
+            data,
             {
                 'ai': 443,
                 'ao': 0,
