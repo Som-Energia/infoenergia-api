@@ -12,7 +12,7 @@ class TestBaseF5D(BaseTestCase):
 
     @mock.patch('infoenergia_api.contrib.pagination.PaginationLinksMixin._next_cursor')
     @db_session
-    def test__get_f5d_by_id__2A(self,next_cursor_mock):
+    def test__get_f5d_by_id__2A(self, next_cursor_mock):
         next_cursor_mock.return_value = 'N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0='
 
         user = self.get_or_create_user(
@@ -48,8 +48,12 @@ class TestBaseF5D(BaseTestCase):
         )
         self.delete_user(user)
 
+
+    @mock.patch('infoenergia_api.contrib.pagination.PaginationLinksMixin._next_cursor')
     @db_session
-    def test__get_f5d__20DHS(self):
+    def test__get_f5d__all_contracts(self, next_cursor_mock):
+        next_cursor_mock.return_value = 'N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0='
+
         user = self.get_or_create_user(
             username='someone',
             password='123412345',
@@ -75,8 +79,10 @@ class TestBaseF5D(BaseTestCase):
         self.assertDictEqual(
             response.json,
             {
-                'count': 2,
-                'data': self.json4test['f5d']['cch_data'],
+                'count': 50,
+                'cursor': 'N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=',
+                'next_page':'http://{}/f5d?cursor=N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=&limit=50'.format(response.url.authority),
+                'data': self.json4test['f5d_all']['cch_data'],
             }
         )
         self.delete_user(user)

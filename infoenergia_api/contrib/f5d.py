@@ -85,13 +85,17 @@ def get_cups(request, contractId=None):
 
 def get_f5d(request, contractId=None):
     tg_cchfact = request.app.mongo_client.somenergia.tg_cchfact
-    cups = get_cups(request, contractId)
-    filters = {
-        "name": { "$in": cups }
-    }
-    if request.args:
-        filters = get_cch_filters(request, filters)
-    return [f5d['id'] for f5d in tg_cchfact.find(filters)]
+
+    if contractId:
+        cups = get_cups(request, contractId)
+        filters = {
+            "name": { "$in": cups }
+        }
+        if request.args:
+            filters = get_cch_filters(request, filters)
+        return [f5d['id'] for f5d in tg_cchfact.find(filters)]
+    else:
+        return [f5d['id'] for f5d in tg_cchfact.find()]
 
 
 async def async_get_f5d(request, id_contract=None):
