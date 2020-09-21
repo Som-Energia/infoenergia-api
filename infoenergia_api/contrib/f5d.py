@@ -19,6 +19,7 @@ class F5D(object):
     def __init__(self, f5d_id):
         from infoenergia_api.app import app
 
+        self._erp = app.erp_client
         self._mongo = app.mongo_client.somenergia
         self._F5D = self._mongo.tg_cchfact
 
@@ -54,11 +55,29 @@ class F5D(object):
         }
 
     @property
+    def valid_empowering(self):
+        contract_obj = self._erp.model('giscedata.polissa')
+
+        filters = [
+                ('active', '=', True),
+                ('state', '=', 'activa'),
+                ('empowering_profile_id', '=', 1),
+                ('cups', '=', self.name)
+            ]
+
+        contract = contract_obj.search(filters)
+        if contract:
+            return True
+        else:
+            return False
+
+    @property
     def f5d_measures(self):
-        return {
-        'meteringPointId': make_uuid('giscedata.cups.ps', self.name),
-        'measurements': self.measurements
-        }
+        if self.valid_empowering:
+            return {
+            'meteringPointId': make_uuid('giscedata.cups.ps', self.name),
+            'measurements': self.measurements
+            }
 
 
 def get_cups(request, contractId=None):
@@ -66,7 +85,8 @@ def get_cups(request, contractId=None):
     filters = [
         ('active', '=', True),
         ('state', '=', 'activa'),
-        ('empowering_profile_id', '=', 1)
+        ('empowering_profile_id', '=', 1),
+        ('name', '=', contractId)
     ]
 
     if request.args:
@@ -75,27 +95,22 @@ def get_cups(request, contractId=None):
             request,
             filters,
         )
-
-    if contractId:
-        filters.append(('name', '=', contractId))
-
     contracts = contract_obj.search(filters)
-    return [contract_obj.read(contract)['cups'][1] for contract in contracts]
+    return [contract_obj.read(contract, ['cups'])['cups'][1] for contract in contracts]
 
 
 def get_f5d(request, contractId=None):
     tg_cchfact = request.app.mongo_client.somenergia.tg_cchfact
+    filters = {}
 
     if contractId:
         cups = get_cups(request, contractId)
-        filters = {
-            "name": { "$in": cups }
-        }
-        if request.args:
-            filters = get_cch_filters(request, filters)
-        return [f5d['id'] for f5d in tg_cchfact.find(filters)]
-    else:
-        return [f5d['id'] for f5d in tg_cchfact.find()]
+        filters.update({"name": { "$in": cups }})
+
+    if request.args:
+        filters = get_cch_filters(request, filters)
+
+    return [f5d['id'] for f5d in tg_cchfact.find(filters)]
 
 
 async def async_get_f5d(request, id_contract=None):
