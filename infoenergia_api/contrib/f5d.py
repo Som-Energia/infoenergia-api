@@ -7,8 +7,7 @@ from sanic.request import RequestParameters
 
 from sanic.log import logger
 
-from ..utils import (get_id_for_contract, get_request_filters,
-                     make_utc_timestamp, make_uuid)
+from ..utils import (get_cch_filters, get_request_filters, make_uuid)
 
 
 class F5D(object):
@@ -76,18 +75,23 @@ def get_cups(request, contractId=None):
             request,
             filters,
         )
+
     if contractId:
         filters.append(('name', '=', contractId))
 
-    contracts = contract_obj.browse(filters)
-    return [contract.cups for contract in contracts]
+    contracts = contract_obj.search(filters)
+    return [contract_obj.read(contract)['cups'][1] for contract in contracts]
 
 
 def get_f5d(request, contractId=None):
     tg_cchfact = request.app.mongo_client.somenergia.tg_cchfact
-
-    cups = get_cups(request, contractId=None)
-    return [f5d['id'] for f5d in tg_cchfact.find({ "name": { "$in": cups } })]
+    cups = get_cups(request, contractId)
+    filters = {
+        "name": { "$in": cups }
+    }
+    if request.args:
+        filters = get_cch_filters(request, filters)
+    return [f5d['id'] for f5d in tg_cchfact.find(filters)]
 
 
 async def async_get_f5d(request, id_contract=None):

@@ -1,3 +1,5 @@
+from unittest import mock
+
 from passlib.hash import pbkdf2_sha256
 from pony.orm import db_session
 
@@ -8,8 +10,11 @@ from infoenergia_api.contrib import F5D
 
 class TestBaseF5D(BaseTestCase):
 
+    @mock.patch('infoenergia_api.contrib.pagination.PaginationLinksMixin._next_cursor')
     @db_session
-    def test__get_f5d_by_id__2A(self):
+    def test__get_f5d_by_id__2A(self,next_cursor_mock):
+        next_cursor_mock.return_value = 'N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0='
+
         user = self.get_or_create_user(
             username='someone',
             password='123412345',
@@ -18,8 +23,13 @@ class TestBaseF5D(BaseTestCase):
             is_superuser=True
         )
         token = self.get_auth_token(user.username, "123412345")
+        params = {
+            'from_': '2018-11-16',
+            'to_': '2018-12-16'
+        }
         _, response = self.client.get(
             '/f5d/' + self.json4test['f5d']['contractId'],
+            params=params,
             headers={
                 'Authorization': 'Bearer {}'.format(token)
             },
@@ -30,8 +40,10 @@ class TestBaseF5D(BaseTestCase):
         self.assertDictEqual(
             response.json,
             {
-                'count': 1,
-                'data': [self.json4test['contract_id_2A']['contract_data']],
+                'count': 50,
+                'cursor': 'N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=',
+                'next_page':'http://{}/f5d/0067411?cursor=N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=&limit=50'.format(response.url.authority),
+                'data': self.json4test['f5d']['cch_data'],
             }
         )
         self.delete_user(user)
