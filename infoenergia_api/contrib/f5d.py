@@ -11,11 +11,7 @@ from ..utils import (get_cch_filters, get_request_filters, make_uuid)
 
 
 class F5D(object):
-    FIELDS = [
-        'id',
-        'name',
-        'cups',
-    ]
+
     def __init__(self, f5d_id):
         from infoenergia_api.app import app
 
@@ -55,7 +51,7 @@ class F5D(object):
         }
 
     @property
-    def valid_empowering(self):
+    def is_valid_empowering(self):
         contract_obj = self._erp.model('giscedata.polissa')
 
         filters = [
@@ -66,14 +62,11 @@ class F5D(object):
             ]
 
         contract = contract_obj.search(filters)
-        if contract:
-            return True
-        else:
-            return False
+        return bool(contract)
 
     @property
     def f5d_measures(self):
-        if self.valid_empowering:
+        if self.is_valid_empowering:
             return {
             'meteringPointId': make_uuid('giscedata.cups.ps', self.name),
             'measurements': self.measurements

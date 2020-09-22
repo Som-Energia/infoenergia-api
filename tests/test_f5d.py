@@ -120,5 +120,5 @@ class TestF5D(BaseTestCase):
 
     def test__valid_empowering(self):
         f5d = F5D(self.f5d_id)
-        valid = f5d.valid_empowering
+        valid = f5d.is_valid_empowering
         self.assertEqual(True, valid)

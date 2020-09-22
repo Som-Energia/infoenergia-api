@@ -68,7 +68,7 @@ async def server_init(app, loop):
     app.redis = await aioredis.create_redis_pool(app.config.REDIS_CONF)
 
 
-@app.listener('after_server_stop')
-def shutdown_app(app, loop):
-    logger.info("Shuting down api... ")
-    app.thread_pool.shutdown()
+#@app.listener('after_server_stop')
+#def shutdown_app(app, loop):
+#    logger.info("Shuting down api... ")
+#    app.thread_pool.shutdown()
