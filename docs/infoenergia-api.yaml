@@ -21,10 +21,8 @@ tags:
   description: All information about contract modifications
 - name: f1
   description: All information about contract f1 measurements
-- name: cch
-  description: cch curves
-- name: measurements
-  description: All information about contract energy measurements
+- name: f5d
+  description: All information about f5d curves
 paths:
   /contracts:
     get:
@@ -461,37 +459,14 @@ paths:
           content: {}
       security:
         - jwt: []
-  /cch/f5d:
+  /f5d:
     get:
       tags:
-      - cch
+      - f5d
       summary: Obtain F5D cch curves
       description: Get F5D curves information depending on some date and tariff parameters
       operationId: server.get_f5d
       parameters:
-      - name: tariff
-        in: query
-        description: Tariff of the contract to filter
-        required: false
-        style: form
-        explode: false
-        schema:
-          type: string
-          default: None
-          enum:
-            - None
-            - 2.0A
-            - 2.1A
-            - 2.0DHA
-            - 2.0DHS
-            - 2.1DHA
-            - 2.1DHS
-            - 3.0A
-            - 3.1A
-            - 3.1A-LB
-            - 6.1
-            - 6.1A
-            - 6.1B
       - name: from_
         in: query
         description: Get all F5D from this date on. In format YYYY-MM-DD
@@ -514,15 +489,6 @@ paths:
           format: date
           default: None
           example: '2019-08-10'
-      - name: limit
-        in: query
-        description: How many contracts to return at one time
-        required: false
-        schema:
-          type: integer
-          minimum: 0
-          default: 50
-          maximum: 500
       - name: cursor
         in: query
         description: Actual cursor for this search
@@ -554,7 +520,80 @@ paths:
                       next:
                         type: string
                         description: url of next results. If null, you are in the last page
-                        example: "https://apinertgia.somenergia.coop/contracts?limit=5&cursor=dXNlcjpVMEc5V0ZYTlo"
+                        example: "https://apinertgia.somenergia.coop/f5d?limit=5&cursor=dXNlcjpVMEc5V0ZYTlo"
+        400:
+          description: Invalid status value
+          content: {}
+      security:
+        - jwt: []
+  /f5d/{contractId}:
+    get:
+      tags:
+      - f5d
+      summary: Obtain F5D cch curves for a contractId
+      description: Get F5D curves for a contract
+      operationId: server.get_f5d_by_contract_id
+      parameters:
+      - name: contractId
+        in: path
+        description: ID of contract to get F1 data
+        required: true
+        schema:
+          type: string
+      - name: from_
+        in: query
+        description: Get all F5D from this date on. In format YYYY-MM-DD
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          format: date
+          default: None
+          example: '2019-08-01'
+      - name: to_
+        in: query
+        description: Get all F5D until this date. In format YYYY-MM-DD
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          format: date
+          default: None
+          example: '2019-08-10'
+      - name: cursor
+        in: query
+        description: Actual cursor for this search
+        required: false
+        schema:
+          type: string
+          format: byte
+          default: None
+          example: 'dXNlcjpXMDdRQ1JQQTQ='
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                    description: number of results
+                    example: 234
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/f5d'
+                  links:
+                    type: object
+                    properties:
+                      next:
+                        type: string
+                        description: url of next results. If null, you are in the last page
+                        example: "https://apinertgia.somenergia.coop/f5d/0000001?limit=5&cursor=dXNlcjpVMEc5V0ZYTlo"
         400:
           description: Invalid status value
           content: {}
