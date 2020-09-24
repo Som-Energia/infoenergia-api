@@ -103,7 +103,7 @@ def get_f5d(request, contractId=None):
     if request.args:
         filters = get_cch_filters(request, filters)
 
-    return [f5d['id'] for f5d in tg_cchfact.find(filters)]
+    return [f5d['id'] for f5d in tg_cchfact.find(filters) if f5d.get('id')]
 
 
 async def async_get_f5d(request, id_contract=None):
