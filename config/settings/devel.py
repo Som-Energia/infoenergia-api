@@ -3,6 +3,9 @@ from .base import *
 # ERP configuration
 ERP_CONF = env.json('ERP_CONF')
 
+#Mongo configuration
+MONGO_CONF = env.str('MONGO_CONF')
+
 # DATABASE configuration
 DB_CONF = env.json('DATABASE_CONF')
 

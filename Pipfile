@@ -24,6 +24,7 @@ pony = "*"
 environs = "*"
 uvicorn = "*"
 aioredis = "*"
+pymongo = "*"
 
 [requires]
 python_version = "3.8"

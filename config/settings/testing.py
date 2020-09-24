@@ -5,6 +5,8 @@ test_env.read_env(os.path.join(BASE_DIR, 'tests/.env.test'), override=True)
 
 ERP_CONF = test_env.json('ERP_CONF')
 
+MONGO_CONF = test_env.str('MONGO_CONF')
+
 DB_CONF = test_env.json('DATABASE_CONF')
 
 # Redis configuration
