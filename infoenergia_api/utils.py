@@ -117,13 +117,6 @@ def get_juridic_filter(erp_client, juridic_type):
 
 
 def get_cch_filters(request, filters):
-    if {'to_','from_'} <= request.args.keys():
-        filters.update({"datetime" : {
-            "$gt":
-                datetime.strptime(request.args['from_'][0],"%Y-%m-%d"),
-            "$lt":
-                datetime.strptime(request.args['to_'][0],"%Y-%m-%d")
-            }})
     if 'from_' in request.args:
         filters.update({"datetime" : {"$gt":
             datetime.strptime(request.args['from_'][0],"%Y-%m-%d")}})
@@ -131,6 +124,12 @@ def get_cch_filters(request, filters):
     if 'to_' in request.args:
         filters.update({"datetime" : {"$lt":
             datetime.strptime(request.args['to_'][0],"%Y-%m-%d")}})
-
+    if {'to_','from_'} <= request.args.keys():
+        filters.update({"datetime" : {
+            "$gt":
+                datetime.strptime(request.args['from_'][0],"%Y-%m-%d"),
+            "$lt":
+                datetime.strptime(request.args['to_'][0],"%Y-%m-%d")
+            }})
 
     return filters

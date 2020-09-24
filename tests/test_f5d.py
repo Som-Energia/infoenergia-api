@@ -63,7 +63,6 @@ class TestBaseF5D(BaseTestCase):
         )
         token = self.get_auth_token(user.username, "123412345")
         params = {
-            'from_': '2019-10-03',
             'to_': '2019-10-09',
         }
         _, response = self.client.get(
