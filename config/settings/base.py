@@ -24,3 +24,5 @@ TASK_TIMEOUT = 30
 
 # Response timeout
 RESPONSE_TIMEOUT = 36000
+
+SANIC_JWT_USER_ID = 'id'
