@@ -1,14 +1,7 @@
 import functools
 from datetime import date
-from sanic.log import logger
 
-from ..tasks import (get_building_details, get_contract_address,
-                     get_cups_to_climaticZone, get_current_power,
-                     get_current_tariff, get_devices, get_eprofile,
-                     get_experimentalgroup, get_powerHistory, get_report,
-                     get_service, get_tariffHistory, get_tertiaryPower,
-                     get_version)
-from ..utils import get_juridic_filter
+from ..utils import get_juridic_filter, get_user_filters
 
 
 def get_modcontracts(request):

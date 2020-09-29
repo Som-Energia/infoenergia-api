@@ -1,5 +1,3 @@
-import asyncio
-
 from sanic import Blueprint
 from sanic.log import logger
 from sanic.response import json
@@ -7,7 +5,7 @@ from sanic.views import HTTPMethodView
 from sanic_jwt.decorators import protected
 
 from infoenergia_api.contrib.contracts import async_get_contracts, Contract
-from infoenergia_api.contrib import Pagination, PaginationLinksMixin
+from infoenergia_api.contrib import PaginationLinksMixin
 
 bp_contracts = Blueprint('contracts')
 
