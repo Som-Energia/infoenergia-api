@@ -14,7 +14,7 @@ from infoenergia_api.api.f5d import bp_f5d_measures
 from infoenergia_api.api.modcontracts import bp_modcontracts
 from infoenergia_api.api.registration.login import (InvitationUrlToken,
                                                     authenticate, extra_views)
-from infoenergia_api.api.registration.models import db
+from infoenergia_api.api.registration.models import db, retrieve_user
 
 
 def build_app():
@@ -23,7 +23,12 @@ def build_app():
     try:
         app.config.from_object(config)
 
-        Initialize(app, authenticate=authenticate, class_views=extra_views)
+        Initialize(
+            app,
+            authenticate=authenticate,
+            retrieve_user=retrieve_user,
+            class_views=extra_views
+        )
         app.blueprint(bp_contracts)
         app.blueprint(bp_f1_measures)
         app.blueprint(bp_modcontracts)

@@ -1,13 +1,11 @@
 import functools
 from datetime import datetime
 
-from sanic.log import logger
-
 from infoenergia_api.contrib.climatic_zones import ine_to_zc
 from infoenergia_api.contrib.postal_codes import ine_to_dp
 
 from ..tasks import find_changes
-from ..utils import (get_id_for_contract, get_request_filters,
+from ..utils import (get_id_for_contract, get_request_filters, get_user_filters,
                      make_utc_timestamp, make_uuid)
 
 
@@ -465,6 +463,8 @@ def get_contracts(request, contractId=None):
         ('state', '=', 'activa'),
         ('empowering_profile_id', '=', 1)
     ]
+
+    filters = get_user_filters(request, filters)
 
     if request.args:
         filters = get_request_filters(

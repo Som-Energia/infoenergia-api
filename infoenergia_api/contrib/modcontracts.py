@@ -5,7 +5,7 @@ from ..utils import get_juridic_filter, get_user_filters
 
 
 def get_modcontracts(request):
-    modcon_obj =  request.app.erp_client.model('giscedata.polissa.modcontractual')
+    modcon_obj = request.app.erp_client.model('giscedata.polissa.modcontractual')
     contract_obj = request.app.erp_client.model('giscedata.polissa')
 
     filters = [
@@ -13,6 +13,8 @@ def get_modcontracts(request):
         ('polissa_id.empowering_profile_id', '=', 1),
         ('data_inici', '>=', request.args.get('from_', str(date.today())))
     ]
+
+    filters = get_user_filters(request, filters)
 
     if 'to_' in request.args:
         filters.append(('data_inici', '<=', request.args['to_'][0]))

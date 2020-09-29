@@ -1,4 +1,4 @@
-from datetime import datetime
+import enum
 from pony.orm import Database, Optional, PrimaryKey, Required, db_session
 
 db = Database()
@@ -14,6 +14,14 @@ class InvitationToken(db.Entity):
     used = Required(bool)
 
 
+class UserCategory(enum.Enum):
+    ADMIN = 'admin'
+
+    PARTNER = 'partner'
+
+    ENERGETICA = 'Energética'
+
+
 class User(db.Entity):
     _table_ = 'user'
 
@@ -26,6 +34,8 @@ class User(db.Entity):
     email = Required(str)
 
     id_partner = Optional(int)
+
+    category = Required(str)
 
     is_superuser = Required(bool)
 
@@ -40,4 +50,15 @@ class User(db.Entity):
 @db_session
 def get_user(username):
     user = User.get(username=username)
+    return user
+
+
+async def retrieve_user(request, payload, *args, **kwargs):
+    if not payload:
+        return None
+
+    user_id = payload.get('id', None)
+    with db_session:
+        user = User.get(id=user_id)
+
     return user

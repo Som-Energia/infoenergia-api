@@ -3,6 +3,8 @@ from datetime import datetime
 
 from pytz import timezone
 
+from .api.registration.models import UserCategory
+
 
 def make_uuid(model, model_id):
     token = '%s,%s' % (model, model_id)
@@ -64,6 +66,20 @@ def get_request_filters(erp_client, request, filters):
             filters += [
                 ('data_inici', '<=', request.args['to_'][0])
             ]
+    return filters
+
+
+def get_user_filters(request, filters):
+    user = request.ctx.user
+    erp_client = request.app.erp_client
+
+    if user.category == UserCategory.ENERGETICA.value:
+        category_id = erp_client.model('res.partner.category').search([
+            ('name', '=', UserCategory.ENERGETICA.value),
+            ('active', '=', True)
+        ])
+        filters += [('soci.category_id', '=', category_id)]
+
     return filters
 
 
