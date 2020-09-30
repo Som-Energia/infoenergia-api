@@ -35,7 +35,7 @@ class Contract(object):
         from infoenergia_api.app import app
 
         self._erp = app.erp_client
-        self._Polissa= self._erp.model('giscedata.polissa')
+        self._Polissa = self._erp.model('giscedata.polissa')
         for name, value in self._Polissa.read(contract_id, self.FIELDS).items():
             setattr(self, name, value)
 
@@ -406,7 +406,6 @@ class Contract(object):
             return False
         else:
             return True
-
 
     @property
     def juridicType(self):
