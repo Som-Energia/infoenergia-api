@@ -5,8 +5,8 @@ from infoenergia_api.contrib.climatic_zones import ine_to_zc
 from infoenergia_api.contrib.postal_codes import ine_to_dp
 
 from ..tasks import find_changes
-from ..utils import (get_id_for_contract, get_request_filters, get_user_filters,
-                     make_utc_timestamp, make_uuid)
+from ..utils import (get_id_for_contract, get_request_filters,
+                     get_contract_user_filters, make_utc_timestamp, make_uuid)
 
 
 class Contract(object):

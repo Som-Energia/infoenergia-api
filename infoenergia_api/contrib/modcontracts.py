@@ -1,7 +1,7 @@
 import functools
 from datetime import date
 
-from ..utils import get_juridic_filter, get_user_filters
+from ..utils import get_juridic_filter, get_contract_user_filters
 
 
 def get_modcontracts(request):

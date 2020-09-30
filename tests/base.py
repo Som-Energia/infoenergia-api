@@ -24,7 +24,7 @@ class BaseTestCase(TestCase):
             self.json4test = yaml.load(f.read())
 
     @db_session
-    def get_or_create_user(self, username, password, email, partner_id, is_superuser):
+    def get_or_create_user(self, username, password, email, partner_id, is_superuser, category):
         user = User.get(username=username)
         if not user:
             user = User(
@@ -32,7 +32,8 @@ class BaseTestCase(TestCase):
                 password=pbkdf2_sha256.hash(password),
                 email=email,
                 id_partner=partner_id,
-                is_superuser=is_superuser
+                is_superuser=is_superuser,
+                category=category
             )
             commit()
         return user
