@@ -36,9 +36,8 @@ class InvitationUrlToken(HTTPMethodView):
             'exp': datetime.utcnow() + timedelta(days=request.app.config.INVITATION_EXP_DAYS)
         }
         payload['is_superuser'] = request.args.get('is_superuser', False)
-
-        if request.args.get('id_partner'):
-            payload['id_partner'] = request.args.get('id_partner')
+        payload['id_partner'] = request.args.get('id_partner')
+        payload['category'] = request.args.get('category')
 
         with db_session:
             invitation_token = InvitationToken(
@@ -99,6 +98,7 @@ class Register(BaseEndpoint):
                     password=pbkdf2_sha256.hash(body['password']),
                     email=body['email'],
                     id_partner=payload.get('id_partner'),
+                    category=payload.get('category'),
                     is_superuser=payload.get('is_superuser', False)
                 )
                 commit()
