@@ -3,7 +3,7 @@ import re
 from sanic.request import RequestParameters
 
 from infoenergia_api.utils import (get_request_filters, make_utc_timestamp,
-                                   make_uuid)
+                                   make_uuid, get_invoice_user_filters)
 
 
 class Invoice(object):
@@ -150,6 +150,9 @@ def get_invoices(request, contractId=None):
         ('type', '=', 'in_invoice'),
         ('polissa_id.empowering_profile_id', '=', 1),
     ]
+
+    filters = get_invoice_user_filters(request, filters)
+
     if contractId:
         filters.append(
             ('polissa_id.name', '=', contractId)

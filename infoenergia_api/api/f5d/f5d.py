@@ -1,13 +1,11 @@
-from base64 import urlsafe_b64encode, urlsafe_b64decode
-
 from sanic import Blueprint
 from sanic.log import logger
 from sanic.response import json
 from sanic.views import HTTPMethodView
-from sanic_jwt.decorators import protected
+from sanic_jwt.decorators import inject_user, protected
 
 from infoenergia_api.contrib.f5d import async_get_f5d, F5D
-from infoenergia_api.contrib import Pagination, PaginationLinksMixin
+from infoenergia_api.contrib import PaginationLinksMixin
 
 bp_f5d_measures = Blueprint('f5d')
 
@@ -15,6 +13,7 @@ bp_f5d_measures = Blueprint('f5d')
 class F5DMeasuresContractIdView(PaginationLinksMixin, HTTPMethodView):
 
     decorators = [
+        inject_user(),
         protected(),
     ]
 
@@ -44,6 +43,7 @@ class F5DMeasuresContractIdView(PaginationLinksMixin, HTTPMethodView):
 class F5DMeasuresView(PaginationLinksMixin, HTTPMethodView):
 
     decorators = [
+        inject_user(),
         protected(),
     ]
 

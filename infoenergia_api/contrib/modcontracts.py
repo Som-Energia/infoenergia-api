@@ -14,7 +14,7 @@ def get_modcontracts(request):
         ('data_inici', '>=', request.args.get('from_', str(date.today())))
     ]
 
-    filters = get_user_filters(request, filters)
+    filters = get_contract_user_filters(request, filters)
 
     if 'to_' in request.args:
         filters.append(('data_inici', '<=', request.args['to_'][0]))

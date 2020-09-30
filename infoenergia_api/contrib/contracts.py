@@ -463,7 +463,7 @@ def get_contracts(request, contractId=None):
         ('empowering_profile_id', '=', 1)
     ]
 
-    filters = get_user_filters(request, filters)
+    filters = get_contract_user_filters(request, filters)
 
     if request.args:
         filters = get_request_filters(

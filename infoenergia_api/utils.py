@@ -69,7 +69,7 @@ def get_request_filters(erp_client, request, filters):
     return filters
 
 
-def get_user_filters(request, filters):
+def get_erp_category(request):
     user = request.ctx.user
     erp_client = request.app.erp_client
 
@@ -78,7 +78,21 @@ def get_user_filters(request, filters):
             ('name', '=', UserCategory.ENERGETICA.value),
             ('active', '=', True)
         ])
+        return category_id
+
+
+def get_contract_user_filters(request, filters):
+    category_id = get_erp_category(request)
+    if category_id:
         filters += [('soci.category_id', '=', category_id)]
+
+    return filters
+
+
+def get_invoice_user_filters(request, filters):
+    category_id = get_erp_category(request)
+    if category_id:
+        filters += [('polissa_id.soci.category_id', '=', category_id)]
 
     return filters
 
