@@ -40,7 +40,9 @@ class User(db.Entity):
     is_superuser = Required(bool)
 
     def to_dict(self):
-        attrs = ['id', 'username', 'email', 'id_partner', 'is_superuser']
+        attrs = [
+            'id', 'username', 'email', 'id_partner', 'is_superuser', 'category'
+        ]
         return {
             attr: getattr(self, attr, None)
             for attr in attrs
