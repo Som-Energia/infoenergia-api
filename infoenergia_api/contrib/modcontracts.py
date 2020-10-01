@@ -1,7 +1,7 @@
 import functools
 from datetime import date
 
-from ..utils import get_juridic_filter, get_contract_user_filters
+from ..utils import get_juridic_filter, get_invoice_user_filters
 
 
 def get_modcontracts(request):
@@ -13,7 +13,9 @@ def get_modcontracts(request):
         ('polissa_id.empowering_profile_id', '=', 1),
         ('data_inici', '>=', request.args.get('from_', str(date.today())))
     ]
-
+    filters = get_invoice_user_filters(
+        request.app.erp_client, request.ctx.user, filters
+    )
     if 'to_' in request.args:
         filters.append(('data_inici', '<=', request.args['to_'][0]))
 
@@ -27,10 +29,11 @@ def get_modcontracts(request):
             filters.append(('state', '=', 'baixa'))
         else:
             filters.extend([('active', '=', True), ('state', '=', 'actiu')])
+
     modcontract_ids = modcon_obj.search(filters, context={'active_test': False})
 
     filter_mods = [('modcontractual_activa', 'in', modcontract_ids)]
-    filter_mods = get_contract_user_filters(request, filter_mods)
+
     contracts_ids = contract_obj.search(filter_mods, context={'active_test': False})
     return contracts_ids
 

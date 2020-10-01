@@ -150,7 +150,9 @@ def get_invoices(request, contractId=None):
         ('type', '=', 'in_invoice'),
         ('polissa_id.empowering_profile_id', '=', 1),
     ]
-    filters = get_invoice_user_filters(request, filters)
+    filters = get_invoice_user_filters(
+        request.app.erp_client, request.ctx.user, filters
+    )
 
     if contractId:
         filters.append(

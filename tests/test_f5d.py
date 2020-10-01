@@ -129,57 +129,13 @@ class TestF5D(BaseTestCase):
     f5d_id = 1806168064
 
 
-    @db_session
     def test__create_f5d(self):
-        user = self.get_or_create_user(
-            username='someone',
-            password='123412345',
-            email='someone@somenergia.coop',
-            partner_id=1,
-            is_superuser=True,
-            category='partner'
-        )
-        token = self.get_auth_token(user.username, "123412345")
-        params = {
-            'to_': '2019-10-09',
-        }
-        request, _ = self.client.get(
-            '/f5d',
-            params=params,
-            headers={
-                'Authorization': 'Bearer {}'.format(token)
-            },
-            timeout=None
-        )
-
-        f5d = F5D(self.f5d_id, request)
+        f5d = F5D(self.f5d_id)
         self.assertIsInstance(f5d, F5D)
-        self.delete_user(user)
 
 
-    @db_session
     def test__get_measurements(self):
-        user = self.get_or_create_user(
-            username='someone',
-            password='123412345',
-            email='someone@somenergia.coop',
-            partner_id=1,
-            is_superuser=True,
-            category='partner'
-        )
-        token = self.get_auth_token(user.username, "123412345")
-        params = {
-            'to_': '2019-10-09',
-        }
-        request, _ = self.client.get(
-            '/f5d',
-            params=params,
-            headers={
-                'Authorization': 'Bearer {}'.format(token)
-            },
-            timeout=None
-        )
-        f5d = F5D(self.f5d_id, request)
+        f5d = F5D(self.f5d_id)
         data = f5d.measurements
         self.assertDictEqual(
             data,
@@ -197,7 +153,6 @@ class TestF5D(BaseTestCase):
                 'source': 1,
                 'validated': True
             })
-        self.delete_user(user)
 
     @db_session
     def test__valid_empowering(self):
@@ -209,19 +164,22 @@ class TestF5D(BaseTestCase):
             is_superuser=True,
             category='partner'
         )
-        token = self.get_auth_token(user.username, "123412345")
-        params = {
-            'to_': '2019-10-09',
-        }
-        request, _ = self.client.get(
-            '/f5d',
-            params=params,
-            headers={
-                'Authorization': 'Bearer {}'.format(token)
-            },
-            timeout=None
-        )
-        f5d = F5D(self.f5d_id, request)
-        valid = f5d.is_valid_empowering
+        f5d = F5D(self.f5d_id)
+        valid = f5d.is_valid_empowering(user)
         self.assertEqual(True, valid)
+        self.delete_user(user)
+
+    @db_session
+    def test__valid_empowering_without_permission(self):
+        user = self.get_or_create_user(
+            username='someone',
+            password='123412345',
+            email='someone@somenergia.coop',
+            partner_id=1,
+            is_superuser=False,
+            category='Energética'
+        )
+        f5d = F5D(self.f5d_id)
+        invalid = f5d.is_valid_empowering(user)
+        self.assertFalse(invalid)
         self.delete_user(user)

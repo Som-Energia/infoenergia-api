@@ -22,6 +22,7 @@ class F5DMeasuresContractIdView(PaginationLinksMixin, HTTPMethodView):
     async def get(self, request, contractId, user):
         logger.info("Getting f5d measures for contract: %s", contractId)
         request.ctx.user = user
+
         f5d_ids, links = await self.paginate_results(
             request,
             function=async_get_f5d, contractId=contractId
@@ -29,7 +30,7 @@ class F5DMeasuresContractIdView(PaginationLinksMixin, HTTPMethodView):
 
         f5d_measure_json = [
             await request.app.loop.run_in_executor(
-                request.app.thread_pool, lambda: F5D(f5d_id, request).f5d_measures
+                request.app.thread_pool, lambda: F5D(f5d_id).f5d_measures(user)
             ) for f5d_id in f5d_ids
         ]
 
@@ -51,8 +52,8 @@ class F5DMeasuresView(PaginationLinksMixin, HTTPMethodView):
     endpoint_name = 'f5d.get_f5d_measures'
 
     async def get(self, request, user):
-        logger.info("Getting f5d measures")
         request.ctx.user = user
+        logger.info("Getting f5d measures")
         f5d_ids, links = await self.paginate_results(
             request,
             function=async_get_f5d
@@ -60,7 +61,7 @@ class F5DMeasuresView(PaginationLinksMixin, HTTPMethodView):
 
         f5d_measure_json = [
             await request.app.loop.run_in_executor(
-                request.app.thread_pool, lambda: F5D(f5d_id, request).f5d_measures
+                request.app.thread_pool, lambda: F5D(f5d_id).f5d_measures(user)
             ) for f5d_id in f5d_ids
         ]
 

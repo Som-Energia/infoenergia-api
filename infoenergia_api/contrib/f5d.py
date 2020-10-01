@@ -12,13 +12,12 @@ from ..utils import (get_cch_filters, get_request_filters, make_uuid, get_contra
 
 class F5D(object):
 
-    def __init__(self, f5d_id, request):
+    def __init__(self, f5d_id):
         from infoenergia_api.app import app
 
         self._erp = app.erp_client
         self._mongo = app.mongo_client.somenergia
         self._F5D = self._mongo.tg_cchfact
-        self._request = request
 
         for name, value in self._F5D.find_one({"id": f5d_id}).items():
             setattr(self, name, value)
@@ -50,8 +49,8 @@ class F5D(object):
                 'dateUpdate': (self.update_at).strftime("%Y-%m-%d %H:%M:%S")
         }
 
-    @property
-    def is_valid_empowering(self):
+
+    def is_valid_empowering(self, user):
         contract_obj = self._erp.model('giscedata.polissa')
 
         filters = [
@@ -60,15 +59,13 @@ class F5D(object):
                 ('empowering_profile_id', '=', 1),
                 ('cups', '=', self.name)
             ]
-
-        filters = get_contract_user_filters(self._request, filters)
+        filters = get_contract_user_filters(self._erp, user, filters)
 
         contract = contract_obj.search(filters)
         return bool(contract)
 
-    @property
-    def f5d_measures(self):
-        if self.is_valid_empowering:
+    def f5d_measures(self, user):
+        if self.is_valid_empowering(user):
             return {
             'meteringPointId': make_uuid('giscedata.cups.ps', self.name),
             'measurements': self.measurements
@@ -84,7 +81,9 @@ def get_cups(request, contractId=None):
         ('name', '=', contractId)
     ]
 
-    filters = get_contract_user_filters(request, filters)
+    filters = get_contract_user_filters(
+        request.app.erp_client, request.ctx.user, filters
+    )
 
     if request.args:
         filters = get_request_filters(
