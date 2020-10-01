@@ -24,6 +24,7 @@ class F1MeasuresContractIdView(PaginationLinksMixin, HTTPMethodView):
     async def get(self, request, contractId, user):
         logger.info("Getting f1 measures for contract: %s", contractId)
         request.ctx.user = user
+
         invoices_ids, links = await self.paginate_results(
             request, function=async_get_invoices, contractId=contractId
         )
