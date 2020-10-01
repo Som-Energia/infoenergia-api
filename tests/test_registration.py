@@ -14,7 +14,8 @@ class TestLogin(BaseTestCase):
             password=pbkdf2_sha256.hash("12341234"),
             email='someone@somenergia.coop',
             id_partner=1,
-            is_superuser=True
+            is_superuser=True,
+            category='partner'
         )
         auth_body = {
             'username': user.username,
