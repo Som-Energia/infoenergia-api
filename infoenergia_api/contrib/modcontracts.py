@@ -14,8 +14,6 @@ def get_modcontracts(request):
         ('data_inici', '>=', request.args.get('from_', str(date.today())))
     ]
 
-    filters = get_contract_user_filters(request, filters)
-
     if 'to_' in request.args:
         filters.append(('data_inici', '<=', request.args['to_'][0]))
 
@@ -30,7 +28,10 @@ def get_modcontracts(request):
         else:
             filters.extend([('active', '=', True), ('state', '=', 'actiu')])
     modcontract_ids = modcon_obj.search(filters, context={'active_test': False})
-    contracts_ids = contract_obj.search([('modcontractual_activa', 'in', modcontract_ids)], context={'active_test': False})
+
+    filter_mods = [('modcontractual_activa', 'in', modcontract_ids)]
+    filter_mods = get_contract_user_filters(request, filter_mods)
+    contracts_ids = contract_obj.search(filter_mods, context={'active_test': False})
     return contracts_ids
 
 
