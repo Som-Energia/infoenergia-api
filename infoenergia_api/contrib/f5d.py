@@ -12,12 +12,13 @@ from ..utils import (get_cch_filters, get_request_filters, make_uuid, get_contra
 
 class F5D(object):
 
-    def __init__(self, f5d_id):
+    def __init__(self, f5d_id, request):
         from infoenergia_api.app import app
 
         self._erp = app.erp_client
         self._mongo = app.mongo_client.somenergia
         self._F5D = self._mongo.tg_cchfact
+        self._request = request
 
         for name, value in self._F5D.find_one({"id": f5d_id}).items():
             setattr(self, name, value)
@@ -59,7 +60,8 @@ class F5D(object):
                 ('empowering_profile_id', '=', 1),
                 ('cups', '=', self.name)
             ]
-        filters = get_contract_user_filters()
+
+        filters = get_contract_user_filters(self._request, filters)
 
         contract = contract_obj.search(filters)
         return bool(contract)
