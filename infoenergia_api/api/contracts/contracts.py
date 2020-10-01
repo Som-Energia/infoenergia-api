@@ -1,26 +1,26 @@
-import asyncio
-
 from sanic import Blueprint
 from sanic.log import logger
 from sanic.response import json
 from sanic.views import HTTPMethodView
-from sanic_jwt.decorators import protected
+from sanic_jwt.decorators import protected, inject_user
 
 from infoenergia_api.contrib.contracts import async_get_contracts, Contract
-from infoenergia_api.contrib import Pagination, PaginationLinksMixin
+from infoenergia_api.contrib import PaginationLinksMixin
 
 bp_contracts = Blueprint('contracts')
 
 
 class ContractsIdView(PaginationLinksMixin, HTTPMethodView):
     decorators = [
+        inject_user(),
         protected(),
     ]
 
     endpoint_name = 'contracts.get_contract_by_id'
 
-    async def get(self, request, contractId):
+    async def get(self, request, contractId, user):
         logger.info("Getting contracts")
+        request.ctx.user = user
         contracts_ids, links = await self.paginate_results(
             request, function=async_get_contracts, contractId=contractId
         )
@@ -40,13 +40,15 @@ class ContractsIdView(PaginationLinksMixin, HTTPMethodView):
 
 class ContractsView(PaginationLinksMixin, HTTPMethodView):
     decorators = [
+        inject_user(),
         protected(),
     ]
 
     endpoint_name = 'contracts.get_contracts'
 
-    async def get(self, request):
+    async def get(self, request, user):
         logger.info("Getting contracts")
+        request.ctx.user = user
         contracts_ids, links = await self.paginate_results(
             request,
             function=async_get_contracts

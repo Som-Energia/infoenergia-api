@@ -1,14 +1,12 @@
 import functools
 from datetime import datetime
 
-from sanic.log import logger
-
 from infoenergia_api.contrib.climatic_zones import ine_to_zc
 from infoenergia_api.contrib.postal_codes import ine_to_dp
 
 from ..tasks import find_changes
 from ..utils import (get_id_for_contract, get_request_filters,
-                     make_utc_timestamp, make_uuid)
+                     get_contract_user_filters, make_utc_timestamp, make_uuid)
 
 
 class Contract(object):
@@ -37,7 +35,7 @@ class Contract(object):
         from infoenergia_api.app import app
 
         self._erp = app.erp_client
-        self._Polissa= self._erp.model('giscedata.polissa')
+        self._Polissa = self._erp.model('giscedata.polissa')
         for name, value in self._Polissa.read(contract_id, self.FIELDS).items():
             setattr(self, name, value)
 
@@ -409,7 +407,6 @@ class Contract(object):
         else:
             return True
 
-
     @property
     def juridicType(self):
         """
@@ -465,6 +462,10 @@ def get_contracts(request, contractId=None):
         ('state', '=', 'activa'),
         ('empowering_profile_id', '=', 1)
     ]
+
+    filters = get_contract_user_filters(
+        request.app.erp_client, request.ctx.user, filters
+    )
 
     if request.args:
         filters = get_request_filters(

@@ -15,7 +15,8 @@ class TestBaseContracts(BaseTestCase):
             password='123412345',
             email='someone@somenergia.coop',
             partner_id=1,
-            is_superuser=True
+            is_superuser=True,
+            category='partner'
         )
         token = self.get_auth_token(user.username, "123412345")
         _, response = self.client.get(
@@ -43,7 +44,8 @@ class TestBaseContracts(BaseTestCase):
             password='123412345',
             email='someone@somenergia.coop',
             partner_id=1,
-            is_superuser=True
+            is_superuser=True,
+            category='partner'
         )
         token = self.get_auth_token(user.username, "123412345")
         params = {
@@ -71,6 +73,63 @@ class TestBaseContracts(BaseTestCase):
         )
         self.delete_user(user)
 
+    @db_session
+    def test__get_contracts_without_permission(self):
+        user = self.get_or_create_user(
+            username='someone',
+            password='123412345',
+            email='someone@somenergia.coop',
+            partner_id=1,
+            is_superuser=False,
+            category='Energética'
+        )
+        token = self.get_auth_token(user.username, "123412345")
+        _, response = self.client.get(
+            '/contracts/' + self.json4test['contract_id_2A']['contractId'],
+            headers={
+                'Authorization': 'Bearer {}'.format(token)
+            },
+            timeout=None
+        )
+
+        self.assertEqual(response.status, 200)
+        self.assertDictEqual(
+            response.json,
+            {
+                'count': 0,
+                'data': [],
+            }
+        )
+        self.delete_user(user)
+
+    @db_session
+    def test__get_contract_energetica(self):
+        user = self.get_or_create_user(
+            username='someone',
+            password='123412345',
+            email='someone@somenergia.coop',
+            partner_id=1,
+            is_superuser=False,
+            category='Energética'
+        )
+        token = self.get_auth_token(user.username, "123412345")
+        _, response = self.client.get(
+            '/contracts/' + self.json4test['contract_energetica']['contractId'],
+            headers={
+                'Authorization': 'Bearer {}'.format(token)
+            },
+            timeout=None
+        )
+
+        self.assertEqual(response.status, 200)
+        self.assertDictEqual(
+            response.json,
+            {
+                'count': 1,
+                'data': self.json4test['contract_energetica']['contract_data'],
+            }
+        )
+        self.delete_user(user)
 
 class TestContracts(BaseTestCase):
 

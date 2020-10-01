@@ -1,18 +1,11 @@
 import functools
 from datetime import date
-from sanic.log import logger
 
-from ..tasks import (get_building_details, get_contract_address,
-                     get_cups_to_climaticZone, get_current_power,
-                     get_current_tariff, get_devices, get_eprofile,
-                     get_experimentalgroup, get_powerHistory, get_report,
-                     get_service, get_tariffHistory, get_tertiaryPower,
-                     get_version)
-from ..utils import get_juridic_filter
+from ..utils import get_juridic_filter, get_invoice_user_filters
 
 
 def get_modcontracts(request):
-    modcon_obj =  request.app.erp_client.model('giscedata.polissa.modcontractual')
+    modcon_obj = request.app.erp_client.model('giscedata.polissa.modcontractual')
     contract_obj = request.app.erp_client.model('giscedata.polissa')
 
     filters = [
@@ -20,7 +13,9 @@ def get_modcontracts(request):
         ('polissa_id.empowering_profile_id', '=', 1),
         ('data_inici', '>=', request.args.get('from_', str(date.today())))
     ]
-
+    filters = get_invoice_user_filters(
+        request.app.erp_client, request.ctx.user, filters
+    )
     if 'to_' in request.args:
         filters.append(('data_inici', '<=', request.args['to_'][0]))
 
@@ -34,8 +29,12 @@ def get_modcontracts(request):
             filters.append(('state', '=', 'baixa'))
         else:
             filters.extend([('active', '=', True), ('state', '=', 'actiu')])
+
     modcontract_ids = modcon_obj.search(filters, context={'active_test': False})
-    contracts_ids = contract_obj.search([('modcontractual_activa', 'in', modcontract_ids)], context={'active_test': False})
+
+    filter_mods = [('modcontractual_activa', 'in', modcontract_ids)]
+
+    contracts_ids = contract_obj.search(filter_mods, context={'active_test': False})
     return contracts_ids
 
 

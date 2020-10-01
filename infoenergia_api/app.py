@@ -6,7 +6,7 @@ from erppeek import Client
 from pymongo import MongoClient
 from sanic import Sanic
 from sanic.log import logger
-from sanic_jwt import Initialize
+from sanic_jwt import Initialize as InitializeJWT
 
 from infoenergia_api.api.contracts import bp_contracts
 from infoenergia_api.api.f1_measures import bp_f1_measures
@@ -14,7 +14,7 @@ from infoenergia_api.api.f5d import bp_f5d_measures
 from infoenergia_api.api.modcontracts import bp_modcontracts
 from infoenergia_api.api.registration.login import (InvitationUrlToken,
                                                     authenticate, extra_views)
-from infoenergia_api.api.registration.models import db
+from infoenergia_api.api.registration.models import db, retrieve_user
 
 
 def build_app():
@@ -23,7 +23,12 @@ def build_app():
     try:
         app.config.from_object(config)
 
-        Initialize(app, authenticate=authenticate, class_views=extra_views)
+        InitializeJWT(
+            app,
+            authenticate=authenticate,
+            retrieve_user=retrieve_user,
+            class_views=extra_views
+        )
         app.blueprint(bp_contracts)
         app.blueprint(bp_f1_measures)
         app.blueprint(bp_modcontracts)
@@ -38,7 +43,6 @@ def build_app():
         app.thread_pool = futures.ThreadPoolExecutor(app.config.MAX_THREADS)
         app.erp_client = Client(**app.config.ERP_CONF)
         app.mongo_client = MongoClient(app.config.MONGO_CONF)
-
 
         db.bind(
             provider='sqlite',

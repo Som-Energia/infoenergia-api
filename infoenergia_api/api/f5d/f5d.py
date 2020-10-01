@@ -1,13 +1,11 @@
-from base64 import urlsafe_b64encode, urlsafe_b64decode
-
 from sanic import Blueprint
 from sanic.log import logger
 from sanic.response import json
 from sanic.views import HTTPMethodView
-from sanic_jwt.decorators import protected
+from sanic_jwt.decorators import inject_user, protected
 
 from infoenergia_api.contrib.f5d import async_get_f5d, F5D
-from infoenergia_api.contrib import Pagination, PaginationLinksMixin
+from infoenergia_api.contrib import PaginationLinksMixin
 
 bp_f5d_measures = Blueprint('f5d')
 
@@ -15,13 +13,16 @@ bp_f5d_measures = Blueprint('f5d')
 class F5DMeasuresContractIdView(PaginationLinksMixin, HTTPMethodView):
 
     decorators = [
+        inject_user(),
         protected(),
     ]
 
     endpoint_name = 'f5d.get_f5d_measures_by_contract_id'
 
-    async def get(self, request, contractId):
+    async def get(self, request, contractId, user):
         logger.info("Getting f5d measures for contract: %s", contractId)
+        request.ctx.user = user
+
         f5d_ids, links = await self.paginate_results(
             request,
             function=async_get_f5d, contractId=contractId
@@ -29,7 +30,7 @@ class F5DMeasuresContractIdView(PaginationLinksMixin, HTTPMethodView):
 
         f5d_measure_json = [
             await request.app.loop.run_in_executor(
-                request.app.thread_pool, lambda: F5D(f5d_id).f5d_measures
+                request.app.thread_pool, lambda: F5D(f5d_id).f5d_measures(user)
             ) for f5d_id in f5d_ids
         ]
 
@@ -44,12 +45,14 @@ class F5DMeasuresContractIdView(PaginationLinksMixin, HTTPMethodView):
 class F5DMeasuresView(PaginationLinksMixin, HTTPMethodView):
 
     decorators = [
+        inject_user(),
         protected(),
     ]
 
     endpoint_name = 'f5d.get_f5d_measures'
 
-    async def get(self, request):
+    async def get(self, request, user):
+        request.ctx.user = user
         logger.info("Getting f5d measures")
         f5d_ids, links = await self.paginate_results(
             request,
@@ -58,7 +61,7 @@ class F5DMeasuresView(PaginationLinksMixin, HTTPMethodView):
 
         f5d_measure_json = [
             await request.app.loop.run_in_executor(
-                request.app.thread_pool, lambda: F5D(f5d_id).f5d_measures
+                request.app.thread_pool, lambda: F5D(f5d_id).f5d_measures(user)
             ) for f5d_id in f5d_ids
         ]
 

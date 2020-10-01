@@ -7,7 +7,7 @@ from sanic.request import RequestParameters
 
 from sanic.log import logger
 
-from ..utils import (get_cch_filters, get_request_filters, make_uuid)
+from ..utils import (get_cch_filters, get_request_filters, make_uuid, get_contract_user_filters)
 
 
 class F5D(object):
@@ -21,7 +21,6 @@ class F5D(object):
 
         for name, value in self._F5D.find_one({"id": f5d_id}).items():
             setattr(self, name, value)
-
 
     @property
     def dateCch(self):
@@ -50,8 +49,8 @@ class F5D(object):
                 'dateUpdate': (self.update_at).strftime("%Y-%m-%d %H:%M:%S")
         }
 
-    @property
-    def is_valid_empowering(self):
+
+    def is_valid_empowering(self, user):
         contract_obj = self._erp.model('giscedata.polissa')
 
         filters = [
@@ -60,13 +59,13 @@ class F5D(object):
                 ('empowering_profile_id', '=', 1),
                 ('cups', '=', self.name)
             ]
+        filters = get_contract_user_filters(self._erp, user, filters)
 
         contract = contract_obj.search(filters)
         return bool(contract)
 
-    @property
-    def f5d_measures(self):
-        if self.is_valid_empowering:
+    def f5d_measures(self, user):
+        if self.is_valid_empowering(user):
             return {
             'meteringPointId': make_uuid('giscedata.cups.ps', self.name),
             'measurements': self.measurements
@@ -81,6 +80,10 @@ def get_cups(request, contractId=None):
         ('empowering_profile_id', '=', 1),
         ('name', '=', contractId)
     ]
+
+    filters = get_contract_user_filters(
+        request.app.erp_client, request.ctx.user, filters
+    )
 
     if request.args:
         filters = get_request_filters(

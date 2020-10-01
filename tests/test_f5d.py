@@ -20,7 +20,8 @@ class TestBaseF5D(BaseTestCase):
             password='123412345',
             email='someone@somenergia.coop',
             partner_id=1,
-            is_superuser=True
+            is_superuser=True,
+            category='partner'
         )
         token = self.get_auth_token(user.username, "123412345")
         params = {
@@ -59,7 +60,8 @@ class TestBaseF5D(BaseTestCase):
             password='123412345',
             email='someone@somenergia.coop',
             partner_id=1,
-            is_superuser=True
+            is_superuser=True,
+            category='partner'
         )
         token = self.get_auth_token(user.username, "123412345")
         params = {
@@ -87,10 +89,45 @@ class TestBaseF5D(BaseTestCase):
         self.delete_user(user)
 
 
+    @db_session
+    def test__get_f5d_without_permission(self):
+        user = self.get_or_create_user(
+            username='someone',
+            password='123412345',
+            email='someone@somenergia.coop',
+            partner_id=1,
+            is_superuser=False,
+            category='Energética'
+        )
+        token = self.get_auth_token(user.username, "123412345")
+        params = {
+            'from_': '2018-11-16',
+            'to_': '2018-12-16'
+        }
+        _, response = self.client.get(
+            '/f5d/' + self.json4test['f5d']['contractId'],
+            params=params,
+            headers={
+                'Authorization': 'Bearer {}'.format(token)
+            },
+            timeout=None
+        )
+
+        self.assertEqual(response.status, 200)
+        self.assertDictEqual(
+            response.json,
+            {
+                'count': 0,
+                'data': []
+            }
+        )
+        self.delete_user(user)
+
 class TestF5D(BaseTestCase):
 
     f5d_id_empty = 4
     f5d_id = 1806168064
+
 
     def test__create_f5d(self):
         f5d = F5D(self.f5d_id)
@@ -117,7 +154,32 @@ class TestF5D(BaseTestCase):
                 'validated': True
             })
 
+    @db_session
     def test__valid_empowering(self):
+        user = self.get_or_create_user(
+            username='someone',
+            password='123412345',
+            email='someone@somenergia.coop',
+            partner_id=1,
+            is_superuser=True,
+            category='partner'
+        )
         f5d = F5D(self.f5d_id)
-        valid = f5d.is_valid_empowering
+        valid = f5d.is_valid_empowering(user)
         self.assertEqual(True, valid)
+        self.delete_user(user)
+
+    @db_session
+    def test__valid_empowering_without_permission(self):
+        user = self.get_or_create_user(
+            username='someone',
+            password='123412345',
+            email='someone@somenergia.coop',
+            partner_id=1,
+            is_superuser=False,
+            category='Energética'
+        )
+        f5d = F5D(self.f5d_id)
+        invalid = f5d.is_valid_empowering(user)
+        self.assertFalse(invalid)
+        self.delete_user(user)
