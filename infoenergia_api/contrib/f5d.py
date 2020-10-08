@@ -101,7 +101,7 @@ def get_f5d(request, contractId=None):
 
     if contractId:
         cups = get_cups(request, contractId)
-        filters.update({"name": { "$in": cups }})
+        filters.update({"name": { '$regex': '^{}'.format(cups[:20])}})
 
     if request.args:
         filters = get_cch_filters(request, filters)
