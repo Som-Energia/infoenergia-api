@@ -50,7 +50,7 @@ class F5D(object):
         }
 
 
-    def is_valid_empowering(self, user):
+    def is_valid_contract(self, user):
         contract_obj = self._erp.model('giscedata.polissa')
 
         filters = [
@@ -60,13 +60,14 @@ class F5D(object):
                 ('cups', 'ilike', self.name)
             ]
         filters = get_contract_user_filters(self._erp, user, filters)
-
         contract = contract_obj.search(filters)
-        return bool(contract)
+        if contract:
+            return contract_obj.read(contract, ['name'])[0]['name']
 
     def f5d_measures(self, user):
-        if self.is_valid_empowering(user):
+        if self.is_valid_contract(user):
             return {
+            'contractId': self.is_valid_contract(user),
             'meteringPointId': make_uuid('giscedata.cups.ps', self.name),
             'measurements': self.measurements
             }
