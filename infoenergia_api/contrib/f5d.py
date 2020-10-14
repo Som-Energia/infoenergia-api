@@ -1,5 +1,6 @@
 import functools
 import re
+from bson.objectid import ObjectId
 from datetime import datetime, timedelta
 import pytz
 
@@ -18,8 +19,7 @@ class F5D(object):
         self._erp = app.erp_client
         self._mongo = app.mongo_client.somenergia
         self._F5D = self._mongo.tg_cchfact
-
-        for name, value in self._F5D.find_one({"id": f5d_id}).items():
+        for name, value in self._F5D.find_one({"_id": ObjectId(str(f5d_id))}).items():
             setattr(self, name, value)
 
     @property
@@ -57,7 +57,7 @@ class F5D(object):
                 ('active', '=', True),
                 ('state', '=', 'activa'),
                 ('empowering_profile_id', '=', 1),
-                ('cups', '=', self.name)
+                ('cups', 'ilike', self.name)
             ]
         filters = get_contract_user_filters(self._erp, user, filters)
 
@@ -101,12 +101,14 @@ def get_f5d(request, contractId=None):
 
     if contractId:
         cups = get_cups(request, contractId)
-        filters.update({"name": { '$regex': '^{}'.format(cups[:20])}})
+        if not cups:
+            return []
+        filters.update({"name": { '$regex': '^{}'.format(cups[0][:20])}})
 
     if request.args:
         filters = get_cch_filters(request, filters)
 
-    return [f5d['id'] for f5d in tg_cchfact.find(filters) if f5d.get('id')]
+    return [f5d['_id'] for f5d in tg_cchfact.find(filters) if f5d.get('_id')]
 
 
 async def async_get_f5d(request, id_contract=None):
