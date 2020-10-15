@@ -3,7 +3,8 @@ from concurrent import futures
 
 import aioredis
 from erppeek import Client
-from pymongo import MongoClient
+from motor.motor_asyncio import AsyncIOMotorClient
+from pool_transport import PoolTransport
 from sanic import Sanic
 from sanic.log import logger
 from sanic_jwt import Initialize as InitializeJWT
@@ -41,8 +42,10 @@ def build_app():
         )
 
         app.thread_pool = futures.ThreadPoolExecutor(app.config.MAX_THREADS)
-        app.erp_client = Client(**app.config.ERP_CONF)
-        app.mongo_client = MongoClient(app.config.MONGO_CONF)
+        app.erp_client = Client(
+            transport=PoolTransport(secure=app.config.TRANSPORT_POOL_CONF['secure']),
+            **app.config.ERP_CONF
+        )
 
         db.bind(
             provider='sqlite',
@@ -70,6 +73,7 @@ app = build_app()
 @app.listener('before_server_start')
 async def server_init(app, loop):
     app.redis = await aioredis.create_redis_pool(app.config.REDIS_CONF)
+    app.mongo_client = AsyncIOMotorClient(app.config.MONGO_CONF, io_loop=loop)
 
 
 #@app.listener('after_server_stop')
