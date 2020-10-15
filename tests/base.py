@@ -15,6 +15,7 @@ from infoenergia_api.api.registration.models import User
 class BaseTestCase(TestCase):
 
     def setUp(self):
+        self.app = app
         self.client = app.test_client
         self.maxDiff = None
         if app.thread_pool._shutdown:

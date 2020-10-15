@@ -5,6 +5,9 @@ test_env.read_env(os.path.join(BASE_DIR, 'tests/.env.test'), override=True)
 
 ERP_CONF = test_env.json('ERP_CONF')
 
+# Transport Pool configuration
+TRANSPORT_POOL_CONF = env.json('TRANSPORT_POOL_CONF')
+
 MONGO_CONF = test_env.str('MONGO_CONF')
 
 DB_CONF = test_env.json('DATABASE_CONF')

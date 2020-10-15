@@ -160,3 +160,18 @@ def get_cch_filters(request, filters):
             }})
 
     return filters
+
+
+def get_contract_id(erp_client, cups, user):
+    contract_obj = erp_client.model('giscedata.polissa')
+
+    filters = [
+            ('active', '=', True),
+            ('state', '=', 'activa'),
+            ('empowering_profile_id', '=', 1),
+            ('cups', 'ilike', cups)
+        ]
+    filters = get_contract_user_filters(erp_client, user, filters)
+    contract = contract_obj.search(filters)
+    if contract:
+        return contract_obj.read(contract, ['name'])[0]['name']

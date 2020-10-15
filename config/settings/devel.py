@@ -3,7 +3,10 @@ from .base import *
 # ERP configuration
 ERP_CONF = env.json('ERP_CONF')
 
-#Mongo configuration
+# Transport Pool configuration
+TRANSPORT_POOL_CONF = env.json('TRANSPORT_POOL_CONF')
+
+# Mongo configuration
 MONGO_CONF = env.str('MONGO_CONF')
 
 # DATABASE configuration
