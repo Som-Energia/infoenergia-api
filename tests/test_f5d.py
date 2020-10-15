@@ -1,12 +1,10 @@
 import asyncio
-
 from unittest import mock
 
-from passlib.hash import pbkdf2_sha256
+from motor.motor_asyncio import AsyncIOMotorClient
 from pony.orm import db_session
 
 from tests.base import BaseTestCase
-
 from infoenergia_api.contrib import F5D
 
 
@@ -129,8 +127,8 @@ class TestF5D(BaseTestCase):
 
     def setUp(self):
         super().setUp()
+        self.app.mongo_client = AsyncIOMotorClient(self.app.config.MONGO_CONF)
         self.loop = asyncio.get_event_loop()
-        self.f5d_id_empty = 4
         self.f5d_id = '5f87b09dcb2f4772124f52fc'
 
     def test__create_f5d(self):
@@ -156,33 +154,3 @@ class TestF5D(BaseTestCase):
                 'source': 1,
                 'validated': True
             })
-
-    @db_session
-    def test__valid_contract(self):
-        user = self.get_or_create_user(
-            username='someone',
-            password='123412345',
-            email='someone@somenergia.coop',
-            partner_id=1,
-            is_superuser=True,
-            category='partner'
-        )
-        f5d = self.loop.run_until_complete(F5D.create(self.f5d_id))
-        valid = f5d.is_valid_contract(user)
-        self.assertTrue(valid)
-        self.delete_user(user)
-
-    @db_session
-    def test__valid_contract_without_permission(self):
-        user = self.get_or_create_user(
-            username='someone',
-            password='123412345',
-            email='someone@somenergia.coop',
-            partner_id=1,
-            is_superuser=False,
-            category='Energética'
-        )
-        f5d = self.loop.run_until_complete(F5D.create(self.f5d_id))
-        invalid = f5d.is_valid_contract(user)
-        self.assertFalse(invalid)
-        self.delete_user(user)

@@ -3,8 +3,9 @@ from datetime import timedelta
 import pytz
 
 from ..utils import (
-    get_cch_filters, get_request_filters, make_uuid, get_contract_user_filters
+    get_cch_filters, make_uuid, get_contract_id
 )
+from ..tasks import get_cups
 
 
 class F5D(object):
@@ -34,65 +35,28 @@ class F5D(object):
     @property
     def measurements(self):
         return {
-                'season': self.season,
-                'r1': self.r1,
-                'r2': self.r2,
-                'r3': self.r3,
-                'r4': self.r4,
-                'ai': self.ai,
-                'ao': self.ao,
-                'source': self.source,
-                'validated': self.validated,
-                'date': self.dateCch,
-                'dateDownload': (self.create_at).strftime("%Y-%m-%d %H:%M:%S"),
-                'dateUpdate': (self.update_at).strftime("%Y-%m-%d %H:%M:%S")
+            'season': self.season,
+            'r1': self.r1,
+            'r2': self.r2,
+            'r3': self.r3,
+            'r4': self.r4,
+            'ai': self.ai,
+            'ao': self.ao,
+            'source': self.source,
+            'validated': self.validated,
+            'date': self.dateCch,
+            'dateDownload': (self.create_at).strftime("%Y-%m-%d %H:%M:%S"),
+            'dateUpdate': (self.update_at).strftime("%Y-%m-%d %H:%M:%S")
         }
 
-
-    def is_valid_contract(self, user):
-        contract_obj = self._erp.model('giscedata.polissa')
-
-        filters = [
-                ('active', '=', True),
-                ('state', '=', 'activa'),
-                ('empowering_profile_id', '=', 1),
-                ('cups', 'ilike', self.name)
-            ]
-        filters = get_contract_user_filters(self._erp, user, filters)
-        contract = contract_obj.search(filters)
-        if contract:
-            return contract_obj.read(contract, ['name'])[0]['name']
-
     def f5d_measures(self, user):
-        if self.is_valid_contract(user):
+        contractId = get_contract_id(self._erp, self.name, user)
+        if contractId:
             return {
-            'contractId': self.is_valid_contract(user),
-            'meteringPointId': make_uuid('giscedata.cups.ps', self.name),
-            'measurements': self.measurements
+                'contractId': contractId,
+                'meteringPointId': make_uuid('giscedata.cups.ps', self.name),
+                'measurements': self.measurements
             }
-
-
-def get_cups(request, contractId=None):
-    contract_obj = request.app.erp_client.model('giscedata.polissa')
-    filters = [
-        ('active', '=', True),
-        ('state', '=', 'activa'),
-        ('empowering_profile_id', '=', 1),
-        ('name', '=', contractId)
-    ]
-
-    filters = get_contract_user_filters(
-        request.app.erp_client, request.ctx.user, filters
-    )
-
-    if request.args:
-        filters = get_request_filters(
-            request.app.erp_client,
-            request,
-            filters,
-        )
-    contracts = contract_obj.search(filters)
-    return [contract_obj.read(contract, ['cups'])['cups'][1] for contract in contracts]
 
 
 async def async_get_f5d(request, contractId=None):
