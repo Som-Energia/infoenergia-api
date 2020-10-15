@@ -1,26 +1,25 @@
-import functools
-import re
 from bson.objectid import ObjectId
-from datetime import datetime, timedelta
+from datetime import timedelta
 import pytz
 
-from sanic.request import RequestParameters
-
-from sanic.log import logger
-
-from ..utils import (get_cch_filters, get_request_filters, make_uuid, get_contract_user_filters)
+from ..utils import (
+    get_cch_filters, get_request_filters, make_uuid, get_contract_user_filters
+)
 
 
 class F5D(object):
 
-    def __init__(self, f5d_id):
+    @classmethod
+    async def create(cls, f5d_id):
         from infoenergia_api.app import app
-
+        self = cls()
         self._erp = app.erp_client
         self._mongo = app.mongo_client.somenergia
         self._F5D = self._mongo.tg_cchfact
-        for name, value in self._F5D.find_one({"_id": ObjectId(str(f5d_id))}).items():
+        curve = await self._F5D.find_one({"_id": ObjectId(str(f5d_id))})
+        for name, value in curve.items():
             setattr(self, name, value)
+        return self
 
     @property
     def dateCch(self):
@@ -96,7 +95,7 @@ def get_cups(request, contractId=None):
     return [contract_obj.read(contract, ['cups'])['cups'][1] for contract in contracts]
 
 
-def get_f5d(request, contractId=None):
+async def async_get_f5d(request, contractId=None):
     tg_cchfact = request.app.mongo_client.somenergia.tg_cchfact
     filters = {}
 
@@ -104,20 +103,9 @@ def get_f5d(request, contractId=None):
         cups = get_cups(request, contractId)
         if not cups:
             return []
-        filters.update({"name": { '$regex': '^{}'.format(cups[0][:20])}})
+        filters.update({"name": {'$regex': '^{}'.format(cups[0][:20])}})
 
     if request.args:
         filters = get_cch_filters(request, filters)
 
-    return [f5d['_id'] for f5d in tg_cchfact.find(filters) if f5d.get('_id')]
-
-
-async def async_get_f5d(request, id_contract=None):
-    try:
-        f5ds = await request.app.loop.run_in_executor(
-            request.app.thread_pool,
-            functools.partial(get_f5d, request, id_contract)
-        )
-    except Exception as e:
-        raise e
-    return f5ds
+    return [f5d['_id'] async for f5d in tg_cchfact.find(filters) if f5d.get('_id')]

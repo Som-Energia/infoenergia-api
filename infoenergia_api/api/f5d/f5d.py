@@ -29,9 +29,7 @@ class F5DMeasuresContractIdView(PaginationLinksMixin, HTTPMethodView):
         )
 
         f5d_measure_json = [
-            await request.app.loop.run_in_executor(
-                request.app.thread_pool, lambda: F5D(f5d_id).f5d_measures(user)
-            ) for f5d_id in f5d_ids
+            (await F5D.create(f5d_id)).f5d_measures(user) for f5d_id in f5d_ids
         ]
 
         response = {
@@ -60,9 +58,7 @@ class F5DMeasuresView(PaginationLinksMixin, HTTPMethodView):
         )
 
         f5d_measure_json = [
-            await request.app.loop.run_in_executor(
-                request.app.thread_pool, lambda: F5D(f5d_id).f5d_measures(user)
-            ) for f5d_id in f5d_ids
+            (await F5D.create(f5d_id)).f5d_measures(user) for f5d_id in f5d_ids
         ]
 
         response = {
