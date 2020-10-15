@@ -25,6 +25,7 @@ environs = "*"
 uvicorn = "*"
 aioredis = "*"
 pymongo = "*"
+motor = "*"
 
 [requires]
 python_version = "3.8"
