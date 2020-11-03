@@ -13,6 +13,7 @@ from infoenergia_api.api.contracts import bp_contracts
 from infoenergia_api.api.f1_measures import bp_f1_measures
 from infoenergia_api.api.cch import bp_cch_measures
 from infoenergia_api.api.modcontracts import bp_modcontracts
+from infoenergia_api.api.reports import bp_reports
 from infoenergia_api.api.registration.login import (InvitationUrlToken,
                                                     authenticate, extra_views)
 from infoenergia_api.api.registration.models import db, retrieve_user
@@ -34,6 +35,7 @@ def build_app():
         app.blueprint(bp_f1_measures)
         app.blueprint(bp_modcontracts)
         app.blueprint(bp_cch_measures)
+        app.blueprint(bp_reports)
 
         app.add_route(
             InvitationUrlToken.as_view(),
