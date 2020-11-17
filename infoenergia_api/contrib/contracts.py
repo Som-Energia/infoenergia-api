@@ -137,6 +137,22 @@ class Contract(object):
         }
 
     @property
+    def tertiaryPowerHistory(self):
+        test = [
+            {
+                "power": {
+                    str(period[0]).split()[0]: float(period[1]) * 1000
+                        for period in zip(modcon['potencies_periode'].split()[::2], modcon['potencies_periode'].split()[1::2])
+                    },
+                "dateStart": make_utc_timestamp(modcon['data_inici']),
+                "dateEnd": make_utc_timestamp(modcon['data_final'])
+            }
+            for modcon in find_changes(self._erp, self.modcontractuals_ids, 'potencies_periode')
+        ]
+        print(test)
+        return test
+
+    @property
     def climaticZone(self):
         """
         Climatic zone from CTE DB-HE:
@@ -437,6 +453,7 @@ class Contract(object):
             'power_': self.currentPower,
             'powerHistory': self.powerHistory,
             'terciaryPower': self.tertiaryPower,
+            'tertiaryPowerHistory': self.tertiaryPowerHistory,
             'climaticZone': self.climaticZone,
             'activityCode': self.cnae[1],
             'customer': {
