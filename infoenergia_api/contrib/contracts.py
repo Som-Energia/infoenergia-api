@@ -39,6 +39,12 @@ class Contract(object):
         for name, value in self._Polissa.read(contract_id, self.FIELDS).items():
             setattr(self, name, value)
 
+    def  get_power_history(self, modcon):
+        return {
+            str(period[0]).split()[0]: float(period[1]) * 1000
+                for period in zip(modcon['potencies_periode'].split()[::2], modcon['potencies_periode'].split()[1::2])
+            }
+
     @property
     def currentTariff(self):
         """
@@ -138,19 +144,14 @@ class Contract(object):
 
     @property
     def tertiaryPowerHistory(self):
-        test = [
+        return [
             {
-                "power": {
-                    str(period[0]).split()[0]: float(period[1]) * 1000
-                        for period in zip(modcon['potencies_periode'].split()[::2], modcon['potencies_periode'].split()[1::2])
-                    },
+                "power": self.get_power_history(modcon),
                 "dateStart": make_utc_timestamp(modcon['data_inici']),
                 "dateEnd": make_utc_timestamp(modcon['data_final'])
             }
             for modcon in find_changes(self._erp, self.modcontractuals_ids, 'potencies_periode')
         ]
-        print(test)
-        return test
 
     @property
     def climaticZone(self):
