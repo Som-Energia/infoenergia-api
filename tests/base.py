@@ -22,7 +22,7 @@ class BaseTestCase(TestCase):
             app.thread_pool = futures.ThreadPoolExecutor(app.config.MAX_THREADS)
 
         with open(os.path.join(app.config.BASE_DIR, 'tests/json4test.yaml')) as f:
-            self.json4test = yaml.load(f.read())
+            self.json4test = yaml.safe_load(f.read())
 
     @db_session
     def get_or_create_user(self, username, password, email, partner_id, is_superuser, category):
