@@ -37,3 +37,16 @@ class TestBaseReports(BaseTestCase):
         self.assertEqual(response.status, 200)
         self.assertEqual(jsonlib.loads(response.body), ['0000004', '0000010'])
         self.delete_user(user)
+
+    def test__login_to_beedata(self):
+        beedata_apiurl = "https://api.beedataanalytics.com"
+        username = "test@test"
+        password = "test1234"
+        loop = asyncio.get_event_loop()
+
+        response = loop.run_until_complete(
+            reports.login(
+                beedata_apiurl, username, password
+            )
+        )
+        self.assertEqual(response.status, 200)
