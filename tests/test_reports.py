@@ -39,14 +39,44 @@ class TestBaseReports(BaseTestCase):
         self.delete_user(user)
 
     def test__login_to_beedata(self):
-        beedata_apiurl = "https://api.beedataanalytics.com"
+        login_url = "https://api.beedataanalytics.com/authn/login"
         username = "test@test"
         password = "test1234"
         loop = asyncio.get_event_loop()
 
-        response = loop.run_until_complete(
+        status, content = loop.run_until_complete(
             reports.login(
-                beedata_apiurl, username, password
+                login_url, username, password
             )
         )
-        self.assertEqual(response.status, 200)
+        self.assertEqual(status, 200)
+
+
+    def test__download_reports(self):
+        login_url = "https://api.beedataanalytics.com/authn/login"
+        beedata_apiurl = "http://api.beedataanalytics.com"
+        apiversion = 'v1'
+        username = "test@test"
+        password = "test1234"
+        company_id = 3108188543
+
+        loop = asyncio.get_event_loop()
+
+        _, content = loop.run_until_complete(
+            reports.login(
+                 login_url, username, password
+            )
+        )
+
+        status, response = loop.run_until_complete(
+            reports.download_reports(
+                beedata_apiurl,
+                apiversion,
+                company_id,
+                content['token'],
+                "0090438"
+            )
+        )
+        print(response)
+        self.assertEqual(status, 200)
+        # TODO check report correctly downloaded o algo
