@@ -21,9 +21,8 @@ class ReportsView(PaginationLinksMixin, HTTPMethodView):
         logger.info("Uploading contracts")
         request.ctx.user = user
 
-
-        reponse = await request.app.loop.create_task(process_report(request))
-        return json({})
+        response = await request.app.loop.create_task(process_report(request))
+        return json(response)
 
 
 bp_reports.add_route(

@@ -8,4 +8,7 @@ async def process_report(request):
         'reports',
         jsonlib.dumps(request.json['contract_ids'])
     )
-    return request.app.redis.mget('reports')
+
+    return  jsonlib.loads(await request.app.redis.get('reports'))
+
+

@@ -1,15 +1,17 @@
 from passlib.hash import pbkdf2_sha256
 from pony.orm import db_session
+import json as jsonlib
+import asyncio
 
 from tests.base import BaseTestCase
 
-from infoenergia_api.contrib import Contract
+from infoenergia_api.contrib import reports
 
 
 class TestBaseReports(BaseTestCase):
 
     @db_session
-    def test__get_contracts_by_id__2A(self):
+    def test__post_contracts(self):
         user = self.get_or_create_user(
             username='someone',
             password='123412345',
@@ -33,5 +35,5 @@ class TestBaseReports(BaseTestCase):
         )
 
         self.assertEqual(response.status, 200)
-
+        self.assertEqual(jsonlib.loads(response.body), ['0000004', '0000010'])
         self.delete_user(user)
