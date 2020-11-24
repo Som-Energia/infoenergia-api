@@ -5,7 +5,7 @@ import asyncio
 
 from tests.base import BaseTestCase
 
-from infoenergia_api.contrib import reports
+from infoenergia_api.contrib import beedataApi, process_report
 
 
 class TestBaseReports(BaseTestCase):
@@ -39,44 +39,33 @@ class TestBaseReports(BaseTestCase):
         self.delete_user(user)
 
     def test__login_to_beedata(self):
-        login_url = "https://api.beedataanalytics.com/authn/login"
-        username = "test@test"
-        password = "test1234"
+
         loop = asyncio.get_event_loop()
 
-        status, content = loop.run_until_complete(
-            reports.login(
-                login_url, username, password
-            )
-        )
+        bapi = beedataApi()
+
+        status = loop.run_until_complete(bapi.login())
+
         self.assertEqual(status, 200)
+        self.assertNotEqual(bapi.token, None)
 
 
     def test__download_reports(self):
         login_url = "https://api.beedataanalytics.com/authn/login"
-        beedata_apiurl = "http://api.beedataanalytics.com"
-        apiversion = 'v1'
+
         username = "test@test"
         password = "test1234"
-        company_id = 3108188543
+
+        bapi = beedataApi()
 
         loop = asyncio.get_event_loop()
 
-        _, content = loop.run_until_complete(
-            reports.login(
-                 login_url, username, password
-            )
-        )
+        status = loop.run_until_complete(bapi.login())
 
         status, response = loop.run_until_complete(
-            reports.download_reports(
-                beedata_apiurl,
-                apiversion,
-                company_id,
-                content['token'],
-                "0090438"
+            bapi.download_reports(
+                contractId="0090438"
             )
         )
-        print(response)
         self.assertEqual(status, 200)
         # TODO check report correctly downloaded o algo

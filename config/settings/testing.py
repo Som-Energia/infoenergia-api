@@ -50,3 +50,12 @@ LOGGING = {
         },
     }
 }
+
+#Access BeeData API:
+CERT_FILE = env.str('CERT_FILE')
+KEY_FILE = env.str('KEY_FILE')
+COMPANY_ID = env.int('COMPANY_ID')
+BASE_URL = env.str('BASE_URL')
+APIVERSION = env.str('APIVERSION')
+USERNAME = env.str('USERNAME')
+PASSWORD = env.str('PASSWORD')
