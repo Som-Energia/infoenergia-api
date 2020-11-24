@@ -1,14 +1,20 @@
+
+import asyncio
 from passlib.hash import pbkdf2_sha256
 from pony.orm import db_session
 import json as jsonlib
-import asyncio
-
+from motor.motor_asyncio import AsyncIOMotorClient
 from tests.base import BaseTestCase
 
-from infoenergia_api.contrib import beedataApi, process_report
+from infoenergia_api.contrib import beedataApi, process_report, save_report, read_report
 
 
 class TestBaseReports(BaseTestCase):
+
+    def setUp(self):
+        super().setUp()
+        self.app.mongo_client = AsyncIOMotorClient(self.app.config.MONGO_CONF)
+        self.loop = asyncio.get_event_loop()
 
     @db_session
     def test__post_contracts(self):
@@ -40,32 +46,33 @@ class TestBaseReports(BaseTestCase):
 
     def test__login_to_beedata(self):
 
-        loop = asyncio.get_event_loop()
-
         bapi = beedataApi()
-
-        status = loop.run_until_complete(bapi.login())
+        status = self.loop.run_until_complete(bapi.login())
 
         self.assertEqual(status, 200)
         self.assertNotEqual(bapi.token, None)
 
-
     def test__download_reports(self):
-        login_url = "https://api.beedataanalytics.com/authn/login"
-
-        username = "test@test"
-        password = "test1234"
-
         bapi = beedataApi()
+        status = self.loop.run_until_complete(bapi.login())
 
-        loop = asyncio.get_event_loop()
-
-        status = loop.run_until_complete(bapi.login())
-
-        status, response = loop.run_until_complete(
+        status, response = self.loop.run_until_complete(
             bapi.download_reports(
                 contractId="0090438"
             )
         )
         self.assertEqual(status, 200)
         # TODO check report correctly downloaded o algo
+
+    # TODO cleanup after test mock fake session...
+    def test__insert_report(self):
+
+        report = {'test': 'report'}
+        reportId = self.loop.run_until_complete(
+            save_report(report)
+        )
+        expectedReport = self.loop.run_until_complete(
+            read_report(reportId)
+        )
+
+        self.assertDictEqual(report, expectedReport)

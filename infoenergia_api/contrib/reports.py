@@ -49,9 +49,8 @@ class beedataApi(object):
         sslcontext.load_cert_chain(self.cert_file, self.key_file)
         async with aiohttp.ClientSession(headers=headers) as session:
             async with session.get(endpoint, params=params, ssl=sslcontext) as response:
-                content = await response.json()
-                return response.status, content
-
+                report = await response.json()
+                return response.status, report
 
 
 async def process_report(request):
@@ -61,3 +60,17 @@ async def process_report(request):
     )
 
     return  jsonlib.loads(await request.app.redis.get('reports'))
+
+
+async def save_report(report):
+    from infoenergia_api.app import app
+    infoenergia_reports = app.mongo_client.somenergia.infoenergia_reports
+    result = await infoenergia_reports.insert_one(report)
+    return result.inserted_id
+
+
+async def read_report(reportId):
+    from infoenergia_api.app import app
+    infoenergia_reports = app.mongo_client.somenergia.infoenergia_reports
+    report = await infoenergia_reports.find_one(reportId)
+    return report
