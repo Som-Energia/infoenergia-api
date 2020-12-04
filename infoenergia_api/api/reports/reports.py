@@ -24,8 +24,12 @@ class ReportsView(PaginationLinksMixin, HTTPMethodView):
 
         report_ids = await request.app.loop.create_task(get_report_ids(request))
 
+        # status = await request.app.loop.create_task(
+        #     beedataApi().process_reports(jsonlib.loads(report_ids))
+        # )
 
-        return json(response)
+        status = 200
+        return json(status)
 
 
 bp_reports.add_route(

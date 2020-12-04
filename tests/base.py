@@ -3,6 +3,8 @@ os.environ.setdefault('INFOENERGIA_MODULE_SETTINGS', 'config.settings.testing')
 
 from concurrent import futures
 from unittest import TestCase
+from aiohttp.test_utils import AioHTTPTestCase, unittest_run_loop
+from aiohttp import web
 
 import yaml
 from passlib.hash import pbkdf2_sha256
@@ -10,6 +12,11 @@ from pony.orm import commit, db_session
 
 from infoenergia_api import app
 from infoenergia_api.api.registration.models import User
+
+class BaseTestCaseAsync(AioHTTPTestCase):
+    async def get_application(self):
+        app = web.Application()
+        return app
 
 
 class BaseTestCase(TestCase):
