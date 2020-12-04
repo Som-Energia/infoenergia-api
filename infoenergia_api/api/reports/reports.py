@@ -4,8 +4,9 @@ from sanic.response import json
 from sanic.views import HTTPMethodView
 from sanic_jwt.decorators import protected, inject_user
 
-from infoenergia_api.contrib import process_report
+from infoenergia_api.contrib import get_report_ids
 from infoenergia_api.contrib import PaginationLinksMixin
+
 
 bp_reports = Blueprint('reports')
 
@@ -21,7 +22,8 @@ class ReportsView(PaginationLinksMixin, HTTPMethodView):
         logger.info("Uploading contracts")
         request.ctx.user = user
 
-        response = await request.app.loop.create_task(process_report(request))
+        report_ids = await request.app.loop.create_task(get_report_ids(request))
+
 
         return json(response)
 
