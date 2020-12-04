@@ -8,8 +8,8 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from tests.base import BaseTestCase, BaseTestCaseAsync
 from aiohttp.test_utils import unittest_run_loop
 
-from infoenergia_api.contrib import (beedataApi,
-    get_report_ids, save_report, read_report, set_report_ids, remove_report_id, get_report_ids2)
+from infoenergia_api.contrib import (beedataApi, get_report_ids,
+    save_report, read_report)
 
 
 class TestReport(BaseTestCase):
@@ -28,9 +28,6 @@ class TestReport(BaseTestCase):
           'X-CompanyId': str(bapi.company_id),
           'Cookie': 'iPlanetDirectoryPro={}'.format(bapi.token)
         }
-
-
-        #self.assertEqual(status, 200)
         expectedReport = self.loop.run_until_complete(
             read_report(reportId)
         )
@@ -48,7 +45,6 @@ class TestReport(BaseTestCase):
         )
         print(results)
         self.assertListEqual(results, contractIdsList)
-
 
     def test__process_reports(self):
         bapi = beedataApi()
@@ -98,6 +94,7 @@ class TestReport(BaseTestCase):
 
         self.assertEqual(status, 200)
 
+
 class TestBaseReports(BaseTestCase):
 
     def setUp(self):
@@ -124,13 +121,14 @@ class TestBaseReports(BaseTestCase):
             json={
               'id': "summer_2020",
               'contract_ids': ['0000004', '0000010'],
-              'type': "infoenergia"
+              'type': "infoenergia",
+              'create_at': "2020-01-01",
+              'month': '202010'
             },
             timeout=None
         )
 
         self.assertEqual(response.status, 200)
-        self.assertEqual(jsonlib.loads(response.body), ['0000004', '0000010'])
         self.delete_user(user)
 
     def test__login_to_beedata(self):
@@ -140,7 +138,6 @@ class TestBaseReports(BaseTestCase):
 
         self.assertEqual(status, 200)
         self.assertNotEqual(bapi.token, None)
-
 
     # TODO cleanup after test mock fake session...
     def _test__insert_report(self):
@@ -164,6 +161,7 @@ class TestBaseReports(BaseTestCase):
             )
         )
         self.assertEqual(status, 200)
+
 
 class TestBaseReportsAsync(BaseTestCaseAsync):
 
@@ -205,13 +203,3 @@ class TestBaseReportsAsync(BaseTestCaseAsync):
                 )
         self.assertEqual(status, 200)
         self.assertIsNone(report)
-
-
-    @unittest_run_loop
-    async def test__remove_report_id(self):
-        contractIds = ['1', '2']
-        await set_report_ids(contractIds)
-        result = remove_report_id(contractIds[0])
-        print(result)
-        ids = await get_report_ids2()
-        self.assertListEqual(ids, ['2'])
