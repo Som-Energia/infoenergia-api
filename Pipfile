@@ -28,6 +28,7 @@ pymongo = "*"
 motor = "*"
 pool-transport = {git = "https://github.com/Som-Energia/pool_transport.git"}
 aiohttp = {extras = ["speedups"],version = "*"}
+pytest-aiohttp = "*"
 
 [requires]
 python_version = "3.8"
