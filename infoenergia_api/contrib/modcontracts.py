@@ -4,7 +4,7 @@ from datetime import date
 from ..utils import get_juridic_filter, get_invoice_user_filters
 
 
-def get_modcontracts(request):
+def get_modcontracts(request, contractId=None):
     modcon_obj = request.app.erp_client.model('giscedata.polissa.modcontractual')
     contract_obj = request.app.erp_client.model('giscedata.polissa')
 
@@ -30,9 +30,13 @@ def get_modcontracts(request):
         else:
             filters.extend([('active', '=', True), ('state', '=', 'actiu')])
 
+
     modcontract_ids = modcon_obj.search(filters, context={'active_test': False})
 
     filter_mods = [('modcontractual_activa', 'in', modcontract_ids)]
+
+    if contractId:
+        return contract_obj.search([('name', '=', contractId)])
 
     contracts_ids = contract_obj.search(filter_mods, context={'active_test': False})
     return contracts_ids
@@ -42,7 +46,7 @@ async def async_get_modcontracts(request, id_contract=None):
     try:
         result = await request.app.loop.run_in_executor(
             request.app.thread_pool,
-            functools.partial(get_modcontracts, request)
+            functools.partial(get_modcontracts, request, id_contract)
         )
     except Exception as e:
         raise e

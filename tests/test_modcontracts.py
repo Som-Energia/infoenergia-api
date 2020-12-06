@@ -113,3 +113,38 @@ class TestModContracts(BaseTestCase):
             }
         )
         self.delete_user(user)
+
+    @db_session
+    def test__get_modcontracts__by_contract(self):
+        user = self.get_or_create_user(
+            username='someone',
+            password='123412345',
+            email='someone@somenergia.coop',
+            partner_id=1,
+            is_superuser=True,
+            category='partner'
+        )
+        token = self.get_auth_token(user.username, "123412345")
+        params = {
+            'from_': '2000-10-01',
+            'to_': '2019-10-19',
+        }
+        _, response = self.client.get(
+            '/modcontracts/' + self.json4test['modcontract_by_id']['contractId'],
+            params=params,
+            headers={
+                'Authorization': 'Bearer {}'.format(token)
+            },
+            timeout=None
+        )
+
+        self.assertEqual(response.status, 200)
+        self.assertDictEqual(
+            response.json,
+            {
+                'total_results': 1,
+                'count': 1,
+                'data': self.json4test['modcontract_by_id']['contract_data']
+            }
+        )
+        self.delete_user(user)
