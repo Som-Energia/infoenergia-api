@@ -36,6 +36,7 @@ class TestF1(BaseTestCase):
             response.json,
             {
                 'count': 1,
+                'total_results': 1,
                 'data': [self.json4test['invoices_f1_by_contract_id']['contract_data'][0]],
             }
         )
@@ -75,6 +76,7 @@ class TestF1(BaseTestCase):
             response.json,
             {
                 'count': 1,
+                'total_results': 1,
                 'data': self.json4test['invoices_f1']['contract_data'],
             }
         )
@@ -116,6 +118,7 @@ class TestF1(BaseTestCase):
             response.json,
             {
                 'count': 1,
+                'total_results': 3,
                 'cursor': 'N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=',
                 'next_page': 'http://{}/f1?cursor=N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=&limit=1'.format(response.url.authority),
                 'data': [self.json4test['f1pagination']['contract_data'][0]]
@@ -150,6 +153,7 @@ class TestF1(BaseTestCase):
             response.json,
             {
                 'count': 1,
+                'total_results': 1,
                 'cursor': 'N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=',
                 'next_page': 'http://{}/f1?cursor=N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=&limit=1'.format(response.url.authority),
                 'data': [self.json4test['f1pagination']['contract_data'][0]]
@@ -183,6 +187,7 @@ class TestF1(BaseTestCase):
             response.json,
             {
                 'count': 0,
+                'total_results': 0,
                 'data': [],
             }
         )

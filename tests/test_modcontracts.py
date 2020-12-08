@@ -38,6 +38,7 @@ class TestModContracts(BaseTestCase):
         self.assertDictEqual(
             response.json,
             {
+                'total_results': 2,
                 'count': 2,
                 'data': self.json4test['contracts_canceled']['contract_data']
             }
@@ -73,7 +74,8 @@ class TestModContracts(BaseTestCase):
         self.assertDictEqual(
             response.json,
             {
-                'count': 2,
+                'total_results': 1,
+                'count': 1,
                 'data': self.json4test['contracts_mod_tariff_power']['contract_data']
             }
         )
@@ -108,6 +110,7 @@ class TestModContracts(BaseTestCase):
         self.assertDictEqual(
             response.json,
             {
+                'total_results': 0,
                 'count': 0,
                 'data': []
             }

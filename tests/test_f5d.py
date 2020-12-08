@@ -42,6 +42,7 @@ class TestBaseF5D(BaseTestCase):
             response.json,
             {
                 'count': 50,
+                'total_results': 719,
                 'cursor': 'N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=',
                 'next_page':'http://{}/f5d/0067411?cursor=N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=&limit=50'.format(response.url.netloc),
                 'data': self.json4test['f5d']['cch_data'],
@@ -80,6 +81,7 @@ class TestBaseF5D(BaseTestCase):
             response.json,
             {
                 'count': 50,
+                'total_results': 22796,
                 'cursor': 'N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=',
                 'next_page':'http://{}/f5d?cursor=N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=&limit=50'.format(response.url.netloc),
                 'data': self.json4test['f5d_all']['cch_data'],
@@ -117,6 +119,7 @@ class TestBaseF5D(BaseTestCase):
             response.json,
             {
                 'count': 0,
+                'total_results': 0,
                 'data': []
             }
         )
@@ -129,7 +132,7 @@ class TestF5D(BaseTestCase):
         super().setUp()
         self.app.mongo_client = AsyncIOMotorClient(self.app.config.MONGO_CONF)
         self.loop = asyncio.get_event_loop()
-        self.f5d_id = '5f87b09dcb2f4772124f52fc'
+        self.f5d_id = '5c2dd783cb2f477212c77abb'
 
     def test__create_f5d(self):
         f5d = self.loop.run_until_complete(F5D.create(self.f5d_id))
@@ -141,15 +144,15 @@ class TestF5D(BaseTestCase):
         self.assertDictEqual(
             data,
             {
-                'ai': 443,
+                'ai': 496,
                 'ao': 0,
-                'date': '2017-11-16 03:00:00+0000',
-                'dateDownload': '2017-12-28 03:49:21',
-                'dateUpdate': '2017-12-28 03:49:21',
-                'r1': 41,
+                'date': '2018-11-15 23:00:00+0000',
+                'dateDownload': '2019-01-03 10:36:03',
+                'dateUpdate': '2019-01-03 16:56:28',
+                'r1': 134,
                 'r2': 0,
                 'r3': 0,
-                'r4': 21,
+                'r4': 0,
                 'season': 0,
                 'source': 1,
                 'validated': True

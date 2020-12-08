@@ -33,6 +33,7 @@ class TestBaseContracts(BaseTestCase):
             {
                 'count': 1,
                 'data': [self.json4test['contract_id_2A']['contract_data']],
+                'total_results': 1
             }
         )
         self.delete_user(user)
@@ -69,6 +70,7 @@ class TestBaseContracts(BaseTestCase):
             {
                 'count': 2,
                 'data': self.json4test['contracts_20DHS']['contract_data'],
+                'total_results': 2
             }
         )
         self.delete_user(user)
@@ -99,7 +101,7 @@ class TestBaseContracts(BaseTestCase):
             {
                 'count': 1,
                 'data': self.json4test['contract_id_3X']['contract_data'],
-
+                'total_results': 1
             }
         )
         self.delete_user(user)
@@ -130,6 +132,7 @@ class TestBaseContracts(BaseTestCase):
             {
                 'count': 0,
                 'data': [],
+                'total_results': 0
             }
         )
         self.delete_user(user)
@@ -159,6 +162,7 @@ class TestBaseContracts(BaseTestCase):
             {
                 'count': 1,
                 'data': self.json4test['contract_energetica']['contract_data'],
+                'total_results': 1
             }
         )
         self.delete_user(user)
@@ -180,7 +184,7 @@ class TestContracts(BaseTestCase):
             tariff,
             {
               'dateEnd': '2020-11-21T00:00:00-00:15Z',
-              'dateStart': '2019-09-02T00:00:00-00:15Z',
+              'dateStart': '2020-11-12T00:00:00-00:15Z',
               'tariffId': '2.0A'
             }
         )
@@ -206,7 +210,7 @@ class TestContracts(BaseTestCase):
             power,
             {
                 'power': 3400,
-                'dateStart': '2019-09-02T00:00:00-00:15Z',
+                'dateStart': '2020-11-12T00:00:00-00:15Z',
                 'dateEnd': '2020-11-21T00:00:00-00:15Z'
             }
         )
@@ -331,7 +335,7 @@ class TestContracts(BaseTestCase):
         version = contract.version
         self.assertEqual(
             version,
-            4
+            7
         )
 
     def test__get_experimentalgroup(self):

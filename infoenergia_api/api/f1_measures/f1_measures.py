@@ -25,7 +25,7 @@ class F1MeasuresContractIdView(PaginationLinksMixin, HTTPMethodView):
         logger.info("Getting f1 measures for contract: %s", contractId)
         request.ctx.user = user
 
-        invoices_ids, links = await self.paginate_results(
+        invoices_ids, links, total_results = await self.paginate_results(
             request, function=async_get_invoices, contractId=contractId
         )
 
@@ -36,6 +36,7 @@ class F1MeasuresContractIdView(PaginationLinksMixin, HTTPMethodView):
         ]
 
         response = {
+            'total_results': total_results,
             'count': len(f1_measure_json),
             'data': f1_measure_json
         }
@@ -55,7 +56,7 @@ class F1MeasuresView(PaginationLinksMixin, HTTPMethodView):
     async def get(self, request, user):
         logger.info("Getting f1 measures")
         request.ctx.user = user
-        invoices_ids, links = await self.paginate_results(
+        invoices_ids, links, total_results = await self.paginate_results(
             request,
             function=async_get_invoices
         )
@@ -67,6 +68,7 @@ class F1MeasuresView(PaginationLinksMixin, HTTPMethodView):
         ]
 
         response = {
+            'total_results': total_results,
             'count': len(f1_measure_json),
             'data': f1_measure_json
         }
