@@ -119,9 +119,13 @@ paths:
               schema:
                 type: object
                 properties:
+                  total_results:
+                    type: integer
+                    description: total number of registers
+                    example: 234
                   count:
                     type: integer
-                    description: number of results
+                    description: number of registers in current page
                     example: 234
                   data:
                     type: array
@@ -161,9 +165,13 @@ paths:
               schema:
                 type: object
                 properties:
+                  total_results:
+                    type: integer
+                    description: total number of registers for this contract
+                    example: 234
                   count:
                     type: integer
-                    description: number of results
+                    description: number of registers in current page
                     example: 234
                   data:
                     type: array
@@ -356,9 +364,13 @@ paths:
               schema:
                 type: object
                 properties:
+                  total_results:
+                    type: integer
+                    description: total number of registers
+                    example: 234
                   count:
                     type: integer
-                    description: number of results
+                    description: number of registers in current page
                     example: 234
                   data:
                     type: array
@@ -438,9 +450,13 @@ paths:
               schema:
                 type: object
                 properties:
+                  total_results:
+                    type: integer
+                    description: total number of f1s for this contract
+                    example: 234
                   count:
                     type: integer
-                    description: number of f1s for this contract
+                    description: number of f1s for this contract on current page
                     example: 234
                   data:
                     type: array
