@@ -351,7 +351,7 @@ class TestContracts(BaseTestCase):
         self_consumption = contract.selfConsumption
         self.assertEqual(
             self_consumption,
-            False
+            'Sin Autoconsumo'
         )
 
     def test__get_juridicType_physical_person(self):
