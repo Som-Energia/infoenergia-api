@@ -190,7 +190,7 @@ paths:
       description: Get all contracts one or more contract amendments by date and type.
       operationId: server.get_modcontracts
       parameters:
-      - name: modtype
+      - name: type
         in: query
         description: Filter by different types of contract modification
         required: false
@@ -302,7 +302,7 @@ paths:
         required: true
         schema:
           type: string
-      - name: modtype
+      - name: type
         in: query
         description: Filter by different types of contract modification
         required: false
