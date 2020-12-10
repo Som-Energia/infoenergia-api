@@ -264,9 +264,125 @@ paths:
               schema:
                 type: object
                 properties:
+                  total_results:
+                    type: integer
+                    description: total number of registers
+                    example: 234
                   count:
                     type: integer
-                    description: number of results
+                    description: number of registers in current page
+                    example: 234
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/contracts'
+                  links:
+                    type: object
+                    properties:
+                      next:
+                        type: string
+                        description: url of next results. If null, you are in the last page
+                        example: "https://apinertgia.somenergia.coop/modcontracts?limit=5&cursor=dXNlcjpVMEc5V0ZYTlo"
+        400:
+          description: Invalid status value
+          content: {}
+      security:
+        - jwt: []
+  /modcontracts/{contractId}:
+    get:
+      tags:
+      - modcontracts
+      summary: Obtain contract amendments by contract ID.
+      description: Get one or more contract amendments by date and type for a specific contract.
+      operationId: server.get_modcontracts_by_id
+      parameters:
+      - name: contractId
+        in: path
+        description: ID of contract to return
+        required: true
+        schema:
+          type: string
+      - name: modtype
+        in: query
+        description: Filter by different types of contract modification
+        required: false
+        style: form
+        explode: false
+        schema:
+          type: array
+          items:
+            type: string
+            enum:
+              - canceled
+              - tariff_power
+      - name: from_
+        in: query
+        description: Filter contract amendments from this date on. Format YYYY-MM-DD.
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: string
+          format: date
+          default: None
+          example: '2019-08-01'
+      - name: to_
+        in: query
+        description: Filter contract amendments until this date. Format YYYY-MM-DD
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          format: date
+          default: None
+          example: '2019-08-10'
+      - name: juridic_type
+        in: query
+        description: Filter contract amendments by juridic type (physical_person or juridic_person).
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          default: None
+          enum:
+            - None
+            - physical_person
+            - juridic_person
+      - name: limit
+        in: query
+        description: How many contracts to return at one time
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          default: 50
+          maximum: 500
+      - name: cursor
+        in: query
+        description: Actual cursor for this search
+        required: false
+        schema:
+          type: string
+          format: byte
+          default: None
+          example: 'dXNlcjpXMDdRQ1JQQTQ='
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total_results:
+                    type: integer
+                    description: total number of registers
+                    example: 234
+                  count:
+                    type: integer
+                    description: number of registers in current page
                     example: 234
                   data:
                     type: array
