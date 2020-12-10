@@ -38,8 +38,8 @@ class TestModContracts(BaseTestCase):
         self.assertDictEqual(
             response.json,
             {
-                'total_results': 2,
-                'count': 2,
+                'total_results': 8,
+                'count': 8,
                 'data': self.json4test['contracts_canceled']['contract_data']
             }
         )
@@ -131,6 +131,7 @@ class TestModContracts(BaseTestCase):
         params = {
             'from_': '2000-10-01',
             'to_': '2019-10-19',
+            'type': 'tariff_power',
         }
         _, response = self.client.get(
             '/modcontracts/' + self.json4test['modcontract_by_id']['contractId'],

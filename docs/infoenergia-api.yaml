@@ -305,9 +305,9 @@ paths:
       - name: type
         in: query
         description: Filter by different types of contract modification
-        required: false
+        required: true
         style: form
-        explode: false
+        explode: true
         schema:
           type: array
           items:
@@ -329,7 +329,7 @@ paths:
       - name: to_
         in: query
         description: Filter contract amendments until this date. Format YYYY-MM-DD
-        required: false
+        required: true
         style: form
         explode: true
         schema:

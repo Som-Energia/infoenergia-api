@@ -11,24 +11,30 @@ def get_modcontracts(request, contractId=None):
     filters = [
         ('tipus', '=', 'mod'),
         ('polissa_id.empowering_profile_id', '=', 1),
-        ('data_inici', '>=', request.args.get('from_', str(date.today())))
     ]
     filters = get_invoice_user_filters(
         request.app.erp_client, request.ctx.user, filters
     )
-    if 'to_' in request.args:
-        filters.append(('data_inici', '<=', request.args['to_'][0]))
 
     if 'juridic_type' in request.args:
         filters += get_juridic_filter(
             request.app.erp_client,
             request.args['juridic_type'][0],
         )
-    if 'type' in request.args:
-        if request.args['type'][0] == 'canceled':
-            filters.append(('state', '=', 'baixa'))
-        else:
-            filters.extend([('active', '=', True), ('state', '=', 'actiu')])
+
+    if request.args['type'][0] == 'canceled':
+        filters.extend([
+            ('state', '=', 'baixa'),
+            ('data_final', '>=', request.args.get('from_', str(date.today()))),
+            ('data_final', '<=', request.args['to_'][0])
+        ])
+    else:
+        filters.extend([
+            ('active', '=', True),
+            ('state', '=', 'actiu'),
+            ('data_inici', '>=', request.args.get('from_', str(date.today()))),
+            ('data_inici', '<=', request.args['to_'][0])
+        ])
 
 
     modcontract_ids = modcon_obj.search(filters, context={'active_test': False})
