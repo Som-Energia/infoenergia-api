@@ -432,10 +432,10 @@ class Contract(object):
         or
         physicalPerson
         """
-        if self.persona_fisica == 'CI':
-            return str.join('-', ('juridicPerson', self.titular_nif[:3]))
-        else:
+        if self.persona_fisica != 'CI' and self.cnae[0] == 986:
             return 'physicalPerson'
+        else:
+            return str.join('-', ('juridicPerson', self.titular_nif[:3]))
 
     @property
     def contracts(self):
