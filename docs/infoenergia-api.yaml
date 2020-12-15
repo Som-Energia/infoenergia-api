@@ -632,7 +632,7 @@ paths:
         explode: false
         schema:
           type: string
-          default: None
+          default: tg_cchfact
           enum:
             - tg_cchfact
             - tg_cchval
