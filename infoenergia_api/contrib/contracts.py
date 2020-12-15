@@ -41,7 +41,7 @@ class Contract(object):
 
     def  get_power_history(self, modcon):
         return {
-            str(period[0]).split()[0]: float(period[1]) * 1000
+            str(period[0]).split(:)[0]: float(period[1]) * 1000
                 for period in zip(modcon['potencies_periode'].split()[::2], modcon['potencies_periode'].split()[1::2])
             }
 
