@@ -71,7 +71,7 @@ class Cch(object):
 
 
 async def async_get_cch(request, contractId=None):
-    collection = str(request.args['collection'][0])
+    collection = str(request.args['type'][0])
     cch_collection = request.app.mongo_client.somenergia[collection]
 
     filters = {}

@@ -27,7 +27,7 @@ class TestBaseCch(BaseTestCase):
         params = {
             'from_': '2018-11-16',
             'to_': '2018-12-16',
-            'collection': 'tg_cchfact'
+            'type': 'tg_cchfact'
         }
         _, response = self.client.get(
             '/cch/' + self.json4test['f5d']['contractId'],
@@ -68,7 +68,7 @@ class TestBaseCch(BaseTestCase):
         token = self.get_auth_token(user.username, "123412345")
         params = {
             'to_': '2019-10-09',
-            'collection': 'tg_cchfact'
+            'type': 'tg_cchfact'
         }
         _, response = self.client.get(
             '/cch',
@@ -106,7 +106,7 @@ class TestBaseCch(BaseTestCase):
         params = {
             'from_': '2018-11-16',
             'to_': '2018-12-16',
-            'collection': 'tg_cchfact'
+            'type': 'tg_cchfact'
         }
         _, response = self.client.get(
             '/cch/' + self.json4test['f5d']['contractId'],
@@ -145,7 +145,7 @@ class TestBaseCch(BaseTestCase):
         params = {
             'from_': '2017-12-29',
             'to_': '2018-01-01',
-            'collection': 'tg_cchval'
+            'type': 'tg_cchval'
         }
         _, response = self.client.get(
             '/cch/' + self.json4test['p5d']['contractId'],
@@ -179,7 +179,7 @@ class TestBaseCch(BaseTestCase):
         )
         token = self.get_auth_token(user.username, "123412345")
         params = {
-            'collection': 'tg_cchval'
+            'type': 'tg_cchval'
         }
         _, response = self.client.get(
             '/cch/' + self.json4test['p5d']['contractId'],

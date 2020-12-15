@@ -15,7 +15,7 @@ class TestUtils(BaseTestCase):
         self.erp = Client(**config.ERP_CONF)
         self.app.mongo_client = AsyncIOMotorClient(config.MONGO_CONF)
         self.loop = asyncio.get_event_loop()
-        self.f5d_id = '5f87b09dcb2f4772124f52fc'
+        self.f5d_id = '5c2dd783cb2f477212c77abb'
 
     @db_session
     def test__valid_contract(self):
@@ -27,8 +27,8 @@ class TestUtils(BaseTestCase):
             is_superuser=True,
             category='partner'
         )
-        f5d = self.loop.run_until_complete(Cch.create(self.f5d_id))
-        valid = get_contract_id(self.erp, cch.name, user)
+        f5d = self.loop.run_until_complete(Cch.create(self.f5d_id, 'tg_cchfact'))
+        valid = get_contract_id(self.erp, f5d.name, user)
         self.assertTrue(valid)
         self.delete_user(user)
 
@@ -42,7 +42,7 @@ class TestUtils(BaseTestCase):
             is_superuser=False,
             category='Energética'
         )
-        f5d = self.loop.run_until_complete(Cch.create(self.f5d_id))
-        invalid = get_contract_id(self.erp, cch.name, user)
+        f5d = self.loop.run_until_complete(Cch.create(self.f5d_id, 'tg_cchfact'))
+        invalid = get_contract_id(self.erp, f5d.name, user)
         self.assertFalse(invalid)
         self.delete_user(user)

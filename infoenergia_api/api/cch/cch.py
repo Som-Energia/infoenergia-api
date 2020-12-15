@@ -27,7 +27,7 @@ class CchMeasuresContractIdView(PaginationLinksMixin, HTTPMethodView):
             request,
             function=async_get_cch, contractId=contractId
         )
-        collection = request.args['collection'][0]
+        collection = request.args['type'][0]
         cch_measure_json = [
             (await Cch.create(cch_id, collection)).cch_measures(user) for cch_id in cch_ids
         ]
@@ -58,7 +58,7 @@ class CchMeasuresView(PaginationLinksMixin, HTTPMethodView):
             function=async_get_cch
         )
 
-        collection = request.args['collection'][0]
+        collection = request.args['type'][0]
         cch_measure_json = [
             (await Cch.create(cch_id, collection)).cch_measures(user) for cch_id in cch_ids
         ]

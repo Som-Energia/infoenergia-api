@@ -624,7 +624,7 @@ paths:
             - 6.1
             - 6.1A
             - 6.1B
-      - name: collection
+      - name: type
         in: query
         description: type of cch, tg_cchfact are F5D and tg_cchval are P5D
         required: true
