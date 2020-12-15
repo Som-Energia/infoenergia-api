@@ -42,7 +42,7 @@ def get_modcontracts(request, contractId=None):
     filter_mods = [('modcontractual_activa', 'in', modcontract_ids)]
 
     if contractId:
-        return contract_obj.search([('name', '=', contractId)])
+        filter_mods.append(('name', '=', contractId))
 
     contracts_ids = contract_obj.search(filter_mods, context={'active_test': False})
     return contracts_ids
