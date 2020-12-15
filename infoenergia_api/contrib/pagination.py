@@ -104,9 +104,11 @@ class PaginationLinksMixin:
         else:
             contract_id = kwargs.get('contractId')
             results_ids = await function(request, contract_id)
-            logger.info(f"There are {len(results_ids)} results to process")
             total_results = len(results_ids)
-            if len(results_ids) > page_size:
+
+            logger.info(f"There are {total_results} results to process")
+
+            if total_results > page_size:
                 request_id = make_uuid(str(datetime.now()), id(request))
                 results_pagination = Pagination(results_ids, page_size)
                 results_ids, total_results = results_pagination.page(results_pagination.cursor)

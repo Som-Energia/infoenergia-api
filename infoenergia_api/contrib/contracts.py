@@ -419,10 +419,11 @@ class Contract(object):
         """
         Type of self-consumption
         """
-        polissa_obj = self._erp.model('giscedata.polissa')
-
-        return [auto[1] for auto in  polissa_obj.fields_get('autoconsumo')[
-            'autoconsumo']['selection'] if auto[0] == self.autoconsumo][0]
+        return [
+            name
+            for value, name in self._Polissa.fields_get('autoconsumo').get('autoconsumo', {}).get('selection', ('',''))
+            if value == self.autoconsumo
+        ][0]
 
     @property
     def juridicType(self):
