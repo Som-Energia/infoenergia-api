@@ -21,7 +21,7 @@ class ContractsIdView(PaginationLinksMixin, HTTPMethodView):
     async def get(self, request, contractId, user):
         logger.info("Getting contracts")
         request.ctx.user = user
-        contracts_ids, links = await self.paginate_results(
+        contracts_ids, links, total_results = await self.paginate_results(
             request, function=async_get_contracts, contractId=contractId
         )
 
@@ -31,6 +31,7 @@ class ContractsIdView(PaginationLinksMixin, HTTPMethodView):
         ]
 
         response = {
+            'total_results': total_results,
             'count': len(contract_json),
             'data': contract_json
         }
@@ -49,7 +50,7 @@ class ContractsView(PaginationLinksMixin, HTTPMethodView):
     async def get(self, request, user):
         logger.info("Getting contracts")
         request.ctx.user = user
-        contracts_ids, links = await self.paginate_results(
+        contracts_ids, links, total_results = await self.paginate_results(
             request,
             function=async_get_contracts
         )
@@ -61,6 +62,7 @@ class ContractsView(PaginationLinksMixin, HTTPMethodView):
         ]
 
         response = {
+            'total_results': total_results,
             'count': len(contracts_json),
             'data': contracts_json
         }

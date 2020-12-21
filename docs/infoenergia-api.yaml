@@ -22,7 +22,7 @@ tags:
 - name: f1
   description: All information about contract f1 measurements
 - name: cch
-  description: cch curves
+  description: cch curves (F5D and P5D)
 - name: measurements
   description: All information about contract energy measurements
 paths:
@@ -119,9 +119,13 @@ paths:
               schema:
                 type: object
                 properties:
+                  total_results:
+                    type: integer
+                    description: total number of registers
+                    example: 234
                   count:
                     type: integer
-                    description: number of results
+                    description: number of registers in current page
                     example: 234
                   data:
                     type: array
@@ -161,9 +165,13 @@ paths:
               schema:
                 type: object
                 properties:
+                  total_results:
+                    type: integer
+                    description: total number of registers for this contract
+                    example: 234
                   count:
                     type: integer
-                    description: number of results
+                    description: number of registers in current page
                     example: 234
                   data:
                     type: array
@@ -182,7 +190,7 @@ paths:
       description: Get all contracts one or more contract amendments by date and type.
       operationId: server.get_modcontracts
       parameters:
-      - name: modtype
+      - name: type
         in: query
         description: Filter by different types of contract modification
         required: false
@@ -256,9 +264,125 @@ paths:
               schema:
                 type: object
                 properties:
+                  total_results:
+                    type: integer
+                    description: total number of registers
+                    example: 234
                   count:
                     type: integer
-                    description: number of results
+                    description: number of registers in current page
+                    example: 234
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/contracts'
+                  links:
+                    type: object
+                    properties:
+                      next:
+                        type: string
+                        description: url of next results. If null, you are in the last page
+                        example: "https://apinertgia.somenergia.coop/modcontracts?limit=5&cursor=dXNlcjpVMEc5V0ZYTlo"
+        400:
+          description: Invalid status value
+          content: {}
+      security:
+        - jwt: []
+  /modcontracts/{contractId}:
+    get:
+      tags:
+      - modcontracts
+      summary: Obtain contract amendments by contract ID.
+      description: Get one or more contract amendments by date and type for a specific contract.
+      operationId: server.get_modcontracts_by_id
+      parameters:
+      - name: contractId
+        in: path
+        description: ID of contract to return
+        required: true
+        schema:
+          type: string
+      - name: type
+        in: query
+        description: Filter by different types of contract modification
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: array
+          items:
+            type: string
+            enum:
+              - canceled
+              - tariff_power
+      - name: from_
+        in: query
+        description: Filter contract amendments from this date on. Format YYYY-MM-DD.
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: string
+          format: date
+          default: None
+          example: '2019-08-01'
+      - name: to_
+        in: query
+        description: Filter contract amendments until this date. Format YYYY-MM-DD
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: string
+          format: date
+          default: None
+          example: '2019-08-10'
+      - name: juridic_type
+        in: query
+        description: Filter contract amendments by juridic type (physical_person or juridic_person).
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          default: None
+          enum:
+            - None
+            - physical_person
+            - juridic_person
+      - name: limit
+        in: query
+        description: How many contracts to return at one time
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          default: 50
+          maximum: 500
+      - name: cursor
+        in: query
+        description: Actual cursor for this search
+        required: false
+        schema:
+          type: string
+          format: byte
+          default: None
+          example: 'dXNlcjpXMDdRQ1JQQTQ='
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total_results:
+                    type: integer
+                    description: total number of registers
+                    example: 234
+                  count:
+                    type: integer
+                    description: number of registers in current page
                     example: 234
                   data:
                     type: array
@@ -356,9 +480,13 @@ paths:
               schema:
                 type: object
                 properties:
+                  total_results:
+                    type: integer
+                    description: total number of registers
+                    example: 234
                   count:
                     type: integer
-                    description: number of results
+                    description: number of registers in current page
                     example: 234
                   data:
                     type: array
@@ -438,9 +566,13 @@ paths:
               schema:
                 type: object
                 properties:
+                  total_results:
+                    type: integer
+                    description: total number of f1s for this contract
+                    example: 234
                   count:
                     type: integer
-                    description: number of f1s for this contract
+                    description: number of f1s for this contract on current page
                     example: 234
                   data:
                     type: array
@@ -461,13 +593,13 @@ paths:
           content: {}
       security:
         - jwt: []
-  /cch/f5d:
+  /cch:
     get:
       tags:
       - cch
-      summary: Obtain F5D cch curves
-      description: Get F5D curves information depending on some date and tariff parameters
-      operationId: server.get_f5d
+      summary: Obtain cch curves
+      description: Get cch curves information depending on some date and tariff parameters
+      operationId: server.get_cch
       parameters:
       - name: tariff
         in: query
@@ -492,9 +624,21 @@ paths:
             - 6.1
             - 6.1A
             - 6.1B
+      - name: type
+        in: query
+        description: type of cch, tg_cchfact are F5D and tg_cchval are P5D
+        required: true
+        style: form
+        explode: false
+        schema:
+          type: string
+          default: tg_cchfact
+          enum:
+            - tg_cchfact
+            - tg_cchval
       - name: from_
         in: query
-        description: Get all F5D from this date on. In format YYYY-MM-DD
+        description: Get all CCH from this date on. In format YYYY-MM-DD
         required: false
         style: form
         explode: true
@@ -505,7 +649,7 @@ paths:
           example: '2019-08-01'
       - name: to_
         in: query
-        description: Get all F5D until this date. In format YYYY-MM-DD
+        description: Get all CCH until this date. In format YYYY-MM-DD
         required: false
         style: form
         explode: true
@@ -540,14 +684,18 @@ paths:
               schema:
                 type: object
                 properties:
+                  total_results:
+                    type: integer
+                    description: total number of registers
+                    example: 234
                   count:
                     type: integer
-                    description: number of results
+                    description: number of registers in current page
                     example: 234
                   data:
                     type: array
                     items:
-                      $ref: '#/components/schemas/f5d'
+                      $ref: '#/components/schemas/cch'
                   links:
                     type: object
                     properties:
@@ -1133,7 +1281,7 @@ components:
                   units: 'kWh'
                 },
               ]
-    f5d:
+    cch:
       type: object
       properties:
         contractId:

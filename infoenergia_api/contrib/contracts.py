@@ -41,7 +41,7 @@ class Contract(object):
 
     def  get_power_history(self, modcon):
         return {
-            str(period[0]).split()[0]: float(period[1]) * 1000
+            str(period[0]).split(':')[0]: float(period[1]) * 1000
                 for period in zip(modcon['potencies_periode'].split()[::2], modcon['potencies_periode'].split()[1::2])
             }
 
@@ -417,12 +417,13 @@ class Contract(object):
     @property
     def selfConsumption(self):
         """
-        If a contract has self-consumption return True, False otherwise
+        Type of self-consumption
         """
-        if self.autoconsumo == '00':
-            return False
-        else:
-            return True
+        return [
+            name
+            for value, name in self._Polissa.fields_get('autoconsumo').get('autoconsumo', {}).get('selection', ('',''))
+            if value == self.autoconsumo
+        ][0]
 
     @property
     def juridicType(self):

@@ -31,7 +31,7 @@ class Pagination(object):
         if self._cursor >= self.len:
             self._cursor = self.len - self.page_size
 
-        return self._elems[self._cursor:self._cursor + self.page_size]
+        return self._elems[self._cursor:self._cursor + self.page_size], self.len
 
     @property
     def next_cursor(self):
@@ -81,13 +81,14 @@ class PaginationLinksMixin:
 
         return dict(
             cursor=url_cursor,
-            next_page=next_page
+            next_page=next_page,
         )
 
     async def paginate_results(self, request, function, **kwargs):
         args = request.args
         page_size = int(args.get('limit', request.app.config.get('MAX_RESULT_SIZE', 50)))
         links = {}
+        total_results = 0
 
         if 'cursor' in args:
             request_id, cursor = urlsafe_b64decode(
@@ -96,19 +97,21 @@ class PaginationLinksMixin:
             results_pagination = pickle.loads(
                 await request.app.redis.get(request_id)
             )
-            results_ids = results_pagination.page(cursor)
+            results_ids, total_results = results_pagination.page(cursor)
             links = await self._pagination_links(
                 request, request_id, results_pagination, **kwargs
             )
         else:
             contract_id = kwargs.get('contractId')
             results_ids = await function(request, contract_id)
-            logger.info(f"There are {len(results_ids)} results to process")
+            total_results = len(results_ids)
 
-            if len(results_ids) > page_size:
+            logger.info(f"There are {total_results} results to process")
+
+            if total_results > page_size:
                 request_id = make_uuid(str(datetime.now()), id(request))
                 results_pagination = Pagination(results_ids, page_size)
-                results_ids = results_pagination.page(results_pagination.cursor)
+                results_ids, total_results = results_pagination.page(results_pagination.cursor)
                 links = await self._pagination_links(
                     request, request_id, results_pagination, **kwargs
                 )
@@ -118,5 +121,4 @@ class PaginationLinksMixin:
                 await request.app.redis.expire(
                     request_id, request.app.config.get('RESULTS_TTL', 60)
                 )
-
-        return results_ids, links
+        return results_ids, links, total_results
