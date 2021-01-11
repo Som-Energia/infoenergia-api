@@ -68,3 +68,6 @@ BASE_URL = env.str('BASE_URL')
 APIVERSION = env.str('APIVERSION')
 USERNAME = env.str('USERNAME')
 PASSWORD = env.str('PASSWORD')
+
+#Number of workers for process Reports
+N_WORKERS = env.int('N_WORKERS')
