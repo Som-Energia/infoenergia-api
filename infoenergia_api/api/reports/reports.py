@@ -20,16 +20,17 @@ class ReportsView(PaginationLinksMixin, HTTPMethodView):
 
     async def post(self, request, user):
         logger.info("Uploading contracts")
-        request.ctx.user = user
-
         report_ids = await request.app.loop.create_task(get_report_ids(request))
 
-        # status = await request.app.loop.create_task(
-        #     beedataApi().process_reports(jsonlib.loads(report_ids))
-        # )
+        unprocessed_reports = await request.app.loop.create_task(
+            beedataApi().process_reports(report_ids)
+         )
 
-        status = 200
-        return json(status)
+        response = {
+            'reports': len(report_ids),
+            'unprocessed_reports': unprocessed_reports
+        }
+        return json(response)
 
 
 bp_reports.add_route(
