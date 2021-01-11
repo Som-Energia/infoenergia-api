@@ -6,6 +6,8 @@ from unittest import TestCase
 from aiohttp.test_utils import AioHTTPTestCase, unittest_run_loop
 from aiohttp import web
 
+import fakeredis
+
 import yaml
 from passlib.hash import pbkdf2_sha256
 from pony.orm import commit, db_session
@@ -14,9 +16,15 @@ from infoenergia_api import app
 from infoenergia_api.api.registration.models import User
 
 class BaseTestCaseAsync(AioHTTPTestCase):
+
+    async def setUpAsync(self):
+        super().setUpAsync()
+        self.app = app
+        self.app.redis = fakeredis.FakeStrictRedis()
+
     async def get_application(self):
-        app = web.Application()
-        return app
+        self.app =  web.Application()
+        return self.app
 
 
 class BaseTestCase(TestCase):

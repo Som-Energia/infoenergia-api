@@ -118,26 +118,13 @@ class beedataApi(object):
 
 
 async def get_report_ids(request):
-    print(*request.json['contract_ids'])
+    await request.app.redis.delete(b"key:reports")
+    key, value = b"key:reports", "{}"
 
-    key, value = b"key:lset", "value:{}"
-    values = [value.format(i).encode("utf-8") for i in range(0, 3)]
-    key = b"key:reports"
-
-    ids = ["value:{}".format(id).encode('utf-8') for id in request.json['contract_ids']]
+    ids = ["{}".format(id).encode() for id in request.json['contract_ids']]
     reports = await request.app.redis.rpush(
         key,
         *ids
     )
-
-    contractIds = await request.app.redis.get('reports')
-    contractId = contractIds[0]
-    print("contract id from redis reports {}".format(contractId))
-
-    result = await request.app.redis.lrem(key, 1, "value:{}".format(contractId).encode("utf-8"))
-    print(result)
-    return jsonlib.loads(contractId)
-
-
     logger.info("There are {} contractIds in redis to process".format(reports))
     return await request.app.redis.lrange(key, 0, -1)

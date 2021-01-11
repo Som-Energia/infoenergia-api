@@ -1,16 +1,18 @@
 
 import aiohttp
 import asyncio
+import json as jsonlib
+import fakeredis
+
+from aiohttp.test_utils import unittest_run_loop
 from passlib.hash import pbkdf2_sha256
 from pony.orm import db_session
-import json as jsonlib
 from motor.motor_asyncio import AsyncIOMotorClient
 from tests.base import BaseTestCase, BaseTestCaseAsync
-from aiohttp.test_utils import unittest_run_loop
+from unittest import mock
 
-from infoenergia_api.contrib import (beedataApi, get_report_ids,
-    save_report, read_report)
-
+from infoenergia_api.contrib import beedataApi, get_report_ids
+from infoenergia_api.utils import read_report, save_report
 
 class TestReport(BaseTestCase):
 
@@ -120,7 +122,7 @@ class TestBaseReports(BaseTestCase):
             },
             json={
               'id': "summer_2020",
-              'contract_ids': ['0000004', '0000010'],
+              'contract_ids': ['0090438', '0000010', '0000004'],
               'type': "infoenergia",
               'create_at': "2020-01-01",
               'month': '202010'

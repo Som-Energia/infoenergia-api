@@ -4,7 +4,7 @@ from sanic.response import json
 from sanic.views import HTTPMethodView
 from sanic_jwt.decorators import protected, inject_user
 
-from infoenergia_api.contrib import get_report_ids
+from infoenergia_api.contrib import beedataApi, get_report_ids
 from infoenergia_api.contrib import PaginationLinksMixin
 
 
