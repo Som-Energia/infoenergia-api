@@ -7,6 +7,7 @@ import json as jsonlib
 from sanic.response import json
 from sanic.log import logger
 
+from ..utils import save_report
 
 class beedataApi(object):
 
@@ -138,15 +139,5 @@ async def get_report_ids(request):
     return jsonlib.loads(contractId)
 
 
-async def save_report(report):
-    from infoenergia_api.app import app
-    infoenergia_reports = app.mongo_client.somenergia.infoenergia_reports
-    result = await infoenergia_reports.insert_one(report)
-    return result.inserted_id
-
-
-async def read_report(reportId):
-    from infoenergia_api.app import app
-    infoenergia_reports = app.mongo_client.somenergia.infoenergia_reports
-    report = await infoenergia_reports.find_one(reportId)
-    return report
+    logger.info("There are {} contractIds in redis to process".format(reports))
+    return await request.app.redis.lrange(key, 0, -1)

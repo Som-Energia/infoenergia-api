@@ -22,9 +22,12 @@ tags:
 - name: f1
   description: All information about contract f1 measurements
 - name: cch
-  description: cch curves (F5D and P5D)
+  description: cch curves
+- name: reports
+  description: Reports to infoenergia
 - name: measurements
   description: All information about contract energy measurements
+
 paths:
   /contracts:
     get:
@@ -708,6 +711,40 @@ paths:
           content: {}
       security:
         - jwt: []
+  /reports:
+    post:
+      tags:
+      - reports
+      summary: uploads report for all contracts
+      operationId: server.reports
+      requestBody:
+        description: json with contracts Ids and type of report to be processed
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/reports'
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  reports:
+                    type: integer
+                    description: number of submited reports
+                    example: 3
+                  unprocessed_reports:
+                    type: array
+                    description: reports that could not be processed
+                    items:
+                      type: string
+                    example: ["0000001", "0000002"]
+        400:
+          description: Invalid username/password supplied
+          content: {}
   /auth:
     post:
       tags:
@@ -739,6 +776,30 @@ paths:
           content: {}
 components:
   schemas:
+    reports:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        contract_ids:
+          type: array
+          items:
+            type: string
+          example: ["0000001", "0000002"]
+        type:
+          type: string
+          description: type of report
+          example: "infoenergia"
+        create_at:
+          type: string
+          format: date-time
+          description: json creation date
+          example: "2020-01-01"
+        month:
+          type: string
+          description: month of json data
+          example: "202001"
     User:
       type: object
       properties:
