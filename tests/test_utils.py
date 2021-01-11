@@ -4,7 +4,7 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from pony.orm import db_session
 
 from infoenergia_api.contrib.cch import Cch
-from infoenergia_api.utils import get_contract_id
+from infoenergia_api.utils import get_contract_id, save_report, read_report
 from config import config
 from tests.base import BaseTestCase
 
@@ -46,3 +46,14 @@ class TestUtils(BaseTestCase):
         invalid = get_contract_id(self.erp, f5d.name, user)
         self.assertFalse(invalid)
         self.delete_user(user)
+
+    def test__insert_or_update_report(self):
+        contractId = '12346'
+        report = {'_items': [ {'report': 2, 'contractId': '12346'}] }
+        reportId = self.loop.run_until_complete(
+            save_report(report, contractId)
+        )
+        expectedReport = self.loop.run_until_complete(
+            read_report(reportId)
+        )
+        self.assertEqual(report['_items'], expectedReport['_items'])
