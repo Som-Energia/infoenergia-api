@@ -43,24 +43,20 @@ class beedataApi(object):
         status, report = await self.download_one_report(session, contractId.decode())
 
         if report is None:
-            return False
-        msg = "Download of {} with status {} for report {}"
-        logger.info(msg.format(contractId, status, report['_meta']))
+            return bool(report)
+        msg = "Download of {} with status {} for report updated at {}"
+        logger.info(msg.format(contractId, status, report[0]['_updated']))
         logger.info("start save of {}".format(contractId))
 
         result = await save_report(report, contractId.decode())
-
-        if not result:
-            return False
-        logger.info("done save of {} with result {}".format(contractId, result))
-        return True
+        return bool(result)
 
     async def worker(self, queue, session, results):
         while True:
             row = await queue.get()
             result = await self.process_one_report(session, row)
             results.append(result)
-            if bool(result):
+            if result:
                 await self._redis.lrem(b"key:reports", 0, row)
 
             # To do: Mark the item as processed, allowing queue.join() to keep
@@ -103,7 +99,7 @@ class beedataApi(object):
             report = await response.json()
             if response.status != 200 or report["_meta"]["total"] == 0:
                 return response.status, None
-            return response.status, report
+            return response.status, report['_items']
 
 
 async def get_report_ids(request):
