@@ -196,7 +196,7 @@ paths:
       - name: type
         in: query
         description: Filter by different types of contract modification
-        required: false
+        required: true
         style: form
         explode: false
         schema:
@@ -220,7 +220,7 @@ paths:
       - name: to_
         in: query
         description: Filter contract amendments until this date. Format YYYY-MM-DD
-        required: false
+        required: true
         style: form
         explode: true
         schema:
@@ -653,6 +653,28 @@ paths:
       - name: to_
         in: query
         description: Get all CCH until this date. In format YYYY-MM-DD
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          format: date
+          default: None
+          example: '2019-08-10'
+      - name: downloaded_from
+        in: query
+        description: Get all CCH downloaded from this date on at 00:00 hours. In format YYYY-MM-DD
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          format: date
+          default: None
+          example: '2019-08-01'
+      - name: downloaded_to
+        in: query
+        description: Get all CCH downloaded until this date at 00:00 hours. In format YYYY-MM-DD
         required: false
         style: form
         explode: true
