@@ -27,6 +27,7 @@ class TestBaseCch(BaseTestCase):
         params = {
             'from_': '2018-11-16',
             'to_': '2018-12-16',
+            'limit':10,
             'type': 'tg_cchfact'
         }
         _, response = self.client.get(
@@ -42,10 +43,10 @@ class TestBaseCch(BaseTestCase):
         self.assertDictEqual(
             response.json,
             {
-                'count': 50,
-                'total_results': 719,
+                'count': 10,
+                'total_results': 721,
                 'cursor': 'N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=',
-                'next_page':'http://{}/cch/0067411?cursor=N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=&limit=50'.format(response.url.netloc),
+                'next_page':'http://{}/cch/0067411?type=tg_cchfact&cursor=N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=&limit=10'.format(response.url.netloc),
                 'data': self.json4test['f5d']['cch_data'],
             }
         )
@@ -67,7 +68,7 @@ class TestBaseCch(BaseTestCase):
         )
         token = self.get_auth_token(user.username, "123412345")
         params = {
-            'to_': '2019-10-09',
+            'to_': '2019-10-08',
             'type': 'tg_cchfact'
         }
         _, response = self.client.get(
@@ -83,9 +84,9 @@ class TestBaseCch(BaseTestCase):
             response.json,
             {
                 'count': 50,
-                'total_results': 22796,
+                'total_results': 47451,
                 'cursor': 'N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=',
-                'next_page':'http://{}/cch?cursor=N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=&limit=50'.format(response.url.netloc),
+                'next_page':'http://{}/cch?type=tg_cchfact&cursor=N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=&limit=50'.format(response.url.netloc),
                 'data': self.json4test['f5d_all']['cch_data'],
             }
         )
@@ -159,8 +160,8 @@ class TestBaseCch(BaseTestCase):
         self.assertDictEqual(
             response.json,
             {
-                'count': 23,
-                'total_results': 23,
+                'count': 24,
+                'total_results': 24,
                 'data': self.json4test['p5d']['cch_data'],
             }
         )

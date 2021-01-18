@@ -144,19 +144,33 @@ def get_juridic_filter(erp_client, juridic_type):
 
 def get_cch_filters(request, filters):
     if 'from_' in request.args:
-        filters.update({"datetime": {"$gt":
+        filters.update({"datetime": {"$gte":
             datetime.strptime(request.args['from_'][0],"%Y-%m-%d")}
         })
 
     if 'to_' in request.args:
-        filters.update({"datetime": {"$lt":
+        filters.update({"datetime": {"$lte":
             datetime.strptime(request.args['to_'][0], "%Y-%m-%d")}})
     if {'to_', 'from_'} <= request.args.keys():
         filters.update({"datetime": {
-            "$gt":
+            "$gte":
                 datetime.strptime(request.args['from_'][0],"%Y-%m-%d"),
-            "$lt":
+            "$lte":
                 datetime.strptime(request.args['to_'][0],"%Y-%m-%d")
+            }})
+    if 'downloaded_from' in request.args:
+        filters.update({"create_at": {"$gte":
+            datetime.strptime(request.args['downloaded_from'][0],"%Y-%m-%d")}
+        })
+    if 'downloaded_to' in request.args:
+        filters.update({"create_at": {"$lte":
+            datetime.strptime(request.args['downloaded_to'][0], "%Y-%m-%d")}})
+    if {'downloaded_to', 'downloaded_from'} <= request.args.keys():
+        filters.update({"create_at": {
+            "$gte":
+                datetime.strptime(request.args['downloaded_from'][0],"%Y-%m-%d"),
+            "$lte":
+                datetime.strptime(request.args['downloaded_to'][0],"%Y-%m-%d")
             }})
 
     return filters
@@ -173,6 +187,7 @@ def get_contract_id(erp_client, cups, user):
         ]
     filters = get_contract_user_filters(erp_client, user, filters)
     contract = contract_obj.search(filters)
+
     if contract:
         return contract_obj.read(contract, ['name'])[0]['name']
 

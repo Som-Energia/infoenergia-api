@@ -73,11 +73,19 @@ class PaginationLinksMixin:
         url = request.url_for(self.endpoint_name, **kwargs)
         url_cursor = await self._next_cursor(request_id, pagination_list.next_cursor)
 
-        next_page = '{url}?cursor={cursor}&limit={limit}'.format(
-            url=url,
-            cursor=url_cursor,
-            limit=pagination_list.page_size
-        ) if url_cursor else False
+        if 'cch' in self.endpoint_name:
+            next_page = '{url}?type={cch_type}&cursor={cursor}&limit={limit}'.format(
+                url=url,
+                cch_type=request.args['type'][0],
+                cursor=url_cursor,
+                limit=pagination_list.page_size
+            ) if url_cursor else False
+        else:
+            next_page = '{url}?cursor={cursor}&limit={limit}'.format(
+                url=url,
+                cursor=url_cursor,
+                limit=pagination_list.page_size
+            ) if url_cursor else False
 
         return dict(
             cursor=url_cursor,
