@@ -12,7 +12,6 @@ from tests.base import BaseTestCase, BaseTestCaseAsync
 from unittest import mock
 
 from infoenergia_api.contrib import beedataApi, get_report_ids
-from infoenergia_api.utils import read_report, save_report
 
 class TestReport(BaseTestCase):
 
@@ -68,6 +67,10 @@ class TestReport(BaseTestCase):
 
 class TestBaseReportsAsync(BaseTestCaseAsync):
 
+    def setUp(self):
+        super().setUp()
+        self.app.mongo_client = AsyncIOMotorClient(self.app.config.MONGO_CONF)
+
     @unittest_run_loop
     async def test__download_one_report(self):
         bapi = beedataApi()
@@ -105,7 +108,7 @@ class TestBaseReportsAsync(BaseTestCaseAsync):
         self.assertEqual(status, 200)
         self.assertIsNone(report)
 
-    @mock.patch('infoenergia_api.contrib.reports.save_report')
+    @mock.patch('infoenergia_api.contrib.reports.beedataApi.save_report')
     @db_session
     @unittest_run_loop
     async def test__process_one_valid_report(self, saved_report_mock):
@@ -127,7 +130,7 @@ class TestBaseReportsAsync(BaseTestCaseAsync):
         self.assertEqual(status, 200)
         self.assertTrue(result)
 
-    @mock.patch('infoenergia_api.contrib.reports.save_report')
+    @mock.patch('infoenergia_api.contrib.reports.beedataApi.save_report')
     @db_session
     @unittest_run_loop
     async def test__process_one_invalid_report(self, saved_report_mock):
@@ -148,3 +151,19 @@ class TestBaseReportsAsync(BaseTestCaseAsync):
                 )
         self.assertEqual(status, 200)
         self.assertFalse(result)
+
+    @db_session
+    @unittest_run_loop
+    async def test__insert_or_update_report(self):
+        bapi = beedataApi()
+
+        report = [{
+            'contractId': '1234567',
+            '_updated': "2020-08-18T12:06:23Z",
+            '_created':  "2020-08-18T12:06:23Z",
+            'month': '202009',
+            'results': {},
+        }]
+        reportId = await bapi.save_report(report)
+        expectedReport = await self.app.mongo_client.somenergia.infoenergia_reports.find_one(reportId[0])
+        self.assertEqual(reportId[0], expectedReport['_id'])

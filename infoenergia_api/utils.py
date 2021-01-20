@@ -183,30 +183,10 @@ def get_contract_id(erp_client, cups, user):
             ('active', '=', True),
             ('state', '=', 'activa'),
             ('empowering_profile_id', '=', 1),
-            ('cups', 'ilike', cups)
+            ('cups', 'ilike', cups[:20])
         ]
     filters = get_contract_user_filters(erp_client, user, filters)
     contract = contract_obj.search(filters)
 
     if contract:
         return contract_obj.read(contract, ['name'])[0]['name']
-
-
-async def save_report(report, contractId):
-    from infoenergia_api.app import app
-    infoenergia_reports = app.mongo_client.somenergia.infoenergia_reports
-
-    result = await infoenergia_reports.find_one_and_replace(
-        filter={"_items.0.contractId": contractId},
-        replacement=report,
-        upsert=True,
-        return_document=True
-    )
-    return result['_id']
-
-
-async def read_report(reportId):
-    from infoenergia_api.app import app
-    infoenergia_reports = app.mongo_client.somenergia.infoenergia_reports
-    report = await infoenergia_reports.find_one(reportId)
-    return report

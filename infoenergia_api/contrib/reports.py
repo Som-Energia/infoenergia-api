@@ -7,14 +7,13 @@ import json as jsonlib
 from sanic.response import json
 from sanic.log import logger
 
-from ..utils import save_report
-
 class beedataApi(object):
 
     def __init__(self):
         from infoenergia_api.app import app
         self._redis = app.redis
         self.N_WORKERS = app.config.N_WORKERS
+        self._mongo = app.mongo_client.somenergia
 
         self.cert_file = app.config.CERT_FILE
         self.key_file = app.config.KEY_FILE
@@ -38,17 +37,28 @@ class beedataApi(object):
                 self.token = content['token']
                 return response.status
 
+    async def save_report(self, report):
+        result = await self._mongo.infoenergia_reports.insert_many([
+            {
+                'contractName': item['contractId'],
+                'beedataUpdateDate': item['_updated'],
+                'beedataCreateDate': item['_created'],
+                'month': item['month'],
+                'results': item['results'],
+            }  for item in report
+            ])
+        msg = "Inserted {} of the initial {} docs"
+        logger.info(msg.format(len(result.inserted_ids), len(report)))
+        return result.inserted_ids
+
     async def process_one_report(self, session, contractId):
         logger.info("start download of {}".format(contractId.decode()))
         status, report = await self.download_one_report(session, contractId.decode())
-
         if report is None:
             return bool(report)
-        msg = "Download of {} with status {} for report updated at {}"
-        logger.info(msg.format(contractId, status, report[0]['_updated']))
-        logger.info("start save of {}".format(contractId))
 
-        result = await save_report(report, contractId.decode())
+        logger.info("start inserting doc for {}".format(contractId))
+        result = await self.save_report(report)
         return bool(result)
 
     async def worker(self, queue, session, results):
@@ -58,7 +68,6 @@ class beedataApi(object):
             results.append(result)
             if result:
                 await self._redis.lrem(b"key:reports", 0, row)
-
             # To do: Mark the item as processed, allowing queue.join() to keep
             # track of remaining work and know when everything is done.
             queue.task_done()
