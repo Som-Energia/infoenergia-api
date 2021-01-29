@@ -39,7 +39,7 @@ class TestReport(BaseTestCase):
             },
             json={
               'id': "summer_2020",
-              'contract_ids': ['0090438', '0000010', '0000004'],
+              'contract_ids': ['0090438', '1000010', '1000004'],
               'type': "infoenergia",
               'create_at': "2020-01-01",
               'month': '202010'
@@ -52,7 +52,7 @@ class TestReport(BaseTestCase):
             response.json,
             {
                 'reports': 3,
-                'unprocessed_reports':['0000010', '0000004'],
+                'unprocessed_reports':['1000010', '1000004'],
             }
         )
         self.delete_user(user)

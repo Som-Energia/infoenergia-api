@@ -97,7 +97,7 @@ class beedataApi(object):
         return [report.decode() for report in unprocessed_reports]
 
     async def download_one_report(self, session, contractId):
-        endpoint = "{}/{}/results_chart".format(self.base_url, self.apiversion)
+        endpoint = "{}/{}/components".format(self.base_url, self.apiversion)
         params = {'where': '"contractId"=="{}"'.format(contractId)}
         sslcontext = ssl.create_default_context(
             purpose=ssl.Purpose.CLIENT_AUTH,
