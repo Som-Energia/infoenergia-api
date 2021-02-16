@@ -51,9 +51,9 @@ class beedataApi(object):
         logger.info(msg.format(len(result.inserted_ids), len(report)))
         return result.inserted_ids
 
-    async def process_one_report(self, session, contractId):
+    async def process_one_report(self, month, session, contractId):
         logger.info("start download of {}".format(contractId.decode()))
-        status, report = await self.download_one_report(session, contractId.decode())
+        status, report = await self.download_one_report(session, contractId.decode(), month)
         if report is None:
             return bool(report)
 
@@ -61,10 +61,10 @@ class beedataApi(object):
         result = await self.save_report(report)
         return bool(result)
 
-    async def worker(self, queue, session, results):
+    async def worker(self, queue, month, session, results):
         while True:
             row = await queue.get()
-            result = await self.process_one_report(session, row)
+            result = await self.process_one_report(month, session, row)
             results.append(result)
             if result:
                 await self._redis.lrem(b"key:reports", 0, row)
@@ -72,7 +72,7 @@ class beedataApi(object):
             # track of remaining work and know when everything is done.
             queue.task_done()
 
-    async def process_reports(self, contractIdsList):
+    async def process_reports(self, contractIdsList, month):
         await self.login()
         headers = {
           'X-CompanyId': str(self.company_id),
@@ -81,7 +81,7 @@ class beedataApi(object):
         queue = asyncio.Queue(self.N_WORKERS)
         results = []
         async with aiohttp.ClientSession(headers=headers) as session:
-            workers = [asyncio.create_task(self.worker(queue, session, results))
+            workers = [asyncio.create_task(self.worker(queue, month, session, results))
                        for _ in range(self.N_WORKERS)]
             for contractId in contractIdsList:
                 await queue.put(contractId) # Feed the contractIds to the workers.
@@ -96,9 +96,12 @@ class beedataApi(object):
 
         return [report.decode() for report in unprocessed_reports]
 
-    async def download_one_report(self, session, contractId):
+    async def download_one_report(self, session, contractId, month):
         endpoint = "{}/{}/components".format(self.base_url, self.apiversion)
-        params = {'where': '"contractId"=="{}"'.format(contractId)}
+        contract = '"contractId"=="{}"'.format(contractId)
+        month = '"month"=={}'.format(month)
+
+        params = {'where': contract + 'and' + month}
         sslcontext = ssl.create_default_context(
             purpose=ssl.Purpose.CLIENT_AUTH,
             cafile=self.cert_file
@@ -121,4 +124,5 @@ async def get_report_ids(request):
         *ids
     )
     logger.info("There are {} contractIds in redis to process".format(reports))
-    return await request.app.redis.lrange(key, 0, -1)
+    report_ids = await request.app.redis.lrange(key, 0, -1)
+    return report_ids, request.json['month']

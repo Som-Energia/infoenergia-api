@@ -39,10 +39,10 @@ class TestReport(BaseTestCase):
             },
             json={
               'id': "summer_2020",
-              'contract_ids': ['0090438', '1000010', '1000004'],
+              'contract_ids': ["0180471", "0010012", "1000010"],
               'type': "infoenergia",
               'create_at': "2020-01-01",
-              'month': '202010'
+              'month': '202011'
             },
             timeout=None
         )
@@ -52,7 +52,7 @@ class TestReport(BaseTestCase):
             response.json,
             {
                 'reports': 3,
-                'unprocessed_reports':['1000010', '1000004'],
+                'unprocessed_reports':['1000010'],
             }
         )
         self.delete_user(user)
@@ -82,8 +82,9 @@ class TestBaseReportsAsync(BaseTestCaseAsync):
         }
         async with aiohttp.ClientSession(headers=headers) as session:
             status, report = await bapi.download_one_report(
-                    session,
-                    contractId="0090438"
+                    session=session,
+                    contractId="0090438",
+                    month='202011'
                 )
         self.assertEqual(status, 200)
         self.assertIsNotNone(report)
@@ -103,7 +104,8 @@ class TestBaseReportsAsync(BaseTestCaseAsync):
         async with aiohttp.ClientSession(headers=headers) as session:
             status, report = await bapi.download_one_report(
                     session,
-                    contractId="1090438"
+                    contractId="1090438",
+                    month='202011'
                 )
         self.assertEqual(status, 200)
         self.assertIsNone(report)
@@ -124,7 +126,8 @@ class TestBaseReportsAsync(BaseTestCaseAsync):
 
         async with aiohttp.ClientSession(headers=headers) as session:
             result = await bapi.process_one_report(
-                    session,
+                    month='202011',
+                    session=session,
                     contractId=b"0090438"
                 )
         self.assertEqual(status, 200)
@@ -146,7 +149,8 @@ class TestBaseReportsAsync(BaseTestCaseAsync):
 
         async with aiohttp.ClientSession(headers=headers) as session:
             result = await bapi.process_one_report(
-                    session,
+                    month='202011',
+                    session=session,
                     contractId=b"0090438"
                 )
         self.assertEqual(status, 200)
