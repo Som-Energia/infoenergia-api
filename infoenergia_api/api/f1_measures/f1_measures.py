@@ -4,10 +4,10 @@ from sanic import Blueprint
 from sanic.log import logger
 from sanic.response import json
 from sanic.views import HTTPMethodView
-from sanic_jwt.decorators import protected
+from sanic_jwt.decorators import inject_user, protected
 
 from infoenergia_api.contrib.f1 import async_get_invoices, Invoice
-from infoenergia_api.contrib import Pagination, PaginationLinksMixin
+from infoenergia_api.contrib import PaginationLinksMixin
 
 bp_f1_measures = Blueprint('f1')
 
@@ -15,14 +15,17 @@ bp_f1_measures = Blueprint('f1')
 class F1MeasuresContractIdView(PaginationLinksMixin, HTTPMethodView):
 
     decorators = [
+        inject_user(),
         protected(),
     ]
 
     endpoint_name = 'f1.get_f1_measures_by_contract_id'
 
-    async def get(self, request, contractId):
+    async def get(self, request, contractId, user):
         logger.info("Getting f1 measures for contract: %s", contractId)
-        invoices_ids, links = await self.paginate_results(
+        request.ctx.user = user
+
+        invoices_ids, links, total_results = await self.paginate_results(
             request, function=async_get_invoices, contractId=contractId
         )
 
@@ -33,6 +36,7 @@ class F1MeasuresContractIdView(PaginationLinksMixin, HTTPMethodView):
         ]
 
         response = {
+            'total_results': total_results,
             'count': len(f1_measure_json),
             'data': f1_measure_json
         }
@@ -43,14 +47,16 @@ class F1MeasuresContractIdView(PaginationLinksMixin, HTTPMethodView):
 class F1MeasuresView(PaginationLinksMixin, HTTPMethodView):
 
     decorators = [
+        inject_user(),
         protected(),
     ]
 
     endpoint_name = 'f1.get_f1_measures'
 
-    async def get(self, request):
+    async def get(self, request, user):
         logger.info("Getting f1 measures")
-        invoices_ids, links = await self.paginate_results(
+        request.ctx.user = user
+        invoices_ids, links, total_results = await self.paginate_results(
             request,
             function=async_get_invoices
         )
@@ -62,6 +68,7 @@ class F1MeasuresView(PaginationLinksMixin, HTTPMethodView):
         ]
 
         response = {
+            'total_results': total_results,
             'count': len(f1_measure_json),
             'data': f1_measure_json
         }

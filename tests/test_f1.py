@@ -18,7 +18,8 @@ class TestF1(BaseTestCase):
             password='123412345',
             email='someone@somenergia.coop',
             partner_id=1,
-            is_superuser=True
+            is_superuser=True,
+            category='partner'
         )
         token = self.get_auth_token(user.username, "123412345")
 
@@ -35,6 +36,7 @@ class TestF1(BaseTestCase):
             response.json,
             {
                 'count': 1,
+                'total_results': 1,
                 'data': [self.json4test['invoices_f1_by_contract_id']['contract_data'][0]],
             }
         )
@@ -49,7 +51,8 @@ class TestF1(BaseTestCase):
             password='123412345',
             email='someone@somenergia.coop',
             partner_id=1,
-            is_superuser=True
+            is_superuser=True,
+            category='partner'
         )
         token = self.get_auth_token(user.username, "123412345")
         params = {
@@ -73,6 +76,7 @@ class TestF1(BaseTestCase):
             response.json,
             {
                 'count': 1,
+                'total_results': 1,
                 'data': self.json4test['invoices_f1']['contract_data'],
             }
         )
@@ -89,7 +93,8 @@ class TestF1(BaseTestCase):
             password='123412345',
             email='someone@somenergia.coop',
             partner_id=1,
-            is_superuser=True
+            is_superuser=True,
+            category='partner'
         )
         token = self.get_auth_token(user.username, "123412345")
         params = {
@@ -113,6 +118,7 @@ class TestF1(BaseTestCase):
             response.json,
             {
                 'count': 1,
+                'total_results': 3,
                 'cursor': 'N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=',
                 'next_page': 'http://{}/f1?cursor=N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=&limit=1'.format(response.url.authority),
                 'data': [self.json4test['f1pagination']['contract_data'][0]]
@@ -130,7 +136,8 @@ class TestF1(BaseTestCase):
             password='123412345',
             email='someone@somenergia.coop',
             partner_id=1,
-            is_superuser=True
+            is_superuser=True,
+            category='partner'
         )
         token = self.get_auth_token(user.username, "123412345")
         request, response = self.client.get(
@@ -146,6 +153,7 @@ class TestF1(BaseTestCase):
             response.json,
             {
                 'count': 1,
+                'total_results': 1,
                 'cursor': 'N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=',
                 'next_page': 'http://{}/f1?cursor=N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=&limit=1'.format(response.url.authority),
                 'data': [self.json4test['f1pagination']['contract_data'][0]]
@@ -153,6 +161,37 @@ class TestF1(BaseTestCase):
         )
         self.delete_user(user)
 
+
+    @db_session
+    def test__get_f1_measures_without_permission(self):
+        user = self.get_or_create_user(
+            username='someone',
+            password='123412345',
+            email='someone@somenergia.coop',
+            partner_id=1,
+            is_superuser=False,
+            category='Energética'
+        )
+        token = self.get_auth_token(user.username, "123412345")
+
+        request, response = self.client.get(
+            '/f1/{}?limit=1'.format(self.json4test['invoices_f1_by_contract_id']['contractId']),
+            headers={
+                'Authorization': 'Bearer {}'.format(token)
+            },
+            timeout=None
+        )
+
+        self.assertEqual(response.status, 200)
+        self.assertDictEqual(
+            response.json,
+            {
+                'count': 0,
+                'total_results': 0,
+                'data': [],
+            }
+        )
+        self.delete_user(user)
 
 class TestInvoice(BaseTestCase):
 

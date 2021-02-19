@@ -3,6 +3,12 @@ from .base import *
 # ERP configuration
 ERP_CONF = env.json('ERP_CONF')
 
+# Transport Pool configuration
+TRANSPORT_POOL_CONF = env.json('TRANSPORT_POOL_CONF')
+
+# Mongo configuration
+MONGO_CONF = env.str('MONGO_CONF')
+
 # DATABASE configuration
 DB_CONF = env.json('DATABASE_CONF')
 
@@ -53,3 +59,15 @@ LOGGING = {
         },
     }
 }
+
+#Access BeeData API:
+CERT_FILE = env.str('CERT_FILE')
+KEY_FILE = env.str('KEY_FILE')
+COMPANY_ID = env.int('COMPANY_ID')
+BASE_URL = env.str('BASE_URL')
+APIVERSION = env.str('APIVERSION')
+USERNAME = env.str('USERNAME')
+PASSWORD = env.str('PASSWORD')
+
+#Number of workers for process Reports
+N_WORKERS = env.int('N_WORKERS')

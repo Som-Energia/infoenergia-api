@@ -1,14 +1,14 @@
-import re
 from datetime import datetime
 
 from infoenergia_api.contrib.climatic_zones import ine_to_zc
 from infoenergia_api.contrib.postal_codes import ine_to_dp
-from .utils import make_utc_timestamp, make_uuid
+
+from .utils import make_utc_timestamp, make_uuid, get_request_filters, get_contract_user_filters
 
 
 def find_changes(erp_client, modcons_id, field):
     modcon_obj = erp_client.model('giscedata.polissa.modcontractual')
-    fields = ['data_inici', 'data_final', 'potencia', 'tarifa']
+    fields = ['data_inici', 'data_final', 'potencia', 'tarifa', 'potencies_periode']
 
     modcons = modcon_obj.read(modcons_id, fields)
     # to do: re-write if
@@ -365,3 +365,26 @@ def get_experimentalgroup(erp_client, cups_id):
     cups_obj = erp_client.model('giscedata.cups.ps')
     cups = cups_obj.read(cups_id)
     return cups.get('empowering', False)
+
+
+def get_cups(request, contractId=None):
+    contract_obj = request.app.erp_client.model('giscedata.polissa')
+    filters = [
+        ('active', '=', True),
+        ('state', '=', 'activa'),
+        ('empowering_profile_id', '=', 1),
+        ('name', '=', contractId)
+    ]
+
+    filters = get_contract_user_filters(
+        request.app.erp_client, request.ctx.user, filters
+    )
+
+    if request.args:
+        filters = get_request_filters(
+            request.app.erp_client,
+            request,
+            filters,
+        )
+    contracts = contract_obj.search(filters)
+    return [contract_obj.read(contract, ['cups'])['cups'][1] for contract in contracts]

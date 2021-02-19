@@ -21,6 +21,10 @@ tags:
   description: All information about contract modifications
 - name: f1
   description: All information about contract f1 measurements
+- name: cch
+  description: cch curves
+- name: reports
+  description: Reports to infoenergia
 - name: measurements
   description: All information about contract energy measurements
 - name: tariff
@@ -119,9 +123,13 @@ paths:
               schema:
                 type: object
                 properties:
+                  total_results:
+                    type: integer
+                    description: total number of registers
+                    example: 234
                   count:
                     type: integer
-                    description: number of results
+                    description: number of registers in current page
                     example: 234
                   data:
                     type: array
@@ -161,9 +169,13 @@ paths:
               schema:
                 type: object
                 properties:
+                  total_results:
+                    type: integer
+                    description: total number of registers for this contract
+                    example: 234
                   count:
                     type: integer
-                    description: number of results
+                    description: number of registers in current page
                     example: 234
                   data:
                     type: array
@@ -185,7 +197,7 @@ paths:
       - name: type
         in: query
         description: Filter by different types of contract modification
-        required: false
+        required: true
         style: form
         explode: false
         schema:
@@ -209,7 +221,7 @@ paths:
       - name: to_
         in: query
         description: Filter contract amendments until this date. Format YYYY-MM-DD
-        required: false
+        required: true
         style: form
         explode: true
         schema:
@@ -256,9 +268,125 @@ paths:
               schema:
                 type: object
                 properties:
+                  total_results:
+                    type: integer
+                    description: total number of registers
+                    example: 234
                   count:
                     type: integer
-                    description: number of results
+                    description: number of registers in current page
+                    example: 234
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/contracts'
+                  links:
+                    type: object
+                    properties:
+                      next:
+                        type: string
+                        description: url of next results. If null, you are in the last page
+                        example: "https://apinertgia.somenergia.coop/modcontracts?limit=5&cursor=dXNlcjpVMEc5V0ZYTlo"
+        400:
+          description: Invalid status value
+          content: {}
+      security:
+        - jwt: []
+  /modcontracts/{contractId}:
+    get:
+      tags:
+      - modcontracts
+      summary: Obtain contract amendments by contract ID.
+      description: Get one or more contract amendments by date and type for a specific contract.
+      operationId: server.get_modcontracts_by_id
+      parameters:
+      - name: contractId
+        in: path
+        description: ID of contract to return
+        required: true
+        schema:
+          type: string
+      - name: type
+        in: query
+        description: Filter by different types of contract modification
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: array
+          items:
+            type: string
+            enum:
+              - canceled
+              - tariff_power
+      - name: from_
+        in: query
+        description: Filter contract amendments from this date on. Format YYYY-MM-DD.
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: string
+          format: date
+          default: None
+          example: '2019-08-01'
+      - name: to_
+        in: query
+        description: Filter contract amendments until this date. Format YYYY-MM-DD
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: string
+          format: date
+          default: None
+          example: '2019-08-10'
+      - name: juridic_type
+        in: query
+        description: Filter contract amendments by juridic type (physical_person or juridic_person).
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          default: None
+          enum:
+            - None
+            - physical_person
+            - juridic_person
+      - name: limit
+        in: query
+        description: How many contracts to return at one time
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          default: 50
+          maximum: 500
+      - name: cursor
+        in: query
+        description: Actual cursor for this search
+        required: false
+        schema:
+          type: string
+          format: byte
+          default: None
+          example: 'dXNlcjpXMDdRQ1JQQTQ='
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total_results:
+                    type: integer
+                    description: total number of registers
+                    example: 234
+                  count:
+                    type: integer
+                    description: number of registers in current page
                     example: 234
                   data:
                     type: array
@@ -356,9 +484,13 @@ paths:
               schema:
                 type: object
                 properties:
+                  total_results:
+                    type: integer
+                    description: total number of registers
+                    example: 234
                   count:
                     type: integer
-                    description: number of results
+                    description: number of registers in current page
                     example: 234
                   data:
                     type: array
@@ -438,9 +570,13 @@ paths:
               schema:
                 type: object
                 properties:
+                  total_results:
+                    type: integer
+                    description: total number of f1s for this contract
+                    example: 234
                   count:
                     type: integer
-                    description: number of f1s for this contract
+                    description: number of f1s for this contract on current page
                     example: 234
                   data:
                     type: array
@@ -461,17 +597,17 @@ paths:
           content: {}
       security:
         - jwt: []
-  /tariff:
+  /cch:
     get:
       tags:
-      - tariff
-      summary: Obtain tariff prices
-      description: 'Get detailed prices for each tariff depending on date'
-      operationId: server.get_tariff
+      - cch
+      summary: Obtain cch curves
+      description: Get cch curves information depending on some date and tariff parameters
+      operationId: server.get_cch
       parameters:
       - name: tariff
         in: query
-        description: Choose a tariff to filter
+        description: Tariff of the contract to filter
         required: false
         style: form
         explode: false
@@ -492,19 +628,21 @@ paths:
             - 6.1
             - 6.1A
             - 6.1B
-      - name: contractId
+      - name: type
         in: query
-        description: Get tariff history for a specific contract.
-        required: false
+        description: type of cch, tg_cchfact are F5D and tg_cchval are P5D
+        required: true
         style: form
-        explode: true
+        explode: false
         schema:
           type: string
-          default: None
-          example: '1234'
+          default: tg_cchfact
+          enum:
+            - tg_cchfact
+            - tg_cchval
       - name: from_
         in: query
-        description: Filter tariff price by date (format YYYY-MM-DD). Price applied to a tariff from this date on.
+        description: Get all CCH from this date on. In format YYYY-MM-DD
         required: false
         style: form
         explode: true
@@ -515,7 +653,29 @@ paths:
           example: '2019-08-01'
       - name: to_
         in: query
-        description: Filter tariff price by date (format YYYY-MM-DD). Price applied to a tariff until this date.
+        description: Get all CCH until this date. In format YYYY-MM-DD
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          format: date
+          default: None
+          example: '2019-08-10'
+      - name: downloaded_from
+        in: query
+        description: Get all CCH downloaded from this date on at 00:00 hours. In format YYYY-MM-DD
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          format: date
+          default: None
+          example: '2019-08-01'
+      - name: downloaded_to
+        in: query
+        description: Get all CCH downloaded until this date at 00:00 hours. In format YYYY-MM-DD
         required: false
         style: form
         explode: true
@@ -526,7 +686,7 @@ paths:
           example: '2019-08-10'
       - name: limit
         in: query
-        description: How many f1 to return at one time
+        description: How many contracts to return at one time
         required: false
         schema:
           type: integer
@@ -550,26 +710,174 @@ paths:
               schema:
                 type: object
                 properties:
+                  total_results:
+                    type: integer
+                    description: total number of registers
+                    example: 234
                   count:
                     type: integer
-                    description: number of results
+                    description: number of registers in current page
                     example: 234
                   data:
                     type: array
                     items:
-                      $ref: '#/components/schemas/tariff'
+                      $ref: '#/components/schemas/cch'
                   links:
                     type: object
                     properties:
                       next:
                         type: string
                         description: url of next results. If null, you are in the last page
-                        example: "https://apinertgia.somenergia.coop/f1?limit=5&cursor=dXNlcjpVMEc5V0ZYTlo"
+                        example: "https://apinertgia.somenergia.coop/contracts?limit=5&cursor=dXNlcjpVMEc5V0ZYTlo"
         400:
           description: Invalid status value
           content: {}
       security:
         - jwt: []
+  /reports:
+    post:
+      tags:
+      - reports
+      summary: uploads report for all contracts
+      operationId: server.reports
+      requestBody:
+        description: json with contracts Ids and type of report to be processed
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/reports'
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  reports:
+                    type: integer
+                    description: number of submited reports
+                    example: 3
+                  unprocessed_reports:
+                    type: array
+                    description: reports that could not be processed
+                    items:
+                      type: string
+                    example: ["0000001", "0000002"]
+        400:
+          description: Invalid username/password supplied
+          content: {}
+  /tariff:
+      get:
+        tags:
+        - tariff
+        summary: Obtain tariff prices
+        description: 'Get detailed prices for each tariff depending on date'
+        operationId: server.get_tariff
+        parameters:
+        - name: tariff
+          in: query
+          description: Choose a tariff to filter
+          required: false
+          style: form
+          explode: false
+          schema:
+            type: string
+            default: None
+            enum:
+              - None
+              - 2.0A
+              - 2.1A
+              - 2.0DHA
+              - 2.0DHS
+              - 2.1DHA
+              - 2.1DHS
+              - 3.0A
+              - 3.1A
+              - 3.1A-LB
+              - 6.1
+              - 6.1A
+              - 6.1B
+        - name: contractId
+          in: query
+          description: Get tariff history for a specific contract.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+            default: None
+            example: '1234'
+        - name: from_
+          in: query
+          description: Filter tariff price by date (format YYYY-MM-DD). Price applied to a tariff from this date on.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+            format: date
+            default: None
+            example: '2019-08-01'
+        - name: to_
+          in: query
+          description: Filter tariff price by date (format YYYY-MM-DD). Price applied to a tariff until this date.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+            format: date
+            default: None
+            example: '2019-08-10'
+        - name: limit
+          in: query
+          description: How many f1 to return at one time
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            default: 50
+            maximum: 500
+        - name: cursor
+          in: query
+          description: Actual cursor for this search
+          required: false
+          schema:
+            type: string
+            format: byte
+            default: None
+            example: 'dXNlcjpXMDdRQ1JQQTQ='
+        responses:
+          200:
+            description: successful operation
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    count:
+                      type: integer
+                      description: number of results
+                      example: 234
+                    data:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/tariff'
+                    links:
+                      type: object
+                      properties:
+                        next:
+                          type: string
+                          description: url of next results. If null, you are in the last page
+                          example: "https://apinertgia.somenergia.coop/f1?limit=5&cursor=dXNlcjpVMEc5V0ZYTlo"
+          400:
+            description: Invalid status value
+            content: {}
+        security:
+          - jwt: []
+
 
   /auth:
     post:
@@ -602,6 +910,30 @@ paths:
           content: {}
 components:
   schemas:
+    reports:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        contract_ids:
+          type: array
+          items:
+            type: string
+          example: ["0000001", "0000002"]
+        type:
+          type: string
+          description: type of report
+          example: "infoenergia"
+        create_at:
+          type: string
+          format: date-time
+          description: json creation date
+          example: "2020-01-01"
+        month:
+          type: string
+          description: month of json data
+          example: "202001"
     User:
       type: object
       properties:
@@ -1153,6 +1485,84 @@ components:
                   units: 'kWh'
                 },
               ]
+    cch:
+      type: object
+      properties:
+        contractId:
+          type: string
+          description: contract ID
+          example: contractId-123
+        meteringPointId:
+          type: string
+          description: cups
+          example: "c1759810-90f3-012e-0404-34159e211070"
+        season:
+          type: number
+          format: integer
+          description: current season. 0 if it's winter and 1 if it's or summer
+          example: 0
+        r1:
+          type: number
+          format: float
+          description: first quadrant of reactive energy mesurement (Wh)
+          example: 0
+        r2:
+          type: number
+          format: float
+          description: second quadrant of reactive energy mesurement (Wh)
+          example: 0
+        r3:
+          type: number
+          format: float
+          description: third quadrant of reactive energy mesurement (Wh)
+          example: 0
+        r4:
+          type: number
+          format: float
+          description: fourth quadrant of reactive energy mesurement (Wh)
+          example: 0
+        ai:
+          type: number
+          format: float
+          description: Input of active energy mesurement (Wh)
+          example: 0
+        ao:
+          type: number
+          format: float
+          description: Ouput of active energy mesurement (Wh)
+          example: 0
+        source:
+          type: number
+          format: integer
+          description: "Data collection method.
+            It could have the following values:
+            1 (Medida real válida);
+            2 (Medida perfilada correspondiente a un cierre real);
+            3 (Medida real ajustada a un cierre real);
+            4 (Medida perfilada correspondiente a auto-lectura de cliente);
+            5 (Estimación por consumo histórico del año anterior perfilado);
+            6 (Estimación por factor de utilización perfilado)"
+          example: 1
+        validated:
+          type: boolean
+          description: True if measurement is validated, False otherwise
+          example: True
+        date:
+          type: string
+          format: date
+          description: measurement date.
+          example: "2020-09-01T16:37:05Z"
+        dateDownload:
+          type: string
+          format: date
+          description: file dowloaded at this date
+          example: "2020-09-01T16:37:05Z"
+        dateUpdate:
+          type: string
+          format: date
+          description: file updated at this date
+          example: "2020-09-01T16:37:05Z"
+
     tariff:
       type: object
       properties:

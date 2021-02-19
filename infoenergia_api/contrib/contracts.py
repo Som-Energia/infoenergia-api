@@ -1,14 +1,12 @@
 import functools
 from datetime import datetime
 
-from sanic.log import logger
-
 from infoenergia_api.contrib.climatic_zones import ine_to_zc
 from infoenergia_api.contrib.postal_codes import ine_to_dp
 
 from ..tasks import find_changes
 from ..utils import (get_id_for_contract, get_request_filters,
-                     make_utc_timestamp, make_uuid)
+                     get_contract_user_filters, make_utc_timestamp, make_uuid)
 
 
 class Contract(object):
@@ -38,9 +36,15 @@ class Contract(object):
         from infoenergia_api.app import app
 
         self._erp = app.erp_client
-        self._Polissa= self._erp.model('giscedata.polissa')
+        self._Polissa = self._erp.model('giscedata.polissa')
         for name, value in self._Polissa.read(contract_id, self.FIELDS).items():
             setattr(self, name, value)
+
+    def  get_power_history(self, modcon):
+        return {
+            str(period[0]).split(':')[0]: float(period[1]) * 1000
+                for period in zip(modcon['potencies_periode'].split()[::2], modcon['potencies_periode'].split()[1::2])
+            }
 
     @property
     def currentTariff(self):
@@ -138,6 +142,17 @@ class Contract(object):
         return {
          'P{}'.format(i): int(period['potencia'] * 1000) for i, period in enumerate(period_powers, 1)
         }
+
+    @property
+    def tertiaryPowerHistory(self):
+        return [
+            {
+                "power": self.get_power_history(modcon),
+                "dateStart": make_utc_timestamp(modcon['data_inici']),
+                "dateEnd": make_utc_timestamp(modcon['data_final'])
+            }
+            for modcon in find_changes(self._erp, self.modcontractuals_ids, 'potencies_periode')
+        ]
 
     @property
     def climaticZone(self):
@@ -403,13 +418,13 @@ class Contract(object):
     @property
     def selfConsumption(self):
         """
-        If a contract has self-consumption return True, False otherwise
+        Type of self-consumption
         """
-        if self.autoconsumo == '00':
-            return False
-        else:
-            return True
-
+        return [
+            name
+            for value, name in self._Polissa.fields_get('autoconsumo').get('autoconsumo', {}).get('selection', ('',''))
+            if value == self.autoconsumo
+        ][0]
 
     @property
     def juridicType(self):
@@ -441,6 +456,7 @@ class Contract(object):
             'power_': self.currentPower,
             'powerHistory': self.powerHistory,
             'terciaryPower': self.tertiaryPower,
+            'tertiaryPowerHistory': self.tertiaryPowerHistory,
             'climaticZone': self.climaticZone,
             'activityCode': self.cnae[1],
             'customer': {
@@ -466,6 +482,10 @@ def get_contracts(request, contractId=None):
         ('state', '=', 'activa'),
         ('empowering_profile_id', '=', 1)
     ]
+
+    filters = get_contract_user_filters(
+        request.app.erp_client, request.ctx.user, filters
+    )
 
     if request.args:
         filters = get_request_filters(

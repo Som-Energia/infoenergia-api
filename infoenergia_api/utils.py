@@ -3,6 +3,8 @@ from datetime import datetime
 
 from pytz import timezone
 
+from .api.registration.models import UserCategory
+
 
 def make_uuid(model, model_id):
     token = '%s,%s' % (model, model_id)
@@ -69,6 +71,31 @@ def get_request_filters(erp_client, request, filters):
     return filters
 
 
+def get_erp_category(erp_client, user):
+    if user.category == UserCategory.ENERGETICA.value:
+        category_id = erp_client.model('res.partner.category').search([
+            ('name', '=', UserCategory.ENERGETICA.value),
+            ('active', '=', True)
+        ])
+        return category_id
+
+
+def get_contract_user_filters(erp_client, user, filters):
+    category_id = get_erp_category(erp_client, user)
+    if category_id:
+        filters += [('soci.category_id', '=', category_id)]
+
+    return filters
+
+
+def get_invoice_user_filters(erp_client, user, filters):
+    category_id = get_erp_category(erp_client, user)
+    if category_id:
+        filters += [('polissa_id.soci.category_id', '=', category_id)]
+
+    return filters
+
+
 def get_juridic_filter(erp_client, juridic_type):
     person_type = erp_client.model('res.partner')
     if juridic_type == 'physical_person':
@@ -114,5 +141,54 @@ def get_juridic_filter(erp_client, juridic_type):
         ])
         juridic_filters = [('titular', 'in', juridic_person)]
 
-
     return juridic_filters
+
+
+def get_cch_filters(request, filters):
+    if 'from_' in request.args:
+        filters.update({"datetime": {"$gte":
+            datetime.strptime(request.args['from_'][0],"%Y-%m-%d")}
+        })
+
+    if 'to_' in request.args:
+        filters.update({"datetime": {"$lte":
+            datetime.strptime(request.args['to_'][0], "%Y-%m-%d")}})
+    if {'to_', 'from_'} <= request.args.keys():
+        filters.update({"datetime": {
+            "$gte":
+                datetime.strptime(request.args['from_'][0],"%Y-%m-%d"),
+            "$lte":
+                datetime.strptime(request.args['to_'][0],"%Y-%m-%d")
+            }})
+    if 'downloaded_from' in request.args:
+        filters.update({"create_at": {"$gte":
+            datetime.strptime(request.args['downloaded_from'][0],"%Y-%m-%d")}
+        })
+    if 'downloaded_to' in request.args:
+        filters.update({"create_at": {"$lte":
+            datetime.strptime(request.args['downloaded_to'][0], "%Y-%m-%d")}})
+    if {'downloaded_to', 'downloaded_from'} <= request.args.keys():
+        filters.update({"create_at": {
+            "$gte":
+                datetime.strptime(request.args['downloaded_from'][0],"%Y-%m-%d"),
+            "$lte":
+                datetime.strptime(request.args['downloaded_to'][0],"%Y-%m-%d")
+            }})
+
+    return filters
+
+
+def get_contract_id(erp_client, cups, user):
+    contract_obj = erp_client.model('giscedata.polissa')
+
+    filters = [
+            ('active', '=', True),
+            ('state', '=', 'activa'),
+            ('empowering_profile_id', '=', 1),
+            ('cups', 'ilike', cups[:20])
+        ]
+    filters = get_contract_user_filters(erp_client, user, filters)
+    contract = contract_obj.search(filters)
+
+    if contract:
+        return contract_obj.read(contract, ['name'])[0]['name']

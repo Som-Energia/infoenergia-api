@@ -15,7 +15,8 @@ class TestBaseContracts(BaseTestCase):
             password='123412345',
             email='someone@somenergia.coop',
             partner_id=1,
-            is_superuser=True
+            is_superuser=True,
+            category='partner'
         )
         token = self.get_auth_token(user.username, "123412345")
         _, response = self.client.get(
@@ -32,6 +33,7 @@ class TestBaseContracts(BaseTestCase):
             {
                 'count': 1,
                 'data': [self.json4test['contract_id_2A']['contract_data']],
+                'total_results': 1
             }
         )
         self.delete_user(user)
@@ -43,7 +45,8 @@ class TestBaseContracts(BaseTestCase):
             password='123412345',
             email='someone@somenergia.coop',
             partner_id=1,
-            is_superuser=True
+            is_superuser=True,
+            category='partner'
         )
         token = self.get_auth_token(user.username, "123412345")
         params = {
@@ -67,10 +70,102 @@ class TestBaseContracts(BaseTestCase):
             {
                 'count': 2,
                 'data': self.json4test['contracts_20DHS']['contract_data'],
+                'total_results': 2
             }
         )
         self.delete_user(user)
 
+    @db_session
+    def test__get_contracts__3X(self):
+        user = self.get_or_create_user(
+            username='someone',
+            password='123412345',
+            email='someone@somenergia.coop',
+            partner_id=1,
+            is_superuser=True,
+            category='partner'
+        )
+        token = self.get_auth_token(user.username, "123412345")
+
+        _, response = self.client.get(
+            '/contracts/' + self.json4test['contract_id_3X']['contractId'],
+            headers={
+                'Authorization': 'Bearer {}'.format(token)
+            },
+            timeout=None
+        )
+
+        self.assertEqual(response.status, 200)
+        self.assertDictEqual(
+            response.json,
+            {
+                'count': 1,
+                'data': self.json4test['contract_id_3X']['contract_data'],
+                'total_results': 1
+            }
+        )
+        self.delete_user(user)
+
+
+    @db_session
+    def test__get_contracts_without_permission(self):
+        user = self.get_or_create_user(
+            username='someone',
+            password='123412345',
+            email='someone@somenergia.coop',
+            partner_id=1,
+            is_superuser=False,
+            category='Energética'
+        )
+        token = self.get_auth_token(user.username, "123412345")
+        _, response = self.client.get(
+            '/contracts/' + self.json4test['contract_id_2A']['contractId'],
+            headers={
+                'Authorization': 'Bearer {}'.format(token)
+            },
+            timeout=None
+        )
+
+        self.assertEqual(response.status, 200)
+        self.assertDictEqual(
+            response.json,
+            {
+                'count': 0,
+                'data': [],
+                'total_results': 0
+            }
+        )
+        self.delete_user(user)
+
+    @db_session
+    def test__get_contract_energetica(self):
+        user = self.get_or_create_user(
+            username='someone',
+            password='123412345',
+            email='someone@somenergia.coop',
+            partner_id=1,
+            is_superuser=False,
+            category='Energética'
+        )
+        token = self.get_auth_token(user.username, "123412345")
+        _, response = self.client.get(
+            '/contracts/' + self.json4test['contract_energetica']['contractId'],
+            headers={
+                'Authorization': 'Bearer {}'.format(token)
+            },
+            timeout=None
+        )
+
+        self.assertEqual(response.status, 200)
+        self.assertDictEqual(
+            response.json,
+            {
+                'count': 1,
+                'data': self.json4test['contract_energetica']['contract_data'],
+                'total_results': 1
+            }
+        )
+        self.delete_user(user)
 
 class TestContracts(BaseTestCase):
 
@@ -89,7 +184,7 @@ class TestContracts(BaseTestCase):
             tariff,
             {
               'dateEnd': '2020-11-21T00:00:00-00:15Z',
-              'dateStart': '2019-09-02T00:00:00-00:15Z',
+              'dateStart': '2020-11-12T00:00:00-00:15Z',
               'tariffId': '2.0A'
             }
         )
@@ -115,7 +210,7 @@ class TestContracts(BaseTestCase):
             power,
             {
                 'power': 3400,
-                'dateStart': '2019-09-02T00:00:00-00:15Z',
+                'dateStart': '2020-11-12T00:00:00-00:15Z',
                 'dateEnd': '2020-11-21T00:00:00-00:15Z'
             }
         )
@@ -240,7 +335,7 @@ class TestContracts(BaseTestCase):
         version = contract.version
         self.assertEqual(
             version,
-            4
+            7
         )
 
     def test__get_experimentalgroup(self):
@@ -256,7 +351,7 @@ class TestContracts(BaseTestCase):
         self_consumption = contract.selfConsumption
         self.assertEqual(
             self_consumption,
-            False
+            'Sin Autoconsumo'
         )
 
     def test__get_juridicType_physical_person(self):
