@@ -52,7 +52,6 @@ class TestReport(BaseTestCase):
             response.json,
             {
                 'reports': 3,
-                'unprocessed_reports':['1000010'],
             }
         )
         self.delete_user(user)

@@ -1,10 +1,7 @@
-import aioredis
 import aiohttp
 import asyncio
 
 import ssl
-import json as jsonlib
-from sanic.response import json
 from sanic.log import logger
 
 class beedataApi(object):
