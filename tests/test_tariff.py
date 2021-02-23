@@ -14,12 +14,11 @@ class TestBaseTariff(BaseTestCase):
             password='123412345',
             email='someone@somenergia.coop',
             partner_id=1,
-            is_superuser=True
+            is_superuser=True,
+            category='partner'
         )
         token = self.get_auth_token(user.username, "123412345")
         params = {
-            'from_': '2019-10-03',
-            'to_': '2019-10-09',
             'tariff': '2.0A',
         }
         _, response = self.client.get(
@@ -27,6 +26,40 @@ class TestBaseTariff(BaseTestCase):
             headers={
                 'Authorization': 'Bearer {}'.format(token)
             },
+            params=params,
+            timeout=None
+        )
+
+        self.assertEqual(response.status, 200)
+        self.assertDictEqual(
+            response.json,
+            {
+                'count': 7,
+                'data': self.json4test['price2A']['data_AllPriceId']
+            }
+        )
+        self.delete_user(user)
+
+    def test__get_tariff__2A_with_priceId(self):
+        user = self.get_or_create_user(
+            username='someone',
+            password='123412345',
+            email='someone@somenergia.coop',
+            partner_id=1,
+            is_superuser=True,
+            category='partner'
+        )
+        token = self.get_auth_token(user.username, "123412345")
+        params = {
+            'tariff': '2.0A',
+            'tariffPriceId': 4
+        }
+        _, response = self.client.get(
+            '/tariff',
+            headers={
+                'Authorization': 'Bearer {}'.format(token)
+            },
+            params=params,
             timeout=None
         )
 
@@ -35,12 +68,43 @@ class TestBaseTariff(BaseTestCase):
             response.json,
             {
                 'count': 1,
-                'data': [self.json4test['contract_id_2A']['contract_data']],
+                'data': self.json4test['price2A']['data_OnePriceId']
             }
         )
         self.delete_user(user)
 
 
+    def test__get_tariff__3A(self):
+        user = self.get_or_create_user(
+            username='someone',
+            password='123412345',
+            email='someone@somenergia.coop',
+            partner_id=1,
+            is_superuser=True,
+            category='partner'
+        )
+        token = self.get_auth_token(user.username, "123412345")
+        params = {
+            'tariff': '3.0A',
+        }
+        _, response = self.client.get(
+            '/tariff',
+            headers={
+                'Authorization': 'Bearer {}'.format(token)
+            },
+            params=params,
+            timeout=None
+        )
+
+        self.assertEqual(response.status, 200)
+        self.assertDictEqual(
+            response.json,
+            {
+                'count': 9,
+                'data': self.json4test['price3A']['data']
+            }
+        )
+        self.delete_user(user)
 
 class TestTariff(BaseTestCase):
 
@@ -208,26 +272,16 @@ class TestTariff(BaseTestCase):
     def test__get_tariff_historical_prices_2X(self):
         tariff = Tariff(self.tariff_id_2x)
         prices = tariff.priceDetail
+        self.assertEqual(prices, self.json4test['price2A']['data_OnePriceId'][0]['price'])
 
-        self.assertEqual(prices, self.json4test['tariff2X']['priceHistory'])
 
-
-    def test__get_reactive_energy(self):
+    def _test__get_reactive_energy(self):
         tariff = Tariff(self.tariff_id_2x)
         energy = tariff.reactiveEnergy
-
         self.assertEqual(energy, self.json4test['reactiveEnergy'])
 
 
     def test__get_tariff_2X(self):
         tariff = Tariff(self.tariff_id_2x)
         tariff_json = tariff.tariff
-
-        self.assertEqual(tariff_json, self.json4test['tariff2X'])
-
-
-    def test__get_tariff_3X(self):
-        tariff = Tariff(self.tariff_id_3x)
-        tariff_json = tariff.tariff
-
-        self.assertEqual(tariff_json, self.json4test['tariff3X'])
+        self.assertEqual(tariff_json, self.json4test['price2A']['data_OnePriceId'][0])

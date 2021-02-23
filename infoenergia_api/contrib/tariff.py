@@ -1,7 +1,9 @@
 import functools
+import operator
 from sanic.log import logger
 
 from ..utils import (get_request_filters, make_uuid)
+
 
 class Tariff(object):
     FIELDS = [
@@ -15,7 +17,9 @@ class Tariff(object):
         from infoenergia_api.app import app
 
         self._erp = app.erp_client
+        self._Priceversion = self._erp.model('product.pricelist.version')
         self._Pricelist = self._erp.model('product.pricelist')
+
         for name, value in self._Pricelist.read(price_id,
              self.FIELDS).items():
             setattr(self, name, value)
@@ -39,12 +43,11 @@ class Tariff(object):
         ]
         priceitem_obj = self._erp.model('product.pricelist.item')
         term_price = priceitem_obj.read(items_id, fields)
-
         return [{
             'name': tp['name'],
             'period': tp['name'].split('_')[0],
             'price': tp['price_surcharge'],
-            'units': units
+            'units': units,
             } for tp in term_price
             if tp['name'].find(term_type) > 0
         ]
@@ -52,15 +55,13 @@ class Tariff(object):
     def reactiveEnergyPrice(self, price_version_id, name):
         priceitem_obj = self._erp.model('product.pricelist.item')
 
-        return priceitem_obj.read(
-            [
-                ('name', 'like', '%Cos%'),
-                ('base_pricelist_id', '=', 3),
-                ('price_version_id', '=', price_version_id),
-                ('name', '=', name),
-            ]
-        )[0]['price_surcharge']
-
+        priceitem_ids = priceitem_obj.search([
+                        ('name', 'like', '%Cos%'),
+                        ('base_pricelist_id', '=', 3),
+                        ('price_version_id', '=', price_version_id),
+                        ('name', '=', name),
+                    ])
+        return priceitem_obj.read(priceitem_ids)[0]['price_surcharge']
 
     @property
     def reactiveEnergy(self):
@@ -77,14 +78,17 @@ class Tariff(object):
                 ('base_pricelist_id', '=', 3),
             ], fields , order='price_version_id'
         )
-        return [{
+        price_detail = [{
                 'BOE': rp.get('price_version_id')[1],
                 'price33': self.reactiveEnergyPrice(rp['price_version_id'][0], str('Cos(fi) 0.80 - 0.95')),
                 'price75': self.reactiveEnergyPrice(rp['price_version_id'][0], str('Cos(fi) 0 - 0.80')),
                 'units': '€/kVArh'
                 } for rp in reactive_price
-            ] or []
-
+            ]
+        return {
+            'current': price_detail[0],
+            'history': price_detail[1:]
+        }
 
     @property
     def priceDetail(self):
@@ -99,25 +103,29 @@ class Tariff(object):
             'id',
             'name',
         ]
-        priceversion_obj = self._erp.model('product.pricelist.version')
-        prices = priceversion_obj.read(self.version_id, fields)
-        return [{
-            'dateStart': price['date_start'],
-            'dateEnd': price['date_end'],
-            'activeEnergy': self.termPrice(price['items_id'], 'ENERGIA', '€/kWh'),
-            'power': self.termPrice(price['items_id'], 'POTENCIA', '€/kW year'),
-            'GKWh': self.termPrice(price['items_id'], 'GKWh', '€/kWh'),
-            } for price in prices]
+        prices = self._Priceversion.read(self.version_id, fields)
+        if prices:
+            price_detail = [{
+                'dateStart': price['date_start'],
+                'dateEnd': price['date_end'],
+                'activeEnergy': self.termPrice(price['items_id'], 'ENERGIA', '€/kWh'),
+                'power': self.termPrice(price['items_id'], 'POTENCIA', '€/kW year'),
+                'GKWh': self.termPrice(price['items_id'], 'GKWh', '€/kWh'),
+                } for price in prices]
+            price_detail.sort(key=operator.itemgetter('dateStart'), reverse=True)
+            return {
+                'current': price_detail[0],
+                'history': price_detail[1:]
+            }
 
     @property
     def tariff(self):
-        return {
-            'tariffId': self.id,
-            'price': self.priceDetail[0],
-            'priceReactiveEnergy': self.reactiveEnergy[-1],
-            'priceHistory': self.priceDetail,
-            'priceReactiveEnergyHistory': self.reactiveEnergy
-        }
+        if self.type == 'sale':
+            return {
+                'tariffPriceId': self.id,
+                'price': self.priceDetail,
+                #'priceReactiveEnergy': self.reactiveEnergy,
+            }
 
 def get_tariff_prices(request, contractId=None):
     tariff_obj = request.app.erp_client.model('giscedata.polissa.tarifa')
@@ -125,23 +133,25 @@ def get_tariff_prices(request, contractId=None):
     filters = [
         ('active', '=', True),
     ]
-
     if request.args:
-        filters = get_request_filters(
-            request.app.erp_client,
-            request,
-            filters,
-        )
+        if 'tariffPriceId' in request.args:
+            return [int(request.args['tariffPriceId'][0])]
+        else:
+            filters = get_request_filters(
+                request.app.erp_client,
+                request,
+                filters,
+            )
+
     if contractId:
-        tariffId =contract_obj.read(
+        tariffId = contract_obj.read(
             [('name', '=', contractId)],
             ['tarifa']
         )[0]['tarifa'][1]
         filters.append(('name', '=', tariffId))
     tariff_id = tariff_obj.search(filters)
-    tariff_price_ids = tariff_obj.read(tariff_id)[0]['llistes_preus_comptatibles']
-
-    return tariff_price_ids
+    tariff_price_ids = [price['llistes_preus_comptatibles'] for price in tariff_obj.read(tariff_id)]
+    return list(set(functools.reduce(operator.concat, tariff_price_ids)))
 
 
 async def async_get_tariff_prices(request, contractId=None):

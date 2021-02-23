@@ -21,7 +21,7 @@ class TariffView(PaginationLinksMixin, HTTPMethodView):
 
     async def get(self, request):
         logger.info("Getting tariffs")
-        tariff_price_ids, links = await self.paginate_results(
+        tariff_price_ids, links, total_results = await self.paginate_results(
             request,
             function=async_get_tariff_prices
         )
@@ -33,8 +33,8 @@ class TariffView(PaginationLinksMixin, HTTPMethodView):
         ]
 
         response = {
-            'count': len(tariff_json),
-            'data': tariff_json
+            'count': len(list(filter(None, tariff_json))),
+            'data': list(filter(None, tariff_json))
         }
         response.update(links)
         return json(response)
