@@ -2,12 +2,14 @@ import os
 from concurrent import futures
 
 import aioredis
+import sentry_sdk
 from erppeek import Client
 from motor.motor_asyncio import AsyncIOMotorClient
 from pool_transport import PoolTransport
 from sanic import Sanic
 from sanic.log import logger
 from sanic_jwt import Initialize as InitializeJWT
+from sentry_sdk.integrations.sanic import SanicIntegration
 
 from infoenergia_api.api.contracts import bp_contracts
 from infoenergia_api.api.f1_measures import bp_f1_measures
@@ -18,9 +20,19 @@ from infoenergia_api.api.registration.login import (InvitationUrlToken,
                                                     authenticate, extra_views)
 from infoenergia_api.api.registration.models import db, retrieve_user
 
+from . import VERSION
+
 
 def build_app():
     from config import config
+
+    sentry_sdk.init(
+        dsn=config.SENTRY_DSN,
+        integrations=[SanicIntegration()],
+        realease=VERSION,
+        environment=os.environ.get('INFOENERGIA_MODULE_SETTINGS').split('.')[-1]
+    )
+
     app = Sanic('infoenergia-api')
     try:
         app.config.from_object(config)
