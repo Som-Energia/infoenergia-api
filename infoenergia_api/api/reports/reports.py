@@ -29,13 +29,12 @@ class ReportsView(PaginationLinksMixin, HTTPMethodView):
             cert_file=request.app.config.CERT_FILE,
             cert_key=request.app.config.KEY_FILE
         )
-        await request.app.loop.create_task(
+        request.app.loop.create_task(
             Beedata(bapi, request.app.mongo_client, request.app.redis).process_reports(report_ids, month)
          )
         response = {
             'reports': len(report_ids),
         }
-        await bapi.logout()
         return json(response)
 
 

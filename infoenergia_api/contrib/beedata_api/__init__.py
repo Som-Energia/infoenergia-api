@@ -39,7 +39,7 @@ class BeedataApiClient(object):
     }
 
     @classmethod
-    async def create (
+    async def create(
         cls, url, username, password, company_id, cert_file, cert_key, **kwargs
     ):
         self = cls()  
@@ -97,7 +97,6 @@ class BeedataApiClient(object):
                     cookies=response.cookies,
                     status=response.status
                 )
-            import pdb; pdb.set_trace()
             raise ApiException(content.get('error', 'Unexpected request'), response.status) 
 
     async def login(self, username=None, password=None):

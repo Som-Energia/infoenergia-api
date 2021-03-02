@@ -38,11 +38,11 @@ class Beedata(object):
 
     async def worker(self, queue, month, results):
         while True:
-            row = await queue.get()
-            result = await self.process_one_report(month, row)
+            contract_id = await queue.get()
+            result = await self.process_one_report(month, contract_id)
             results.append(result)
             if result:
-                await self._redis.lrem(b"key:reports", 0, row)
+                await self._redis.lrem(b"key:reports", 0, contract_id)
             # To do: Mark the item as processed, allowing queue.join() to keep
             # track of remaining work and know when everything is done.
             queue.task_done()
@@ -61,6 +61,7 @@ class Beedata(object):
         unprocessed_reports = await self._redis.lrange(b"key:reports", 0, -1)
         msg = 'The following {} reports were NOT processed: {}'
         logger.warning(msg.format(len(unprocessed_reports), unprocessed_reports))
+        await self.api_client.logout()
 
         return [report.decode() for report in unprocessed_reports]
 
