@@ -18,7 +18,7 @@ from infoenergia_api.api.registration.models import User
 class BaseTestCaseAsync(AioHTTPTestCase):
 
     async def setUpAsync(self):
-        super().setUpAsync()
+        await super().setUpAsync()
         self.app = app
         self.app.redis = fakeredis.FakeStrictRedis()
 

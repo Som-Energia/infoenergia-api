@@ -11,6 +11,9 @@ pylint = "*"
 coverage = "*"
 pytest = "*"
 requests = "*"
+pytest-aiohttp = "*"
+fakeredis = "*"
+vcrpy = "*"
 
 [packages]
 connexion = "*"
@@ -28,8 +31,9 @@ pymongo = "*"
 motor = "*"
 pool-transport = {git = "https://github.com/Som-Energia/pool_transport.git"}
 aiohttp = {extras = ["speedups"],version = "*"}
-pytest-aiohttp = "*"
-fakeredis = "*"
+pyyaml = "*"
+sentry-sdk = "*"
+aiocontextvars = "*"
 
 [requires]
 python_version = "3.8"

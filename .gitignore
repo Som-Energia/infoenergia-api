@@ -111,3 +111,9 @@ configdb.py
 *.sqlite3
 #test files
 json4test.yaml
+
+# Other staff
+.vscode
+cert.crt
+cert.key
+fixtures
