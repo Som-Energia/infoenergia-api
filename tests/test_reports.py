@@ -11,7 +11,7 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from tests.base import BaseTestCase, BaseTestCaseAsync
 from unittest import mock
 
-from infoenergia_api.contrib import beedataApi, get_report_ids
+from infoenergia_api.contrib import Beedata, BeedataApiClient, get_report_ids
 
 class TestReport(BaseTestCase):
 
@@ -20,6 +20,14 @@ class TestReport(BaseTestCase):
         self.app.redis = fakeredis.FakeStrictRedis()
         self.app.mongo_client = AsyncIOMotorClient(self.app.config.MONGO_CONF)
         self.loop = asyncio.get_event_loop()
+        self.bapi = asyncio.run(BeedataApiClient.create(
+            url=self.app.config.BASE_URL,
+            username=self.app.config.USERNAME,
+            password=self.app.config.PASSWORD,
+            company_id=self.app.config.COMPANY_ID,
+            cert_file=self.app.config.CERT_FILE,
+            cert_key=self.app.config.KEY_FILE
+        ))
 
     @db_session
     def test__post_contracts(self):
@@ -52,17 +60,17 @@ class TestReport(BaseTestCase):
             response.json,
             {
                 'reports': 3,
-                'unprocessed_reports':['1000010'],
             }
         )
         self.delete_user(user)
 
     def test__login_to_beedata(self):
-        bapi = beedataApi()
-        status = self.loop.run_until_complete(bapi.login())
+        bapi = Beedata(self.bapi, self.app.mongo_client)
+        status = asyncio.run(
+            bapi.api_client.login(self.app.config.USERNAME, self.app.config.PASSWORD)
+        )
 
-        self.assertEqual(status, 200)
-        self.assertNotEqual(bapi.token, None)
+        self.assertNotEqual(status.token, None)
 
 
 class TestBaseReportsAsync(BaseTestCaseAsync):
@@ -70,97 +78,68 @@ class TestBaseReportsAsync(BaseTestCaseAsync):
     def setUp(self):
         super().setUp()
         self.app.mongo_client = AsyncIOMotorClient(self.app.config.MONGO_CONF)
+        bapi_client = asyncio.run(BeedataApiClient.create(
+            url=self.app.config.BASE_URL,
+            username=self.app.config.USERNAME,
+            password=self.app.config.PASSWORD,
+            company_id=self.app.config.COMPANY_ID,
+            cert_file=self.app.config.CERT_FILE,
+            cert_key=self.app.config.KEY_FILE
+        ))
+        self.bapi = Beedata(bapi_client, self.app.mongo_client)
 
     @unittest_run_loop
     async def test__download_one_report(self):
-        bapi = beedataApi()
-
-        status = await bapi.login()
-        headers = {
-          'X-CompanyId': str(bapi.company_id),
-          'Cookie': 'iPlanetDirectoryPro={}'.format(bapi.token)
-        }
-        async with aiohttp.ClientSession(headers=headers) as session:
-            status, report = await bapi.download_one_report(
-                    session=session,
-                    contractId="0090438",
-                    month='202011'
-                )
+        async with aiohttp.ClientSession() as session:
+            status, report = await self.bapi.api_client.download_report(
+                contract_id="0090438",
+                month='202011'
+            )
         self.assertEqual(status, 200)
         self.assertIsNotNone(report)
         # TODO check report correctly downloaded
 
     @unittest_run_loop
     async def test__download_one_report__wrongid(self):
-
-        bapi = beedataApi()
-        status = await bapi.login()
-
-        headers = {
-          'X-CompanyId': str(bapi.company_id),
-          'Cookie': 'iPlanetDirectoryPro={}'.format(bapi.token)
-        }
-
-        async with aiohttp.ClientSession(headers=headers) as session:
-            status, report = await bapi.download_one_report(
-                    session,
-                    contractId="1090438",
-                    month='202011'
-                )
+        async with aiohttp.ClientSession() as session:
+            status, report = await self.bapi.api_client.download_report(
+                contract_id="1090438",
+                month='202011'
+            )
         self.assertEqual(status, 200)
         self.assertIsNone(report)
 
-    @mock.patch('infoenergia_api.contrib.reports.beedataApi.save_report')
+    @mock.patch('infoenergia_api.contrib.reports.Beedata.save_report')
     @db_session
     @unittest_run_loop
     async def test__process_one_valid_report(self, saved_report_mock):
         saved_report_mock.return_value = '1234'
 
-        bapi = beedataApi()
-        status = await bapi.login()
-
-        headers = {
-          'X-CompanyId': str(bapi.company_id),
-          'Cookie': 'iPlanetDirectoryPro={}'.format(bapi.token)
-        }
-
-        async with aiohttp.ClientSession(headers=headers) as session:
-            result = await bapi.process_one_report(
-                    month='202011',
-                    session=session,
-                    contractId=b"0090438"
-                )
+        async with aiohttp.ClientSession() as session:
+            status, result = await self.bapi.process_one_report(
+                month='202011',
+                contract_id=b"0090438"
+            )
         self.assertEqual(status, 200)
         self.assertTrue(result)
 
-    @mock.patch('infoenergia_api.contrib.reports.beedataApi.save_report')
+    @mock.patch('infoenergia_api.contrib.reports.Beedata.save_report')
     @db_session
     @unittest_run_loop
     async def test__process_one_invalid_report(self, saved_report_mock):
         saved_report_mock.return_value = ''
 
-        bapi = beedataApi()
-        status = await bapi.login()
-
-        headers = {
-          'X-CompanyId': str(bapi.company_id),
-          'Cookie': 'iPlanetDirectoryPro={}'.format(bapi.token)
-        }
-
-        async with aiohttp.ClientSession(headers=headers) as session:
-            result = await bapi.process_one_report(
-                    month='202011',
-                    session=session,
-                    contractId=b"0090438"
-                )
+        async with aiohttp.ClientSession() as session:
+            status, result = await self.bapi.process_one_report(
+                month='202011',
+                contract_id=b"0090438"
+            )
         self.assertEqual(status, 200)
         self.assertFalse(result)
 
     @db_session
     @unittest_run_loop
     async def test__insert_or_update_report(self):
-        bapi = beedataApi()
-
         report = [{
             'contractId': '1234567',
             '_updated': "2020-08-18T12:06:23Z",
@@ -168,6 +147,6 @@ class TestBaseReportsAsync(BaseTestCaseAsync):
             'month': '202009',
             'results': {},
         }]
-        reportId = await bapi.save_report(report)
+        reportId = await self.bapi.save_report(report)
         expectedReport = await self.app.mongo_client.somenergia.infoenergia_reports.find_one(reportId[0])
         self.assertEqual(reportId[0], expectedReport['_id'])

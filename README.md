@@ -39,6 +39,31 @@ Now our api is ready to run. You can simply execute `pipenv run python run.py` a
 #### Usage
 
 #### Changes
+
+### 1.4.1
+- Authentication fixes in report endpoint
+
+
+### 1.4.0
+
+- endpoint reports:
+  - Post contracts to be processed
+  - Download and save report information
+
+- enpoint cch:
+  - Add new filter: get cch by download date
+  - Fix bugs:
+    - get only 20 digits of cups
+    - add cch type to pagination request
+
+### 1.3.2
+
+- endpoint modcontracts:
+  - get modcontracts by contractId
+  - make more intuitive to filter canceled contracts, now it takes into account end date of the contract and not the initial date
+- endpoint contracts: return self-consumption type instead of True or False
+- add number of total results to response for all endpoints
+
 ### 1.3.1
 - Added tertiaryPowerHistory to contracts and modcontracts response
 
