@@ -30,7 +30,7 @@ def build_app():
     sentry_sdk.init(
         dsn=config.SENTRY_DSN,
         integrations=[SanicIntegration()],
-        realease=VERSION,
+        release=VERSION,
         environment=os.environ.get('INFOENERGIA_MODULE_SETTINGS').split('.')[-1]
     )
 
