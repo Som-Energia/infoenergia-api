@@ -6,7 +6,8 @@ from sanic.response import json
 from sanic.views import HTTPMethodView
 from sanic_jwt.decorators import protected
 
-from infoenergia_api.contrib.tariff import async_get_tariff_prices, Tariff
+from infoenergia_api.contrib.tariff import (async_get_tariff_prices, TariffPrice,
+    ReactiveEnergyPrice)
 from infoenergia_api.contrib import Pagination, PaginationLinksMixin
 
 bp_tariff = Blueprint('tariff')
@@ -28,13 +29,27 @@ class TariffView(PaginationLinksMixin, HTTPMethodView):
 
         tariff_json = [
             await request.app.loop.run_in_executor(
-                request.app.thread_pool, lambda: Tariff(tariff_price_id).tariff
+                request.app.thread_pool, lambda: TariffPrice(tariff_price_id).tariff
             ) for tariff_price_id in tariff_price_ids
-        ]
+        ]))
+
+        tariff_results = len(tariff_json)
+
+        reactive_energy_json = ReactiveEnergyPrice.create().reactiveEnergy
+        tariff_json.append(reactive_energy_json)
 
         response = {
-            'count': len(list(filter(None, tariff_json))),
-            'data': list(filter(None, tariff_json))
+            'count': tariff_results,
+            'data': tariff_json
+        }
+        response.update(links)
+        return json(response)
+
+
+
+        response = {
+            'count': tariff_results,
+            'data': tariff_json
         }
         response.update(links)
         return json(response)

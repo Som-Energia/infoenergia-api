@@ -1,14 +1,64 @@
 import functools
+import itertools
 import operator
 from sanic.log import logger
 
 from ..utils import (get_request_filters, make_uuid)
 
 
-class Tariff(object):
+class ReactiveEnergyPrice(object):
+
+    @classmethod
+    def create(cls):
+        from infoenergia_api.app import app
+        self = cls()
+        self._erp = app.erp_client
+        self._PricelistItem = self._erp.model('product.pricelist.item')
+        return self
+
+    def reactiveEnergyPrice(self, price_version_id, name):
+
+        priceitem_ids = self._PricelistItem.search([
+                        ('name', 'like', '%Cos%'),
+                        ('base_pricelist_id', '=', 3),
+                        ('price_version_id', '=', price_version_id),
+                        ('name', '=', name),
+                    ])
+        return self._PricelistItem.read(priceitem_ids)[0]['price_surcharge']
+
+    @property
+    def reactiveEnergy(self):
+
+        price_version = self._PricelistItem.read(
+            [
+                ('name', 'like', '%Cos%'),
+                ('base_pricelist_id', '=', 3),
+            ],
+            ['price_version_id'],
+            order='price_version_id'
+        )
+
+        boe_prices = [pv['price_version_id'] for pv in price_version]
+
+        reactive_prices = [boe_prices for boe_prices,_ in itertools.groupby(boe_prices)]
+        price_detail = [{
+                'BOE': rp[1],
+                'price33': self.reactiveEnergyPrice(rp[0], str('Cos(fi) 0.80 - 0.95')),
+                'price75': self.reactiveEnergyPrice(rp[0], str('Cos(fi) 0 - 0.80')),
+                'units': '€/kVArh'
+                } for rp in reactive_prices
+            ]
+        return {
+            'priceReactiveEnergy': {
+                'current': price_detail[-1],
+                'history': price_detail[:-1]
+            }
+        }
+
+
+class TariffPrice(object):
     FIELDS = [
         'id',
-        'name',
         'version_id',
         'type'
     ]
@@ -19,11 +69,11 @@ class Tariff(object):
         self._erp = app.erp_client
         self._Priceversion = self._erp.model('product.pricelist.version')
         self._Pricelist = self._erp.model('product.pricelist')
+        self._PricelistItem = self._erp.model('product.pricelist.item')
 
         for name, value in self._Pricelist.read(price_id,
              self.FIELDS).items():
             setattr(self, name, value)
-
 
     def termPrice(self, items_id, term_type, units):
         """
@@ -124,7 +174,6 @@ class Tariff(object):
             return {
                 'tariffPriceId': self.id,
                 'price': self.priceDetail,
-                #'priceReactiveEnergy': self.reactiveEnergy,
             }
 
 def get_tariff_prices(request, contractId=None):
