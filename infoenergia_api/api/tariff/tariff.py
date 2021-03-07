@@ -27,7 +27,7 @@ class TariffView(PaginationLinksMixin, HTTPMethodView):
             function=async_get_tariff_prices
         )
 
-        tariff_json = [
+        tariff_json = list(filter(None, [
             await request.app.loop.run_in_executor(
                 request.app.thread_pool, lambda: TariffPrice(tariff_price_id).tariff
             ) for tariff_price_id in tariff_price_ids

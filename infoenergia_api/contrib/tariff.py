@@ -79,66 +79,33 @@ class TariffPrice(object):
         """
         Term price
          [{
-         'name': P1-ENERGIA-20A_SOM
          'period': P1
          'price': 0.139
          'units': €/kWh
          }]
         """
         fields = [
-            'product_id',
             'name',
             'price_surcharge',
-            'price_version_id'
         ]
-        priceitem_obj = self._erp.model('product.pricelist.item')
-        term_price = priceitem_obj.read(items_id, fields)
-        return [{
-            'name': tp['name'],
-            'period': tp['name'].split('_')[0],
-            'price': tp['price_surcharge'],
-            'units': units,
-            } for tp in term_price
-            if tp['name'].find(term_type) > 0
-        ]
-
-    def reactiveEnergyPrice(self, price_version_id, name):
-        priceitem_obj = self._erp.model('product.pricelist.item')
-
-        priceitem_ids = priceitem_obj.search([
-                        ('name', 'like', '%Cos%'),
-                        ('base_pricelist_id', '=', 3),
-                        ('price_version_id', '=', price_version_id),
-                        ('name', '=', name),
-                    ])
-        return priceitem_obj.read(priceitem_ids)[0]['price_surcharge']
-
-    @property
-    def reactiveEnergy(self):
-        fields = [
-            'product_id',
-            'name',
-            'price_surcharge',
-            'price_version_id'
-        ]
-        priceitem_obj = self._erp.model('product.pricelist.item')
-        reactive_price = priceitem_obj.read(
-            [
-                ('name', 'like', '%Cos%'),
-                ('base_pricelist_id', '=', 3),
-            ], fields , order='price_version_id'
-        )
-        price_detail = [{
-                'BOE': rp.get('price_version_id')[1],
-                'price33': self.reactiveEnergyPrice(rp['price_version_id'][0], str('Cos(fi) 0.80 - 0.95')),
-                'price75': self.reactiveEnergyPrice(rp['price_version_id'][0], str('Cos(fi) 0 - 0.80')),
-                'units': '€/kVArh'
-                } for rp in reactive_price
+        term_price = self._PricelistItem.read(items_id, fields)
+        if term_type == 'GKWh':
+            return [{
+                'period': tp['name'].split('_')[0],
+                'price': tp['price_surcharge'],
+                'units': units,
+                } for tp in term_price
+                if tp['name'].find(term_type) > 0
+                if tp['name'].split('_')[0] != 'P3'
             ]
-        return {
-            'current': price_detail[0],
-            'history': price_detail[1:]
-        }
+        else:
+            return [{
+                'period': tp['name'].split('_')[0],
+                'price': tp['price_surcharge'],
+                'units': units,
+                } for tp in term_price
+                if tp['name'].find(term_type) > 0
+            ]
 
     @property
     def priceDetail(self):
@@ -150,10 +117,9 @@ class TariffPrice(object):
             'date_start',
             'date_end',
             'items_id',
-            'id',
-            'name',
         ]
-        prices = self._Priceversion.read(self.version_id, fields)
+        prices = self._Priceversion.read(self.version_id, fields, order='date_start')
+
         if prices:
             price_detail = [{
                 'dateStart': price['date_start'],
@@ -162,7 +128,6 @@ class TariffPrice(object):
                 'power': self.termPrice(price['items_id'], 'POTENCIA', '€/kW year'),
                 'GKWh': self.termPrice(price['items_id'], 'GKWh', '€/kWh'),
                 } for price in prices]
-            price_detail.sort(key=operator.itemgetter('dateStart'), reverse=True)
             return {
                 'current': price_detail[0],
                 'history': price_detail[1:]
