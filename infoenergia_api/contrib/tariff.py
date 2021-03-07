@@ -158,11 +158,11 @@ def get_tariff_prices(request, contractId=None):
             )
 
     if contractId:
-        tariffId = contract_obj.read(
+        tariff_price_id = contract_obj.read(
             [('name', '=', contractId)],
-            ['tarifa']
-        )[0]['tarifa'][1]
-        filters.append(('name', '=', tariffId))
+            ['llista_preu']
+        )[0]['llista_preu'][0]
+        return [tariff_price_id]
     tariff_id = tariff_obj.search(filters)
     tariff_price_ids = [price['llistes_preus_comptatibles'] for price in tariff_obj.read(tariff_id)]
     return list(set(functools.reduce(operator.concat, tariff_price_ids)))

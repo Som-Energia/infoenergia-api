@@ -103,8 +103,38 @@ class TestBaseTariff(BaseTestCase):
                 'count': 9,
                 'data': self.json4test['price3A']['data']
             }
+
         )
         self.delete_user(user)
+
+    def test__get_tariff__by_contract_id(self):
+        user = self.get_or_create_user(
+            username='someone',
+            password='123412345',
+            email='someone@somenergia.coop',
+            partner_id=1,
+            is_superuser=True,
+            category='partner'
+        )
+        token = self.get_auth_token(user.username, "123412345")
+        _, response = self.client.get(
+            '/tariff/0000004',
+            headers={
+                'Authorization': 'Bearer {}'.format(token)
+            },
+            timeout=None
+        )
+
+        self.assertEqual(response.status, 200)
+        self.assertDictEqual(
+            response.json,
+            {
+                'count': 1,
+                'data': self.json4test['price2A']['data_OnePriceId']
+            }
+        )
+        self.delete_user(user)
+
 
 class TestTariff(BaseTestCase):
 
