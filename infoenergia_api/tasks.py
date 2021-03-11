@@ -372,7 +372,7 @@ def get_cups(request, contractId=None):
     filters = [
         ('active', '=', True),
         ('state', '=', 'activa'),
-        ('empowering_profile_id', '=', 1),
+        ('emp_allow_send_data', '=', True),
         ('name', '=', contractId)
     ]
 
