@@ -450,7 +450,7 @@ class Contract(object):
             'autoconsumo': self.selfConsumption,
             'juridicType': self.juridicType,
             'tariffPriceId': self.llista_preu[0],
-            'tariffId': self.llista_preu[1],
+            'tariffId': self.tarifa[1],
             'tariff_': self.currentTariff,
             'tariffHistory': self.tariffHistory,
             'power': int(self.potencia * 1000),
