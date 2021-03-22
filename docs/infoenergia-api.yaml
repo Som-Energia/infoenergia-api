@@ -71,7 +71,6 @@ paths:
         schema:
           type: string
           format: date
-          default: None
           example: '2019-08-01'
       - name: to_
         in: query
@@ -82,7 +81,6 @@ paths:
         schema:
           type: string
           format: date
-          default: None
           example: '2019-08-10'
       - name: juridic_type
         in: query
@@ -216,7 +214,6 @@ paths:
         schema:
           type: string
           format: date
-          default: None
           example: '2019-08-01'
       - name: to_
         in: query
@@ -227,7 +224,6 @@ paths:
         schema:
           type: string
           format: date
-          default: None
           example: '2019-08-10'
       - name: juridic_type
         in: query
@@ -328,7 +324,6 @@ paths:
         schema:
           type: string
           format: date
-          default: None
           example: '2019-08-01'
       - name: to_
         in: query
@@ -339,7 +334,6 @@ paths:
         schema:
           type: string
           format: date
-          default: None
           example: '2019-08-10'
       - name: juridic_type
         in: query
@@ -445,7 +439,6 @@ paths:
         schema:
           type: string
           format: date
-          default: None
           example: '2019-08-01'
       - name: to_
         in: query
@@ -456,7 +449,6 @@ paths:
         schema:
           type: string
           format: date
-          default: None
           example: '2019-08-10'
       - name: limit
         in: query
@@ -531,7 +523,6 @@ paths:
         schema:
           type: string
           format: date
-          default: None
           example: '2019-08-01'
       - name: to_
         in: query
@@ -542,7 +533,6 @@ paths:
         schema:
           type: string
           format: date
-          default: None
           example: '2019-08-10'
       - name: limit
         in: query
@@ -649,7 +639,6 @@ paths:
         schema:
           type: string
           format: date
-          default: None
           example: '2019-08-01'
       - name: to_
         in: query
@@ -660,7 +649,6 @@ paths:
         schema:
           type: string
           format: date
-          default: None
           example: '2019-08-10'
       - name: downloaded_from
         in: query
@@ -671,7 +659,6 @@ paths:
         schema:
           type: string
           format: date
-          default: None
           example: '2019-08-01'
       - name: downloaded_to
         in: query
@@ -682,7 +669,6 @@ paths:
         schema:
           type: string
           format: date
-          default: None
           example: '2019-08-10'
       - name: limit
         in: query
@@ -805,7 +791,6 @@ paths:
           required: false
           schema:
             type: integer
-            default: None
             example: 4
         - name: limit
           in: query
