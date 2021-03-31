@@ -73,7 +73,7 @@ class TestContracts(TestCase):
                 {
                     'power': 3400,
                     'dateStart': '2019-09-02T00:00:00-00:15Z',
-                    'dateEnd': '2020-11-21T00:00:00-00:15Z'
+                    'dateEnd': '2020-10-27T00:00:00-00:15Z'
                 },
             ]
         )

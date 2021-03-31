@@ -52,6 +52,7 @@ class Contract(object):
         Current tariff:
         "tariff_": {
           "tariffId": "tariffID-123",
+          "tariffPriceId": 123,
           "dateStart": "2014-10-11T00:00:00Z",
           "dateEnd": null,
         }
@@ -60,6 +61,7 @@ class Contract(object):
 
         return {
             "tariffId": modcon['tarifa'][1],
+            "tariffPriceId": modcon['llista_preu'][0],
             "dateStart": make_utc_timestamp(modcon['data_inici']),
             "dateEnd": make_utc_timestamp(modcon['data_final'])
         }
@@ -70,11 +72,13 @@ class Contract(object):
         "tariffHistory": [
          {
           "tariffId": "tariffID-123",
+          "tariffPriceId": 123,
           "dateStart": "2014-10-11T00:00:00Z",
           "dateEnd": null,
          },
          {
            "tariffId": "tariffID-122",
+           "tariffPriceId": 122,
            "dateStart": "2013-10-11T16:37:05Z",
            "dateEnd": "2014-10-10T23:59:59Z"
           }
@@ -83,6 +87,7 @@ class Contract(object):
         return [
             {
                 "tariffId": modcon['tarifa'][1],
+                "tariffPriceId": modcon['llista_preu'][0],
                 "dateStart": make_utc_timestamp(modcon['data_inici']),
                 "dateEnd": make_utc_timestamp(modcon['data_final'])
             }
@@ -449,7 +454,6 @@ class Contract(object):
             'dateEnd': make_utc_timestamp(self.data_baixa),
             'autoconsumo': self.selfConsumption,
             'juridicType': self.juridicType,
-            'tariffPriceId': self.llista_preu[0],
             'tariffId': self.tarifa[1],
             'tariff_': self.currentTariff,
             'tariffHistory': self.tariffHistory,

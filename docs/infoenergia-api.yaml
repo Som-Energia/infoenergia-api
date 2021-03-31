@@ -990,11 +990,6 @@ components:
           type: string
           description: contracted tariff id
           example:  "tariffID-123"
-        tariffCostId:
-          type: number
-          format: integer
-          description: cost id for contracted tariff
-          example:  "123"
         tariff_:
           type: object
           description: tariff information
@@ -1027,6 +1022,10 @@ components:
             properties:
               tariff:
                 type: string
+              tariffCostId:
+                type: number
+                format: integer
+                description: cost id for contracted tariff
               dateStart:
                 type: string
                 format: date-time
@@ -1036,6 +1035,7 @@ components:
           example:
               {
                 "tariff": "2.0A",
+                "tariffCostId": 123,
                 "dateStart": "2019-08-11T00:00:00Z",
                 "dateEnd": "2019-08-11T00:00:00Z",
               }

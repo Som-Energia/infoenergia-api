@@ -8,7 +8,8 @@ from .utils import make_utc_timestamp, make_uuid, get_request_filters, get_contr
 
 def find_changes(erp_client, modcons_id, field):
     modcon_obj = erp_client.model('giscedata.polissa.modcontractual')
-    fields = ['data_inici', 'data_final', 'potencia', 'tarifa', 'potencies_periode']
+    fields = ['data_inici', 'data_final', 'potencia', 'tarifa',
+        'potencies_periode', 'llista_preu']
 
     modcons = modcon_obj.read(modcons_id, fields)
     # to do: re-write if

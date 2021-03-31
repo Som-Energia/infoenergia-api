@@ -130,7 +130,7 @@ class TestModContracts(BaseTestCase):
         token = self.get_auth_token(user.username, "123412345")
         params = {
             'from_': '2000-10-01',
-            'to_': '2019-10-19',
+            'to_': '2021-10-19',
             'type': 'tariff_power',
         }
         _, response = self.client.get(

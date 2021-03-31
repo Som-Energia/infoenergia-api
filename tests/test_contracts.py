@@ -185,20 +185,28 @@ class TestContracts(BaseTestCase):
             {
               'dateEnd': '2020-11-21T00:00:00-00:15Z',
               'dateStart': '2020-11-12T00:00:00-00:15Z',
-              'tariffId': '2.0A'
+              'tariffId': '2.0A',
+              'tariffPriceId': 4
             }
         )
 
     def test__get_tariffHistory(self):
-        contract = Contract(self.contract_id)
+        contract = Contract(13)
         tariff_history = contract.tariffHistory
         self.assertListEqual(
             tariff_history,
             [
                 {
-                    'dateEnd': '2020-11-21T00:00:00-00:15Z',
-                    'dateStart': '2011-11-22T00:00:00-00:15Z',
-                    'tariffId': '2.0A'
+                    'dateEnd': '2019-06-05T00:00:00-00:15Z',
+                    'dateStart': '2011-12-31T00:00:00-00:15Z',
+                    'tariffId': '2.0A',
+                    'tariffPriceId': 4
+                },
+                {
+                    'dateEnd': '2020-12-30T00:00:00-00:15Z',
+                    'dateStart': '2019-06-06T00:00:00-00:15Z',
+                    'tariffId': '2.0DHS',
+                    'tariffPriceId': 18
                 }
             ]
         )
