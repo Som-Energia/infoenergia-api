@@ -59,6 +59,24 @@ class Cch(object):
                 'dateDownload': (self.create_at).strftime("%Y-%m-%d %H:%M:%S"),
                 'dateUpdate': (self.update_at).strftime("%Y-%m-%d %H:%M:%S")
             }
+        if self._collection == 'tg_f1':
+            return {
+                'season': self.season,
+                'ai': self.ai,
+                'ao': self.ao,
+                'r1': self.r1,
+                'r2': self.r2,
+                'r3': self.r3,
+                'r4': self.r4,
+                'source': self.source,
+                'validated': self.validated,
+                'date': self.dateCch,
+                'dateDownload': (self.create_at).strftime("%Y-%m-%d %H:%M:%S"),
+                'dateUpdate': (self.update_at).strftime("%Y-%m-%d %H:%M:%S"),
+                'reserve1': self.reserve1,
+                'reserve2': self.reserve2,
+                'measureType': self.measure_type,
+            }
 
     def cch_measures(self, user):
         contractId = get_contract_id(self._erp, self.name, user)

@@ -630,6 +630,7 @@ paths:
           enum:
             - tg_cchfact
             - tg_cchval
+            - tg_f1
       - name: from_
         in: query
         description: Get all CCH from this date on. In format YYYY-MM-DD

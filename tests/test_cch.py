@@ -210,6 +210,7 @@ class TestCch(BaseTestCase):
         self.app.mongo_client = AsyncIOMotorClient(self.app.config.MONGO_CONF)
         self.loop = asyncio.get_event_loop()
         self.f5d_id = '5c2dd783cb2f477212c77abb'
+        self.f1_id = '5e1d8d9612cd738e89bb3cfb'
 
     @unittest_run_loop
     async def test__create_f5d(self):
@@ -236,3 +237,33 @@ class TestCch(BaseTestCase):
                 'source': 1,
                 'validated': True
             })
+
+    @unittest_run_loop
+    async def test__create_f1(self):
+        f1 = await Cch.create(self.f1_id, 'tg_f1')
+        self.assertIsInstance(f1, Cch)
+
+    @unittest_run_loop
+    async def test__get_f1_measurements(self):
+        f1 = await Cch.create(self.f1_id, 'tg_f1')
+        data = f1.measurements
+        self.assertDictEqual(
+            data,
+            {
+                'ai': 14.0,
+                'ao': 0.0,
+                'date': '2017-12-01 22:00:00+0000',
+                'dateUpdate': '2020-01-14 10:44:54',
+                'season': 0,
+                'validated': False,
+                'r1': 1.0,
+                'r2': 0.0,
+                'r3': 0.0,
+                'r4': 2.0,
+                'reserve1': 0,
+                'reserve2': 0,
+                'source': 1,
+                'measureType': 11,
+                'dateDownload': '2020-01-14 10:44:54'
+            }
+        )
