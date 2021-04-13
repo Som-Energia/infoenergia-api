@@ -1,6 +1,7 @@
 import asyncio
 from unittest import mock
 
+from aiohttp.test_utils import unittest_run_loop
 from motor.motor_asyncio import AsyncIOMotorClient
 from pony.orm import db_session
 
@@ -84,7 +85,7 @@ class TestBaseCch(BaseTestCase):
             response.json,
             {
                 'count': 50,
-                'total_results': 47451,
+                'total_results': 114333,
                 'cursor': 'N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=',
                 'next_page':'http://{}/cch?type=tg_cchfact&cursor=N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=&limit=50'.format(response.url.netloc),
                 'data': self.json4test['f5d_all']['cch_data'],
@@ -210,12 +211,14 @@ class TestCch(BaseTestCase):
         self.loop = asyncio.get_event_loop()
         self.f5d_id = '5c2dd783cb2f477212c77abb'
 
-    def test__create_f5d(self):
-        f5d = self.loop.run_until_complete(Cch.create(self.f5d_id, 'tg_cchfact'))
+    @unittest_run_loop
+    async def test__create_f5d(self):
+        f5d = await Cch.create(self.f5d_id, 'tg_cchfact')
         self.assertIsInstance(f5d, Cch)
 
-    def test__get_measurements(self):
-        f5d = self.loop.run_until_complete(Cch.create(self.f5d_id, 'tg_cchfact'))
+    @unittest_run_loop
+    async def test__get_f5d_measurements(self):
+        f5d = await Cch.create(self.f5d_id, 'tg_cchfact')
         data = f5d.measurements
         self.assertDictEqual(
             data,
