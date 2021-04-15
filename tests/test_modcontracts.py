@@ -152,3 +152,39 @@ class TestModContracts(BaseTestCase):
             }
         )
         self.delete_user(user)
+
+    @db_session
+    def test__get_modcontracts__canceled_by_contractId(self):
+        user = self.get_or_create_user(
+            username='someone',
+            password='123412345',
+            email='someone@somenergia.coop',
+            partner_id=1,
+            is_superuser=True,
+            category='partner'
+        )
+        token = self.get_auth_token(user.username, "123412345")
+        params = {
+            'from_': '2014-05-13',
+            'to_': '2014-05-13',
+            'type': 'canceled',
+        }
+        _, response = self.client.get(
+            '/modcontracts/' + self.json4test['canceled']['contractId'],
+            params=params,
+            headers={
+                'Authorization': 'Bearer {}'.format(token)
+            },
+            timeout=None
+        )
+
+        self.assertEqual(response.status, 200)
+        self.assertDictEqual(
+            response.json,
+            {
+                'total_results': 1,
+                'count': 1,
+                'data': self.json4test['canceled']['contract_data']
+            }
+        )
+        self.delete_user(user)

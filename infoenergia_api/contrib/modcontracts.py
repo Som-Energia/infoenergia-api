@@ -9,7 +9,6 @@ def get_modcontracts(request, contractId=None):
     contract_obj = request.app.erp_client.model('giscedata.polissa')
 
     filters = [
-        ('tipus', '=', 'mod'),
         ('polissa_id.empowering_profile_id', '=', 1),
     ]
     filters = get_invoice_user_filters(
@@ -24,7 +23,7 @@ def get_modcontracts(request, contractId=None):
 
     if request.args['type'][0] == 'canceled':
         filters.extend([
-            ('state', '=', 'baixa'),
+            ('polissa_id.state', '=', 'baixa'),
             ('data_final', '>=', request.args.get('from_', str(date.today()))),
             ('data_final', '<=', request.args['to_'][0])
         ])
@@ -32,10 +31,10 @@ def get_modcontracts(request, contractId=None):
         filters.extend([
             ('active', '=', True),
             ('state', '=', 'actiu'),
+            ('tipus', '=', 'mod'),
             ('data_inici', '>=', request.args.get('from_', str(date.today()))),
             ('data_inici', '<=', request.args['to_'][0])
         ])
-
 
     modcontract_ids = modcon_obj.search(filters, context={'active_test': False})
 

@@ -26,7 +26,7 @@ class TestBaseContracts(BaseTestCase):
             },
             timeout=None
         )
-
+        print(response)
         self.assertEqual(response.status, 200)
         self.assertDictEqual(
             response.json,
@@ -94,7 +94,6 @@ class TestBaseContracts(BaseTestCase):
             },
             timeout=None
         )
-
         self.assertEqual(response.status, 200)
         self.assertDictEqual(
             response.json,
