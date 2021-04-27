@@ -15,6 +15,7 @@ class Cch(object):
         from infoenergia_api.app import app
         self = cls()
         self._erp = app.erp_client
+        self._executor = app.thread_pool
         self._mongo = app.mongo_client.somenergia
         self._collection = collection
         self._Cch = self._mongo[self._collection]

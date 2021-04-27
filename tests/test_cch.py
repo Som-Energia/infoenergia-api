@@ -10,8 +10,9 @@ from infoenergia_api.contrib import Cch
 
 
 class TestBaseCch(BaseTestCase):
-
-    @mock.patch('infoenergia_api.contrib.pagination.PaginationLinksMixin._next_cursor')
+    patch_next_cursor = 'infoenergia_api.contrib.pagination.PaginationLinksMixin._next_cursor'
+    
+    @mock.patch(patch_next_cursor)
     @db_session
     def test__get_f5d_by_id__2A(self, next_cursor_mock):
         next_cursor_mock.return_value = 'N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0='
@@ -54,7 +55,7 @@ class TestBaseCch(BaseTestCase):
         self.delete_user(user)
 
 
-    @mock.patch('infoenergia_api.contrib.pagination.PaginationLinksMixin._next_cursor')
+    @mock.patch(patch_next_cursor)
     @db_session
     def test__get_f5d__all_contracts(self, next_cursor_mock):
         next_cursor_mock.return_value = 'N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0='
@@ -130,7 +131,7 @@ class TestBaseCch(BaseTestCase):
         )
         self.delete_user(user)
 
-    @mock.patch('infoenergia_api.contrib.pagination.PaginationLinksMixin._next_cursor')
+    @mock.patch(patch_next_cursor)
     @db_session
     def test__get_p5d__for_contract_id(self, next_cursor_mock):
         next_cursor_mock.return_value = 'N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0='
