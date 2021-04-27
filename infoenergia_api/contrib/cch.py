@@ -79,27 +79,37 @@ class Cch(object):
                 'measureType': self.measure_type,
             }
 
-    def cch_measures(self, user):
-        contractId = get_contract_id(self._erp, self.name, user)
+    async def cch_measures(self, user):
+        contractId = self._loop.run_in_executor(
+            self._executor, get_contract_id, self._erp, self.name, user
+        )
         if contractId:
             return {
                 'contractId': contractId,
                 'meteringPointId': make_uuid('giscedata.cups.ps', self.name),
                 'measurements': self.measurements
             }
+        return {}
 
 
 async def async_get_cch(request, contractId=None):
     collection = str(request.args['type'][0])
     cch_collection = request.app.mongo_client.somenergia[collection]
-
     filters = {}
+
     if contractId:
-        cups = get_cups(request, contractId)
+        cups = await request.app.loop.run_in_executor(
+            request.app.thread_pool, get_cups, request, contractId
+        )
         if not cups:
             return []
         filters.update({"name": {'$regex': '^{}'.format(cups[0][:20])}})
 
     if request.args:
-        filters = get_cch_filters(request, filters)
-    return [cch['_id'] async for cch in cch_collection.find(filters) if cch.get('_id')]
+        filters = await get_cch_filters(request, filters)
+   
+    return [
+        cch['_id']
+        async for cch in cch_collection.find(filters)
+        if cch.get('_id')
+    ]
