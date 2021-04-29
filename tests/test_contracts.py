@@ -203,7 +203,7 @@ class TestContracts(BaseTestCase):
                     'tariffPriceId': 4
                 },
                 {
-                    'dateEnd': '2020-12-30T00:00:00-00:15Z',
+                    'dateEnd': '2022-03-31T00:00:00-00:15Z',
                     'dateStart': '2019-06-06T00:00:00-00:15Z',
                     'tariffId': '2.0DHS',
                     'tariffPriceId': 18
@@ -219,7 +219,8 @@ class TestContracts(BaseTestCase):
             {
                 'power': 3400,
                 'dateStart': '2020-11-12T00:00:00-00:15Z',
-                'dateEnd': '2020-11-21T00:00:00-00:15Z'
+                'dateEnd': '2020-11-21T00:00:00-00:15Z',
+                'measurement_point': '05'
             }
         )
 
@@ -232,12 +233,14 @@ class TestContracts(BaseTestCase):
                 {
                     'power': 6600,
                     'dateStart': '2011-11-22T00:00:00-00:15Z',
-                    'dateEnd': '2019-09-01T00:00:00-00:15Z'
+                    'dateEnd': '2019-09-01T00:00:00-00:15Z',
+                    'measurement_point': '05'
                 },
                 {
                     'power': 3400,
                     'dateStart': '2019-09-02T00:00:00-00:15Z',
-                    'dateEnd': '2020-11-21T00:00:00-00:15Z'
+                    'dateEnd': '2020-11-21T00:00:00-00:15Z',
+                    'measurement_point': '05'
                 },
             ]
         )
