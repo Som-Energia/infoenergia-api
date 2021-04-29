@@ -631,6 +631,150 @@ paths:
             - tg_cchfact
             - tg_cchval
             - tg_f1
+            - P1
+            - P2
+      - name: from_
+        in: query
+        description: Get all CCH from this date on. In format YYYY-MM-DD
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          format: date
+          example: '2019-08-01'
+      - name: to_
+        in: query
+        description: Get all CCH until this date. In format YYYY-MM-DD
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          format: date
+          example: '2019-08-10'
+      - name: downloaded_from
+        in: query
+        description: Get all CCH downloaded from this date on at 00:00 hours. In format YYYY-MM-DD
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          format: date
+          example: '2019-08-01'
+      - name: downloaded_to
+        in: query
+        description: Get all CCH downloaded until this date at 00:00 hours. In format YYYY-MM-DD
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          format: date
+          example: '2019-08-10'
+      - name: limit
+        in: query
+        description: How many contracts to return at one time
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          default: 50
+          maximum: 500
+      - name: cursor
+        in: query
+        description: Actual cursor for this search
+        required: false
+        schema:
+          type: string
+          format: byte
+          default: None
+          example: 'dXNlcjpXMDdRQ1JQQTQ='
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total_results:
+                    type: integer
+                    description: total number of registers
+                    example: 234
+                  count:
+                    type: integer
+                    description: number of registers in current page
+                    example: 234
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/cch'
+                  links:
+                    type: object
+                    properties:
+                      next:
+                        type: string
+                        description: url of next results. If null, you are in the last page
+                        example: "https://apinertgia.somenergia.coop/contracts?limit=5&cursor=dXNlcjpVMEc5V0ZYTlo"
+        400:
+          description: Invalid status value
+          content: {}
+      security:
+        - jwt: []
+  /cch/{contractId}:
+    get:
+      tags:
+      - cch
+      summary: Obtain cch curves
+      description: Get cch curves information depending on some date and tariff parameters
+      operationId: server.get_cch_by_contract_id
+      parameters:
+      - name: contractId
+        in: path
+        description: ID of contract to get cch curve
+        required: true
+        schema:
+          type: string
+      - name: tariff
+        in: query
+        description: Tariff of the contract to filter
+        required: false
+        style: form
+        explode: false
+        schema:
+          type: string
+          default: None
+          enum:
+            - None
+            - 2.0A
+            - 2.1A
+            - 2.0DHA
+            - 2.0DHS
+            - 2.1DHA
+            - 2.1DHS
+            - 3.0A
+            - 3.1A
+            - 3.1A-LB
+            - 6.1
+            - 6.1A
+            - 6.1B
+      - name: type
+        in: query
+        description: type of cch, tg_cchfact are F5D and tg_cchval are P5D
+        required: true
+        style: form
+        explode: false
+        schema:
+          type: string
+          default: tg_cchfact
+          enum:
+            - tg_cchfact
+            - tg_cchval
+            - tg_f1
+            - P1
+            - P2
       - name: from_
         in: query
         description: Get all CCH from this date on. In format YYYY-MM-DD
