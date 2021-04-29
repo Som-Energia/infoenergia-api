@@ -162,14 +162,20 @@ async def get_cch_filters(request, filters):
         filters.update({"create_at": {"$gte":
             datetime.strptime(request.args['downloaded_from'][0],"%Y-%m-%d")}
         })
-   
+
     if 'downloaded_to' in request.args:
         create_at_query = filters.get("create_at", {})
         create_at_query.update({
             "$lte": datetime.strptime(request.args['downloaded_to'][0], "%Y-%m-%d")
         })
         filters['create_at'] = create_at_query
-   
+
+    if 'P1' in request.args['type']:
+        filters.update({"type": {"$eq": "p"}})
+
+    if 'P2' in request.args['type']:
+        filters.update({"type": {"$eq": "p4"}})
+
     return filters
 
 
