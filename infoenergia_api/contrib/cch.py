@@ -13,9 +13,11 @@ class Cch(object):
     @classmethod
     async def create(cls, cch_id, collection):
         from infoenergia_api.app import app
+
         self = cls()
         self._erp = app.erp_client
         self._executor = app.thread_pool
+        self._loop = app.loop
         self._mongo = app.mongo_client.somenergia
         self._collection = collection
         self._Cch = self._mongo[self._collection]
@@ -80,7 +82,7 @@ class Cch(object):
             }
 
     async def cch_measures(self, user):
-        contractId = self._loop.run_in_executor(
+        contractId = await self._loop.run_in_executor(
             self._executor, get_contract_id, self._erp, self.name, user
         )
         if contractId:

@@ -29,7 +29,7 @@ class CchMeasuresContractIdView(PaginationLinksMixin, HTTPMethodView):
         )
         collection = request.args['type'][0]
         cch_measure_json = [
-            (await Cch.create(cch_id, collection)).cch_measures(user) for cch_id in cch_ids
+            await (await Cch.create(cch_id, collection)).cch_measures(user) for cch_id in cch_ids
         ]
 
         response = {
