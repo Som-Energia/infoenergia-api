@@ -490,7 +490,7 @@ def get_contracts(request, contractId=None):
     filters = [
         ('active', '=', True),
         ('state', '=', 'activa'),
-        ('empowering_profile_id', '=', 1)
+        ('emp_allow_send_data', '=', True)
     ]
 
     filters = get_contract_user_filters(

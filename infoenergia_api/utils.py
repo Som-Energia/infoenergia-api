@@ -185,7 +185,7 @@ def get_contract_id(erp_client, cups, user):
     filters = [
             ('active', '=', True),
             ('state', '=', 'activa'),
-            ('empowering_profile_id', '=', 1),
+            ('emp_allow_send_data', '=', True),
             ('cups', 'ilike', cups[:20])
         ]
     filters = get_contract_user_filters(erp_client, user, filters)

@@ -10,7 +10,7 @@ def get_modcontracts(request, contractId=None):
 
     filters = [
         ('tipus', '=', 'mod'),
-        ('polissa_id.empowering_profile_id', '=', 1),
+        ('polissa_id.emp_allow_send_data', '=', True),
     ]
     filters = get_invoice_user_filters(
         request.app.erp_client, request.ctx.user, filters
