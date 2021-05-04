@@ -27,7 +27,8 @@ tags:
   description: Reports to infoenergia
 - name: measurements
   description: All information about contract energy measurements
-
+- name: tariff
+  description: Tariff pricelist
 paths:
   /contracts:
     get:
@@ -70,7 +71,6 @@ paths:
         schema:
           type: string
           format: date
-          default: None
           example: '2019-08-01'
       - name: to_
         in: query
@@ -81,7 +81,6 @@ paths:
         schema:
           type: string
           format: date
-          default: None
           example: '2019-08-10'
       - name: juridic_type
         in: query
@@ -215,7 +214,6 @@ paths:
         schema:
           type: string
           format: date
-          default: None
           example: '2019-08-01'
       - name: to_
         in: query
@@ -226,7 +224,6 @@ paths:
         schema:
           type: string
           format: date
-          default: None
           example: '2019-08-10'
       - name: juridic_type
         in: query
@@ -327,7 +324,6 @@ paths:
         schema:
           type: string
           format: date
-          default: None
           example: '2019-08-01'
       - name: to_
         in: query
@@ -338,7 +334,6 @@ paths:
         schema:
           type: string
           format: date
-          default: None
           example: '2019-08-10'
       - name: juridic_type
         in: query
@@ -444,7 +439,6 @@ paths:
         schema:
           type: string
           format: date
-          default: None
           example: '2019-08-01'
       - name: to_
         in: query
@@ -455,7 +449,6 @@ paths:
         schema:
           type: string
           format: date
-          default: None
           example: '2019-08-10'
       - name: limit
         in: query
@@ -530,7 +523,6 @@ paths:
         schema:
           type: string
           format: date
-          default: None
           example: '2019-08-01'
       - name: to_
         in: query
@@ -541,7 +533,6 @@ paths:
         schema:
           type: string
           format: date
-          default: None
           example: '2019-08-10'
       - name: limit
         in: query
@@ -639,6 +630,9 @@ paths:
           enum:
             - tg_cchfact
             - tg_cchval
+            - tg_f1
+            - P1
+            - P2
       - name: from_
         in: query
         description: Get all CCH from this date on. In format YYYY-MM-DD
@@ -648,7 +642,6 @@ paths:
         schema:
           type: string
           format: date
-          default: None
           example: '2019-08-01'
       - name: to_
         in: query
@@ -659,7 +652,6 @@ paths:
         schema:
           type: string
           format: date
-          default: None
           example: '2019-08-10'
       - name: downloaded_from
         in: query
@@ -670,7 +662,6 @@ paths:
         schema:
           type: string
           format: date
-          default: None
           example: '2019-08-01'
       - name: downloaded_to
         in: query
@@ -681,7 +672,148 @@ paths:
         schema:
           type: string
           format: date
+          example: '2019-08-10'
+      - name: limit
+        in: query
+        description: How many contracts to return at one time
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          default: 50
+          maximum: 500
+      - name: cursor
+        in: query
+        description: Actual cursor for this search
+        required: false
+        schema:
+          type: string
+          format: byte
           default: None
+          example: 'dXNlcjpXMDdRQ1JQQTQ='
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total_results:
+                    type: integer
+                    description: total number of registers
+                    example: 234
+                  count:
+                    type: integer
+                    description: number of registers in current page
+                    example: 234
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/cch'
+                  links:
+                    type: object
+                    properties:
+                      next:
+                        type: string
+                        description: url of next results. If null, you are in the last page
+                        example: "https://apinertgia.somenergia.coop/contracts?limit=5&cursor=dXNlcjpVMEc5V0ZYTlo"
+        400:
+          description: Invalid status value
+          content: {}
+      security:
+        - jwt: []
+  /cch/{contractId}:
+    get:
+      tags:
+      - cch
+      summary: Obtain cch curves
+      description: Get cch curves information depending on some date and tariff parameters
+      operationId: server.get_cch_by_contract_id
+      parameters:
+      - name: contractId
+        in: path
+        description: ID of contract to get cch curve
+        required: true
+        schema:
+          type: string
+      - name: tariff
+        in: query
+        description: Tariff of the contract to filter
+        required: false
+        style: form
+        explode: false
+        schema:
+          type: string
+          default: None
+          enum:
+            - None
+            - 2.0A
+            - 2.1A
+            - 2.0DHA
+            - 2.0DHS
+            - 2.1DHA
+            - 2.1DHS
+            - 3.0A
+            - 3.1A
+            - 3.1A-LB
+            - 6.1
+            - 6.1A
+            - 6.1B
+      - name: type
+        in: query
+        description: type of cch, tg_cchfact are F5D and tg_cchval are P5D
+        required: true
+        style: form
+        explode: false
+        schema:
+          type: string
+          default: tg_cchfact
+          enum:
+            - tg_cchfact
+            - tg_cchval
+            - tg_f1
+            - P1
+            - P2
+      - name: from_
+        in: query
+        description: Get all CCH from this date on. In format YYYY-MM-DD
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          format: date
+          example: '2019-08-01'
+      - name: to_
+        in: query
+        description: Get all CCH until this date. In format YYYY-MM-DD
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          format: date
+          example: '2019-08-10'
+      - name: downloaded_from
+        in: query
+        description: Get all CCH downloaded from this date on at 00:00 hours. In format YYYY-MM-DD
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          format: date
+          example: '2019-08-01'
+      - name: downloaded_to
+        in: query
+        description: Get all CCH downloaded until this date at 00:00 hours. In format YYYY-MM-DD
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          format: date
           example: '2019-08-10'
       - name: limit
         in: query
@@ -767,6 +899,134 @@ paths:
         400:
           description: Invalid username/password supplied
           content: {}
+  /tariff:
+      get:
+        tags:
+        - tariff
+        summary: Obtain tariff prices
+        description: 'Get detailed prices for each tariff depending on date'
+        operationId: server.get_tariff
+        parameters:
+        - name: tariff
+          in: query
+          description: Choose a tariff to filter
+          required: false
+          style: form
+          explode: false
+          schema:
+            type: string
+            default: None
+            enum:
+              - None
+              - 2.0A
+              - 2.1A
+              - 2.0DHA
+              - 2.0DHS
+              - 2.1DHA
+              - 2.1DHS
+              - 3.0A
+              - 3.1A
+              - 3.1A-LB
+              - 6.1
+              - 6.1A
+              - 6.1B
+        - name: tariffPriceId
+          in: query
+          description: Tariff price id
+          required: false
+          schema:
+            type: integer
+            example: 4
+        - name: limit
+          in: query
+          description: How many tariff prices to return at one time
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            default: 50
+            maximum: 500
+        - name: cursor
+          in: query
+          description: Actual cursor for this search
+          required: false
+          schema:
+            type: string
+            format: byte
+            default: None
+            example: 'dXNlcjpXMDdRQ1JQQTQ='
+        responses:
+          200:
+            description: successful operation
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    count:
+                      type: integer
+                      description: number of results
+                      example: 234
+                    data:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/tariff'
+                    links:
+                      type: object
+                      properties:
+                        next:
+                          type: string
+                          description: url of next results. If null, you are in the last page
+                          example: "https://apinertgia.somenergia.coop/tariff?limit=5&cursor=dXNlcjpVMEc5V0ZYTlo"
+          400:
+            description: Invalid status value
+            content: {}
+        security:
+          - jwt: []
+
+  /tariff/{contractId}:
+    get:
+      tags:
+      - tariff
+      summary: Get tariff prices by contractID
+      description: Returns tariff price contract
+      operationId: server.get_tariff_contractid
+      parameters:
+      - name: contractId
+        in: path
+        description: ID of contract to get tariff
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                    description: number of results
+                    example: 234
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/tariff'
+                  links:
+                    type: object
+                    properties:
+                      next:
+                        type: string
+                        description: url of next results. If null, you are in the last page
+                        example: "https://apinertgia.somenergia.coop/tariff/123456?limit=5&cursor=dXNlcjpVMEc5V0ZYTlo"
+        400:
+          description: Invalid status value
+          content: {}
+      security:
+        - jwt: []
+
   /auth:
     post:
       tags:
@@ -883,6 +1143,9 @@ components:
             properties:
               tariff:
                 type: string
+              tariffCostId:
+                type: number
+                format: integer
               dateStart:
                 type: string
                 format: date-time
@@ -892,6 +1155,7 @@ components:
           example:
               {
                 "tariff":"2.0A",
+                "tariffCostId": 123,
                 "dateStart": "2019-08-11T00:00:00Z",
                 "dateEnd": null
               }
@@ -903,6 +1167,10 @@ components:
             properties:
               tariff:
                 type: string
+              tariffCostId:
+                type: number
+                format: integer
+                description: cost id for contracted tariff
               dateStart:
                 type: string
                 format: date-time
@@ -912,6 +1180,7 @@ components:
           example:
               {
                 "tariff": "2.0A",
+                "tariffCostId": 123,
                 "dateStart": "2019-08-11T00:00:00Z",
                 "dateEnd": "2019-08-11T00:00:00Z",
               }
@@ -934,11 +1203,14 @@ components:
               dateEnd:
                 type: string
                 format: date-time
+              measurement_point:
+                type: string
           example:
               {
                 "power": 123,
                 "dateStart": "2019-08-11T00:00:00Z",
-                "dateEnd": null
+                "dateEnd": null,
+                "measurement_point": "05"
               }
         powerHistory:
           type: array
@@ -954,11 +1226,14 @@ components:
               dateEnd:
                 type: string
                 format: date-time
+              measurement_point:
+                type: string
           example:
               {
                 "power": 123,
                 "dateStart": "2019-08-11T00:00:00Z",
                 "dateEnd": "2019-08-11T00:00:00Z",
+                "measurement_point": "05"
               }
         tertiaryPower:
           type: object
@@ -1441,6 +1716,255 @@ components:
           format: date
           description: file updated at this date
           example: "2020-09-01T16:37:05Z"
+
+    tariff:
+      type: object
+      properties:
+        page_results:
+          type: integer
+          description: number of tariffs per page
+          example: 100
+        data:
+          type: array
+          description: list of prices by tariff
+          items:
+            type: object
+            properties:
+              tariffPriceId:
+                type: integer
+                description: Tariff ID
+                example: 123
+              price:
+                type: object
+                description: All prices for all tariff terms
+                properties:
+                  current:
+                      type: array
+                      description: current price
+                      items:
+                        type: object
+                        properties:
+                          dateStart:
+                            type: string
+                            format: date
+                            description: Tariff price starting date
+                          dateEnd:
+                            type: string
+                            format: date
+                            description: Tariff price ending date
+                          activeEnergy:
+                            type: array
+                            description: energy price by period
+                            items:
+                              type: object
+                              properties:
+                                period:
+                                  type: string
+                                price:
+                                  type: number
+                                  format: float
+                                units:
+                                  type: string
+                              example:
+                          power:
+                            type: array
+                            description: power price by period
+                            items:
+                              type: object
+                              properties:
+                                period:
+                                  type: string
+                                price:
+                                  type: number
+                                  format: float
+                                units:
+                                  type: string
+                          GkWh:
+                            type: array
+                            description: power price by period
+                            items:
+                              type: object
+                              properties:
+                                period:
+                                  type: string
+                                price:
+                                  type: number
+                                  format: float
+                                units:
+                                  type: string
+                  history:
+                    type: array
+                    description: get history prices for a tariff
+                    items:
+                      type: object
+                      properties:
+                        dateStart:
+                          type: string
+                          format: date
+                          description: Tariff price starting date
+                        dateEnd:
+                          type: string
+                          format: date
+                          description: Tariff price ending date
+                        activeEnergy:
+                          type: array
+                          description: energy price by period
+                          items:
+                            type: object
+                            properties:
+                              period:
+                                type: string
+                              price:
+                                type: number
+                                format: float
+                              units:
+                                type: string
+                            example:
+                        power:
+                          type: array
+                          description: power price by period
+                          items:
+                            type: object
+                            properties:
+                              period:
+                                type: string
+                              price:
+                                type: number
+                                format: float
+                              units:
+                                type: string
+                        GkWh:
+                          type: array
+                          description: power price by period
+                          items:
+                            type: object
+                            properties:
+                              period:
+                                type: string
+                              price:
+                                type: number
+                                format: float
+                              units:
+                                type: string
+                example: {
+                  "current": {
+                      "dateStart": "2020-07-01",
+                      "dateEnd": "2021-03-31",
+                      "activeEnergy": [
+                          {
+                              "period": "P1",
+                              "price": 0.127,
+                              "units": "€/kWh"
+                          }
+                      ],
+                      "power": [
+                          {
+                              "period": "P1",
+                              "price": 38.043426,
+                              "units": "€/kW year"
+                          }
+                      ],
+                      "GKWh": [
+                          {
+                              "period": "P1",
+                              "price": 0.11,
+                              "units": "€/kWh"
+                          }
+                      ]
+                  },
+                  "history": [
+                      {
+                          "dateStart": "2020-06-01",
+                          "dateEnd": "2020-06-30",
+                          "activeEnergy": [
+                              {
+                                  "period": "P1",
+                                  "price": 0.139,
+                                  "units": "€/kWh"
+                              }
+                          ],
+                          "power": [
+                              {
+                                  "period": "P1",
+                                  "price": 38.043426,
+                                  "units": "€/kW year"
+                              }
+                          ],
+                          "GKWh": [
+                              {
+                                  "period": "P1",
+                                  "price": 0.116,
+                                  "units": "€/kWh"
+                              }
+                          ]
+                      },
+                  ]
+                }
+              priceReactiveEnergy:
+                type: object
+                description: All prices for reactive energy
+                properties:
+                  current:
+                    type: array
+                    description: current price
+                    items:
+                      type: object
+                      properties:
+                        BOE:
+                          type: string
+                          description: Name of BOW
+                        price33:
+                          type: number
+                          format: float
+                          description: price applied
+                        price75:
+                          type: number
+                          format: float
+                          description: price applied
+                        units:
+                          type: string
+                  history:
+                    type: array
+                    description: current price
+                    items:
+                      type: object
+                      properties:
+                        BOE:
+                          type: string
+                          description: Name of BOW
+                        price33:
+                          type: number
+                          format: float
+                          description: price applied
+                        price75:
+                          type: number
+                          format: float
+                          description: price applied
+                        units:
+                          type: string
+                example: {
+                  "current": {
+                      "BOE": "BOE núm. 312 - 28/12/2018",
+                      "price33": 0.041554,
+                      "price75": 0.062332,
+                      "units": "€/kVArh"
+                  },
+                  "history": [
+                    {
+                        "BOE": "BOE núm. 236 - 30/09/2011",
+                        "price33": 0.041554,
+                        "price75": 0.062332,
+                        "units": "€/kVArh"
+                    },
+                    {
+                        "BOE": "BOE núm. 315 - 31/12/2011",
+                        "price33": 0.041554,
+                        "price75": 0.062332,
+                        "units": "€/kVArh"
+                    }
+                  ]
+                }
+
     Error:
       type: object
       required:

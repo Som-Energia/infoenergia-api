@@ -28,8 +28,10 @@ class CchMeasuresContractIdView(PaginationLinksMixin, HTTPMethodView):
             function=async_get_cch, contractId=contractId
         )
         collection = request.args['type'][0]
+        if collection in ('P1', 'P2'):
+            collection = 'tg_p1'
         cch_measure_json = [
-            (await Cch.create(cch_id, collection)).cch_measures(user) for cch_id in cch_ids
+            await (await Cch.create(cch_id, collection)).cch_measures(user) for cch_id in cch_ids
         ]
 
         response = {
@@ -59,8 +61,11 @@ class CchMeasuresView(PaginationLinksMixin, HTTPMethodView):
         )
 
         collection = request.args['type'][0]
+        if collection in ('P1', 'P2'):
+            collection = 'tg_p1'
         cch_measure_json = [
-            (await Cch.create(cch_id, collection)).cch_measures(user) for cch_id in cch_ids
+            await (await Cch.create(cch_id, collection)).cch_measures(user)
+            for cch_id in cch_ids
         ]
 
         response = {

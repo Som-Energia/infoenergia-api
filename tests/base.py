@@ -31,7 +31,9 @@ class BaseTestCase(TestCase):
 
     def setUp(self):
         self.app = app
-        self.client = app.test_client
+        self.app.test_mode = True
+ 
+        self.client = app.test_client 
         self.maxDiff = None
         if app.thread_pool._shutdown:
             app.thread_pool = futures.ThreadPoolExecutor(app.config.MAX_THREADS)

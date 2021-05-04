@@ -1,6 +1,7 @@
 import asyncio
 from unittest import mock
 
+from aiohttp.test_utils import unittest_run_loop
 from motor.motor_asyncio import AsyncIOMotorClient
 from pony.orm import db_session
 
@@ -9,8 +10,9 @@ from infoenergia_api.contrib import Cch
 
 
 class TestBaseCch(BaseTestCase):
-
-    @mock.patch('infoenergia_api.contrib.pagination.PaginationLinksMixin._next_cursor')
+    patch_next_cursor = 'infoenergia_api.contrib.pagination.PaginationLinksMixin._next_cursor'
+    
+    @mock.patch(patch_next_cursor)
     @db_session
     def test__get_f5d_by_id__2A(self, next_cursor_mock):
         next_cursor_mock.return_value = 'N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0='
@@ -53,7 +55,7 @@ class TestBaseCch(BaseTestCase):
         self.delete_user(user)
 
 
-    @mock.patch('infoenergia_api.contrib.pagination.PaginationLinksMixin._next_cursor')
+    @mock.patch(patch_next_cursor)
     @db_session
     def test__get_f5d__all_contracts(self, next_cursor_mock):
         next_cursor_mock.return_value = 'N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0='
@@ -84,7 +86,7 @@ class TestBaseCch(BaseTestCase):
             response.json,
             {
                 'count': 50,
-                'total_results': 47451,
+                'total_results': 114333,
                 'cursor': 'N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=',
                 'next_page':'http://{}/cch?type=tg_cchfact&cursor=N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=&limit=50'.format(response.url.netloc),
                 'data': self.json4test['f5d_all']['cch_data'],
@@ -129,7 +131,7 @@ class TestBaseCch(BaseTestCase):
         )
         self.delete_user(user)
 
-    @mock.patch('infoenergia_api.contrib.pagination.PaginationLinksMixin._next_cursor')
+    @mock.patch(patch_next_cursor)
     @db_session
     def test__get_p5d__for_contract_id(self, next_cursor_mock):
         next_cursor_mock.return_value = 'N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0='
@@ -202,6 +204,89 @@ class TestBaseCch(BaseTestCase):
         )
         self.delete_user(user)
 
+    @mock.patch(patch_next_cursor)
+    @db_session
+    def test__get_p1__for_contract_id(self, next_cursor_mock):
+        next_cursor_mock.return_value = 'N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0='
+
+        user = self.get_or_create_user(
+            username='someone',
+            password='123412345',
+            email='someone@somenergia.coop',
+            partner_id=1,
+            is_superuser=True,
+            category='partner'
+        )
+        token = self.get_auth_token(user.username, "123412345")
+        params = {
+            'from_': '2017-12-21',
+            'to_': '2018-01-01',
+            'type': 'P1'
+        }
+        _, response = self.client.get(
+            '/cch/' + self.json4test['p1']['contractId'],
+            params=params,
+            headers={
+                'Authorization': 'Bearer {}'.format(token)
+            },
+            timeout=None
+        )
+        self.assertEqual(response.status, 200)
+        self.assertDictEqual(
+            response.json,
+            {
+                'count': 50,
+                'total_results': 265,
+                'data': self.json4test['p1']['cch_data'],
+                'cursor': 'N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=',
+                'next_page':'http://{}/cch/0038808?type=P1&cursor=N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=&limit=50'.format(response.url.netloc),
+
+            }
+        )
+        self.delete_user(user)
+
+    @mock.patch(patch_next_cursor)
+    @db_session
+    def test__get_p2__for_all_contracts(self, next_cursor_mock):
+        next_cursor_mock.return_value = 'N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0='
+
+        user = self.get_or_create_user(
+            username='someone',
+            password='123412345',
+            email='someone@somenergia.coop',
+            partner_id=1,
+            is_superuser=True,
+            category='partner'
+        )
+        token = self.get_auth_token(user.username, "123412345")
+        params = {
+            'from_': '2020-01-28',
+            'to_': '2020-01-29',
+            'type': 'P2'
+        }
+        _, response = self.client.get(
+            '/cch/',
+            params=params,
+            headers={
+                'Authorization': 'Bearer {}'.format(token)
+            },
+            timeout=None
+        )
+        self.assertEqual(response.status, 200)
+        self.assertDictEqual(
+            response.json,
+            {
+                'count': 50,
+                'total_results': 435,
+                'data': self.json4test['p2']['cch_data'],
+                'cursor': 'N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=',
+                'next_page':'http://{}/cch?type=P2&cursor=N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=&limit=50'.format(response.url.netloc),
+
+            }
+        )
+        self.delete_user(user)
+
+
 class TestCch(BaseTestCase):
 
     def setUp(self):
@@ -209,13 +294,18 @@ class TestCch(BaseTestCase):
         self.app.mongo_client = AsyncIOMotorClient(self.app.config.MONGO_CONF)
         self.loop = asyncio.get_event_loop()
         self.f5d_id = '5c2dd783cb2f477212c77abb'
+        self.f1_id = '5e1d8d9612cd738e89bb3cfb'
+        self.p1_id = '5e1d8dd112cd738e89bc42eb'
+        self.p2_id = '5e3011f912cd738e8991aca7'
 
-    def test__create_f5d(self):
-        f5d = self.loop.run_until_complete(Cch.create(self.f5d_id, 'tg_cchfact'))
+    @unittest_run_loop
+    async def test__create_f5d(self):
+        f5d = await Cch.create(self.f5d_id, 'tg_cchfact')
         self.assertIsInstance(f5d, Cch)
 
-    def test__get_measurements(self):
-        f5d = self.loop.run_until_complete(Cch.create(self.f5d_id, 'tg_cchfact'))
+    @unittest_run_loop
+    async def test__get_f5d_measurements(self):
+        f5d = await Cch.create(self.f5d_id, 'tg_cchfact')
         data = f5d.measurements
         self.assertDictEqual(
             data,
@@ -233,3 +323,101 @@ class TestCch(BaseTestCase):
                 'source': 1,
                 'validated': True
             })
+
+    @unittest_run_loop
+    async def test__create_f1(self):
+        f1 = await Cch.create(self.f1_id, 'tg_f1')
+        self.assertIsInstance(f1, Cch)
+
+    @unittest_run_loop
+    async def test__get_f1_measurements(self):
+        f1 = await Cch.create(self.f1_id, 'tg_f1')
+        data = f1.measurements
+        self.assertDictEqual(
+            data,
+            {
+                'ai': 14.0,
+                'ao': 0.0,
+                'date': '2017-12-01 22:00:00+0000',
+                'dateUpdate': '2020-01-14 10:44:54',
+                'season': 0,
+                'validated': False,
+                'r1': 1.0,
+                'r2': 0.0,
+                'r3': 0.0,
+                'r4': 2.0,
+                'reserve1': 0,
+                'reserve2': 0,
+                'source': 1,
+                'measureType': 11,
+                'dateDownload': '2020-01-14 10:44:54'
+            }
+        )
+    @unittest_run_loop
+    async def test__get_P1_measurements(self):
+        p1 = await Cch.create(self.p1_id, 'tg_p1')
+        data = p1.measurements
+        self.assertDictEqual(
+            data,
+            {
+                'ai': 0.0,
+                'aiquality': 0,
+                'ao': 0.0,
+                'aoQuality': 0,
+                'date': '2017-12-20 22:00:00+0000',
+                'dateDownload': '2020-01-14 10:45:53',
+                'dateUpdate': '2020-01-14 10:45:53',
+                'measureType': 11,
+                'r1': 0.0,
+                'r1Quality': 0,
+                'r2': 0.0,
+                'r2Quality': 0,
+                'r3': 0.0,
+                'r3Quality': 0,
+                'r4': 0.0,
+                'r4Quality': 0,
+                'reserve1': 0,
+                'reserve1Quality': 128,
+                'reserve2': 0,
+                'reserve2Quality': 128,
+                'season': 0,
+                'source': None,
+                'type': 'p',
+                'validated': False
+            }
+        )
+
+    @unittest_run_loop
+    async def test__get_P2_measurements(self):
+        p2 = await Cch.create(self.p2_id, 'tg_p1')
+        data = p2.measurements
+        self.assertDictEqual(
+            data,
+            {
+                'ai': 0.0,
+                'aiquality': 0,
+                'ao': 0.0,
+                'aoQuality': 0,
+                'date': '2020-01-16 22:00:00+0000',
+                'dateDownload': '2020-01-28 11:50:33',
+                'dateUpdate': '2020-01-28 11:50:33',
+                'measureType': 11,
+                'r1': 0.0,
+                'r1Quality': 0,
+                'r2': 0.0,
+                'r2Quality': 0,
+                'r3': 0.0,
+                'r3Quality': 0,
+                'r4': 0.0,
+                'r4Quality': 0,
+                'reserve1': 0.0,
+                'reserve1Quality': 128,
+                'reserve2': 0.0,
+                'reserve2Quality': 128,
+                'season': 0,
+                'source': 1,
+                'type': 'p4',
+                'validated': False
+            }
+
+        )

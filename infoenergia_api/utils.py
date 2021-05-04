@@ -48,6 +48,8 @@ def get_request_filters(erp_client, request, filters):
             filters += [('tarifa', '=', tariff[0])]
         elif 'f1' in request.endpoint:
             filters += [('tarifa_acces_id', '=', tariff[0])]
+        elif 'tariff' in request.endpoint:
+            filters += [('name', '=', request.args['tariff'][0])]
     if 'from_' in request.args:
         if 'contracts' in request.endpoint:
             filters += [
@@ -142,36 +144,37 @@ def get_juridic_filter(erp_client, juridic_type):
     return juridic_filters
 
 
-def get_cch_filters(request, filters):
+async def get_cch_filters(request, filters):
+    
     if 'from_' in request.args:
         filters.update({"datetime": {"$gte":
             datetime.strptime(request.args['from_'][0],"%Y-%m-%d")}
         })
 
     if 'to_' in request.args:
-        filters.update({"datetime": {"$lte":
-            datetime.strptime(request.args['to_'][0], "%Y-%m-%d")}})
-    if {'to_', 'from_'} <= request.args.keys():
-        filters.update({"datetime": {
-            "$gte":
-                datetime.strptime(request.args['from_'][0],"%Y-%m-%d"),
-            "$lte":
-                datetime.strptime(request.args['to_'][0],"%Y-%m-%d")
-            }})
+        datetime_query = filters.get('datetime', {})
+        datetime_query.update({
+            "$lte": datetime.strptime(request.args['to_'][0], "%Y-%m-%d")
+        })
+        filters['datetime'] = datetime_query
+
     if 'downloaded_from' in request.args:
         filters.update({"create_at": {"$gte":
             datetime.strptime(request.args['downloaded_from'][0],"%Y-%m-%d")}
         })
+
     if 'downloaded_to' in request.args:
-        filters.update({"create_at": {"$lte":
-            datetime.strptime(request.args['downloaded_to'][0], "%Y-%m-%d")}})
-    if {'downloaded_to', 'downloaded_from'} <= request.args.keys():
-        filters.update({"create_at": {
-            "$gte":
-                datetime.strptime(request.args['downloaded_from'][0],"%Y-%m-%d"),
-            "$lte":
-                datetime.strptime(request.args['downloaded_to'][0],"%Y-%m-%d")
-            }})
+        create_at_query = filters.get("create_at", {})
+        create_at_query.update({
+            "$lte": datetime.strptime(request.args['downloaded_to'][0], "%Y-%m-%d")
+        })
+        filters['create_at'] = create_at_query
+
+    if 'P1' in request.args['type']:
+        filters.update({"type": {"$eq": "p"}})
+
+    if 'P2' in request.args['type']:
+        filters.update({"type": {"$eq": "p4"}})
 
     return filters
 

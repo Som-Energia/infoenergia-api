@@ -18,6 +18,7 @@ from infoenergia_api.api.modcontracts import bp_modcontracts
 from infoenergia_api.api.reports import bp_reports
 from infoenergia_api.api.registration.login import (InvitationUrlToken,
                                                     authenticate, extra_views)
+from infoenergia_api.api.tariff import bp_tariff
 from infoenergia_api.api.registration.models import db, retrieve_user
 
 from . import VERSION
@@ -29,7 +30,7 @@ def build_app():
     sentry_sdk.init(
         dsn=config.SENTRY_DSN,
         integrations=[SanicIntegration()],
-        realease=VERSION,
+        release=VERSION,
         environment=os.environ.get('INFOENERGIA_MODULE_SETTINGS').split('.')[-1]
     )
 
@@ -48,6 +49,8 @@ def build_app():
         app.blueprint(bp_modcontracts)
         app.blueprint(bp_cch_measures)
         app.blueprint(bp_reports)
+        app.blueprint(bp_tariff)
+
 
         app.add_route(
             InvitationUrlToken.as_view(),
@@ -90,7 +93,10 @@ async def server_init(app, loop):
     app.mongo_client = AsyncIOMotorClient(app.config.MONGO_CONF, io_loop=loop)
 
 
-@app.listener('after_server_stop')
-def shutdown_app(app, loop):
-    logger.info("Shuting down api... ")
-    app.thread_pool.shutdown()
+# @app.listener('after_server_stop')
+# async def shutdown_app(app, loop):
+#     logger.info("Shuting down api... ")
+#     app.redis.close()
+#     await app.redis.wait_closed()
+#     app.mongo_client.close()
+#     app.thread_pool.shutdown()

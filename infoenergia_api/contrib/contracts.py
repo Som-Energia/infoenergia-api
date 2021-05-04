@@ -28,7 +28,8 @@ class Contract(object):
         'modcontractuals_ids',
         'autoconsumo',
         'persona_fisica',
-        'titular_nif'
+        'titular_nif',
+        'llista_preu'
     ]
 
     def __init__(self, contract_id):
@@ -51,6 +52,7 @@ class Contract(object):
         Current tariff:
         "tariff_": {
           "tariffId": "tariffID-123",
+          "tariffPriceId": 123,
           "dateStart": "2014-10-11T00:00:00Z",
           "dateEnd": null,
         }
@@ -59,6 +61,7 @@ class Contract(object):
 
         return {
             "tariffId": modcon['tarifa'][1],
+            "tariffPriceId": modcon['llista_preu'][0],
             "dateStart": make_utc_timestamp(modcon['data_inici']),
             "dateEnd": make_utc_timestamp(modcon['data_final'])
         }
@@ -69,11 +72,13 @@ class Contract(object):
         "tariffHistory": [
          {
           "tariffId": "tariffID-123",
+          "tariffPriceId": 123,
           "dateStart": "2014-10-11T00:00:00Z",
           "dateEnd": null,
          },
          {
            "tariffId": "tariffID-122",
+           "tariffPriceId": 122,
            "dateStart": "2013-10-11T16:37:05Z",
            "dateEnd": "2014-10-10T23:59:59Z"
           }
@@ -82,6 +87,7 @@ class Contract(object):
         return [
             {
                 "tariffId": modcon['tarifa'][1],
+                "tariffPriceId": modcon['llista_preu'][0],
                 "dateStart": make_utc_timestamp(modcon['data_inici']),
                 "dateEnd": make_utc_timestamp(modcon['data_final'])
             }
@@ -95,13 +101,15 @@ class Contract(object):
           "power": 123,
           "dateStart": "2014-10-11T00:00:00Z",
           "dateEnd": null,
+          "measurement_point": '05'
         }
         """
         modcon = find_changes(self._erp, self.modcontractual_activa[0], 'potencia')[-1]
         return {
             "power": int(modcon['potencia'] * 1000),
             "dateStart": make_utc_timestamp(modcon['data_inici']),
-            "dateEnd": make_utc_timestamp(modcon['data_final'])
+            "dateEnd": make_utc_timestamp(modcon['data_final']),
+            "measurement_point": modcon['agree_tipus']
         }
 
     @property
@@ -112,7 +120,8 @@ class Contract(object):
           {
             "power": 122,
             "dateStart": "2013-10-11T16:37:05Z",
-            "dateEnd": "2014-10-10T23:59:59Z"
+            "dateEnd": "2014-10-10T23:59:59Z",
+            "measurement_point": '05'
           }
         ]
         """
@@ -120,7 +129,8 @@ class Contract(object):
             {
                 "power": int(modcon['potencia'] * 1000),
                 "dateStart": make_utc_timestamp(modcon['data_inici']),
-                "dateEnd": make_utc_timestamp(modcon['data_final'])
+                "dateEnd": make_utc_timestamp(modcon['data_final']),
+                "measurement_point": modcon['agree_tipus']
             }
             for modcon in find_changes(self._erp, self.modcontractuals_ids, 'potencia')]
 
@@ -148,7 +158,8 @@ class Contract(object):
             {
                 "power": self.get_power_history(modcon),
                 "dateStart": make_utc_timestamp(modcon['data_inici']),
-                "dateEnd": make_utc_timestamp(modcon['data_final'])
+                "dateEnd": make_utc_timestamp(modcon['data_final']),
+                "measurement_point": modcon['agree_tipus']
             }
             for modcon in find_changes(self._erp, self.modcontractuals_ids, 'potencies_periode')
         ]
