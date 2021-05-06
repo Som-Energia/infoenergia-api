@@ -14,7 +14,7 @@ async def get_report_ids(request):
     )
     logger.info("There are {} contractIds in redis to process".format(reports))
     report_ids = await request.app.redis.lrange(key, 0, -1)
-    return report_ids, request.json['month']
+    return report_ids, request.json['month'], request.json['type']
 
 
 class Beedata(object):
@@ -26,9 +26,13 @@ class Beedata(object):
 
         self.N_WORKERS = kwargs.get('n_workers', 10)
 
-    async def process_one_report(self, month, contract_id):
+    async def process_one_report(self, month, type, contract_id):
         logger.info("start download of {}".format(contract_id.decode()))
-        status, report = await self.api_client.download_report(contract_id.decode(), month)
+        status, report = await self.api_client.download_report(
+            contract_id.decode(),
+            month,
+            type
+        )
         if report is None:
             return bool(report)
 
@@ -36,10 +40,10 @@ class Beedata(object):
         result = await self.save_report(report)
         return bool(result)
 
-    async def worker(self, queue, month, results):
+    async def worker(self, queue, month, type, results):
         while True:
             contract_id = await queue.get()
-            result = await self.process_one_report(month, contract_id)
+            result = await self.process_one_report(month, type, contract_id)
             results.append(result)
             if result:
                 await self._redis.lrem(b"key:reports", 0, contract_id)
@@ -47,10 +51,10 @@ class Beedata(object):
             # track of remaining work and know when everything is done.
             queue.task_done()
 
-    async def process_reports(self, contractIdsList, month):
+    async def process_reports(self, contractIdsList, month, type):
         queue = asyncio.Queue(self.N_WORKERS)
         results = []
-        workers = [asyncio.create_task(self.worker(queue, month, results)) for _ in range(self.N_WORKERS)]
+        workers = [asyncio.create_task(self.worker(queue, month, type, results)) for _ in range(self.N_WORKERS)]
         for contractId in contractIdsList:
             await queue.put(contractId) # Feed the contractIds to the workers.
         await queue.join() # Wait for all enqueued items to be processed.

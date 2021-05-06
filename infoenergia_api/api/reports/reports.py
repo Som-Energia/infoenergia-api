@@ -19,7 +19,7 @@ class ReportsView(PaginationLinksMixin, HTTPMethodView):
 
     async def post(self, request, user):
         logger.info("Uploading contracts")
-        report_ids, month = await get_report_ids(request)
+        report_ids, month, type = await get_report_ids(request)
 
         bapi = await BeedataApiClient.create(
             url=request.app.config.BASE_URL,
@@ -30,7 +30,11 @@ class ReportsView(PaginationLinksMixin, HTTPMethodView):
             cert_key=request.app.config.KEY_FILE
         )
         request.app.loop.create_task(
-            Beedata(bapi, request.app.mongo_client, request.app.redis).process_reports(report_ids, month)
+            Beedata(
+                bapi,
+                request.app.mongo_client,
+                request.app.redis
+            ).process_reports(report_ids, month, type)
          )
         response = {
             'reports': len(report_ids),

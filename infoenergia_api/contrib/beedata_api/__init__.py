@@ -112,23 +112,24 @@ class BeedataApiClient(object):
                 cookies=response.cookies,
                 headers=self._headers
             )
-    
+
     async def logout(self):
         async with aiohttp.ClientSession() as session:
             return await self._request(session, api_session=self.api_session, ssl=self.api_sslcontext)
 
-    async def download_report(self, contract_id, month):
+    async def download_report(self, contract_id, month, type):
+
         async with aiohttp.ClientSession() as session:
             response = await self._request(
                 session,
-                where=[{'contractId': f'\"{contract_id}\"', 'month': month}],
+                where=[{'contractId': f'\"{contract_id}\"', 'month': month, 'type': type}],
                 api_session=self.api_session,
                 ssl=self.api_sslcontext
             )
             if response.content["_meta"]["total"] == 0:
                 return response.status, None
             return response.status, response.content['_items']
-    
+
     def _get_url_params(self, calling_function, kwargs):
         url_params = self._params.get(calling_function, {})
         if url_params and kwargs:

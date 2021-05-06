@@ -48,7 +48,7 @@ class TestReport(BaseTestCase):
             json={
               'id': "summer_2020",
               'contract_ids': ["0180471", "0010012", "1000010"],
-              'type': "infoenergia",
+              'type': 'CCH',
               'create_at': "2020-01-01",
               'month': '202011'
             },
@@ -62,10 +62,11 @@ class TestReport(BaseTestCase):
                 'reports': 3,
             }
         )
+
         self.delete_user(user)
 
     def test__login_to_beedata(self):
-        bapi = Beedata(self.bapi, self.app.mongo_client)
+        bapi = Beedata(self.bapi, self.app.mongo_client, self.app.redis)
         status = asyncio.run(
             bapi.api_client.login(self.app.config.USERNAME, self.app.config.PASSWORD)
         )
@@ -77,6 +78,7 @@ class TestBaseReportsAsync(BaseTestCaseAsync):
 
     def setUp(self):
         super().setUp()
+        self.app.redis = fakeredis.FakeStrictRedis()
         self.app.mongo_client = AsyncIOMotorClient(self.app.config.MONGO_CONF)
         bapi_client = asyncio.run(BeedataApiClient.create(
             url=self.app.config.BASE_URL,
@@ -86,14 +88,15 @@ class TestBaseReportsAsync(BaseTestCaseAsync):
             cert_file=self.app.config.CERT_FILE,
             cert_key=self.app.config.KEY_FILE
         ))
-        self.bapi = Beedata(bapi_client, self.app.mongo_client)
+        self.bapi = Beedata(bapi_client, self.app.mongo_client, self.app.redis)
 
     @unittest_run_loop
     async def test__download_one_report(self):
         async with aiohttp.ClientSession() as session:
             status, report = await self.bapi.api_client.download_report(
                 contract_id="0090438",
-                month='202011'
+                month='202011',
+                type='CCH'
             )
         self.assertEqual(status, 200)
         self.assertIsNotNone(report)
@@ -104,7 +107,8 @@ class TestBaseReportsAsync(BaseTestCaseAsync):
         async with aiohttp.ClientSession() as session:
             status, report = await self.bapi.api_client.download_report(
                 contract_id="1090438",
-                month='202011'
+                month='202011',
+                type='CCH'
             )
         self.assertEqual(status, 200)
         self.assertIsNone(report)
@@ -116,11 +120,11 @@ class TestBaseReportsAsync(BaseTestCaseAsync):
         saved_report_mock.return_value = '1234'
 
         async with aiohttp.ClientSession() as session:
-            status, result = await self.bapi.process_one_report(
+            result = await self.bapi.process_one_report(
                 month='202011',
-                contract_id=b"0090438"
+                type='CCH',
+                contract_id=b'0090438'
             )
-        self.assertEqual(status, 200)
         self.assertTrue(result)
 
     @mock.patch('infoenergia_api.contrib.reports.Beedata.save_report')
@@ -130,11 +134,11 @@ class TestBaseReportsAsync(BaseTestCaseAsync):
         saved_report_mock.return_value = ''
 
         async with aiohttp.ClientSession() as session:
-            status, result = await self.bapi.process_one_report(
+            result = await self.bapi.process_one_report(
                 month='202011',
+                type='CCH',
                 contract_id=b"0090438"
             )
-        self.assertEqual(status, 200)
         self.assertFalse(result)
 
     @db_session
