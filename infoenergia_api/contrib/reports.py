@@ -76,6 +76,7 @@ class Beedata(object):
                 'beedataUpdateDate': item['_updated'],
                 'beedataCreateDate': item['_created'],
                 'month': item['month'],
+                'type': item['type'],
                 'results': item['results'],
             }  for item in reports
         ])

@@ -122,7 +122,7 @@ class BeedataApiClient(object):
         async with aiohttp.ClientSession() as session:
             response = await self._request(
                 session,
-                where=[{'contractId': f'\"{contract_id}\"', 'month': month, 'type': type}],
+                where=[{'contractId': f'\"{contract_id}\"', 'month': month, 'type': f'\"{type}\"'}],
                 api_session=self.api_session,
                 ssl=self.api_sslcontext
             )

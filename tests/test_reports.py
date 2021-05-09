@@ -149,6 +149,7 @@ class TestBaseReportsAsync(BaseTestCaseAsync):
             '_updated': "2020-08-18T12:06:23Z",
             '_created':  "2020-08-18T12:06:23Z",
             'month': '202009',
+            'type': 'CCH',
             'results': {},
         }]
         reportId = await self.bapi.save_report(report)
