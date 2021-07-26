@@ -1,5 +1,6 @@
 from passlib.hash import pbkdf2_sha256
 from pony.orm import db_session
+from unittest import mock
 
 from tests.base import BaseTestCase
 
@@ -7,6 +8,7 @@ from infoenergia_api.contrib import Contract
 
 
 class TestBaseContracts(BaseTestCase):
+    patch_next_cursor = 'infoenergia_api.contrib.pagination.PaginationLinksMixin._next_cursor'
 
     @db_session
     def test__get_contracts_by_id__2A(self):
@@ -75,8 +77,10 @@ class TestBaseContracts(BaseTestCase):
         )
         self.delete_user(user)
 
+    @mock.patch(patch_next_cursor)
     @db_session
-    def test__get_contracts__20TD(self):
+    def test__get_contracts__20TD(self, next_cursor_mock):
+        next_cursor_mock.return_value = 'N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0='
         user = self.get_or_create_user(
             username='someone',
             password='123412345',
@@ -91,6 +95,7 @@ class TestBaseContracts(BaseTestCase):
             'to_': '2015-10-03',
             'tariff': '2.0TD',
             'juridic_type': 'physical_person',
+            'limit': 1
         }
         _, response = self.client.get(
             '/contracts',
@@ -105,9 +110,11 @@ class TestBaseContracts(BaseTestCase):
         self.assertDictEqual(
             response.json,
             {
-                'count': 2,
-                'data': {},
-                'total_results': 2
+                'count': 1,
+                'data': self.json4test['contract_20TD'],
+                'total_results': 12,
+                'cursor': 'N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=',
+                'next_page':'http://{}/contracts?cursor=N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=&limit=1'.format(response.url.netloc),
             }
         )
         self.delete_user(user)
