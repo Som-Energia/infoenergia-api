@@ -41,10 +41,15 @@ class Contract(object):
             setattr(self, name, value)
 
     def  get_power_history(self, modcon):
-        return {
+        power_history = {
             str(period[0]).split(':')[0]: float(period[1]) * 1000
                 for period in zip(modcon['potencies_periode'].split()[::2], modcon['potencies_periode'].split()[1::2])
             }
+        if modcon['tarifa'][1]=='2.0TD':
+            power_history = {'P1-2': power_history['P1'],
+                             'P3': power_history['P2']}
+        return power_history
+
 
     @property
     def currentTariff(self):
@@ -93,51 +98,11 @@ class Contract(object):
             }
             for modcon in find_changes(self._erp, self.modcontractuals_ids, 'tarifa')]
 
-    @property
-    def currentPower(self):
-        """
-        Current power:
-        "power_": {
-          "power": 123,
-          "dateStart": "2014-10-11T00:00:00Z",
-          "dateEnd": null,
-          "measurement_point": '05'
-        }
-        """
-        modcon = find_changes(self._erp, self.modcontractual_activa[0], 'potencia')[-1]
-        return {
-            "power": int(modcon['potencia'] * 1000),
-            "dateStart": make_utc_timestamp(modcon['data_inici']),
-            "dateEnd": make_utc_timestamp(modcon['data_final']),
-            "measurement_point": modcon['agree_tipus']
-        }
 
     @property
-    def powerHistory(self):
+    def power(self):
         """
-        powerHistory:
-        "powerHistory": [
-          {
-            "power": 122,
-            "dateStart": "2013-10-11T16:37:05Z",
-            "dateEnd": "2014-10-10T23:59:59Z",
-            "measurement_point": '05'
-          }
-        ]
-        """
-        return [
-            {
-                "power": int(modcon['potencia'] * 1000),
-                "dateStart": make_utc_timestamp(modcon['data_inici']),
-                "dateEnd": make_utc_timestamp(modcon['data_final']),
-                "measurement_point": modcon['agree_tipus']
-            }
-            for modcon in find_changes(self._erp, self.modcontractuals_ids, 'potencia')]
-
-    @property
-    def tertiaryPower(self):
-        """
-        Terciary Power:
+        power:
          {
             "P1": 20000,
             "P2": 20000,
@@ -148,12 +113,43 @@ class Contract(object):
             return {}
         period_obj = self._erp.model('giscedata.polissa.potencia.contractada.periode')
         period_powers = period_obj.read([('polissa_id', '=', self.id)])
-        return {
-         'P{}'.format(i): int(period['potencia'] * 1000) for i, period in enumerate(period_powers, 1)
-        }
+        if self.tarifa[1] == '2.0TD':
+            return {
+            'P1-2': int(period_powers[0]['potencia'] * 1000),
+            'P3': int(period_powers[1]['potencia'] * 1000)
+            }
+        else:
+            return {
+            'P{}'.format(i): int(period['potencia'] * 1000) for i, period in enumerate(period_powers, 1)
+            }
+
 
     @property
-    def tertiaryPowerHistory(self):
+    def currentPower(self):
+        """
+        Current power:
+        "power_": {
+          "power": {
+            "P1": 20000,
+            "P2": 20000,
+            "P3": 20000
+          },
+          "dateStart": "2014-10-11T00:00:00Z",
+          "dateEnd": null,
+          "measurement_point": '05'
+        }
+        """
+        modcon = find_changes(self._erp, self.modcontractual_activa[0], 'potencia')[-1]
+        return {
+            "power": self.power,
+            "dateStart": make_utc_timestamp(modcon['data_inici']),
+            "dateEnd": make_utc_timestamp(modcon['data_final']),
+            "measurement_point": modcon['agree_tipus']
+        }
+
+
+    @property
+    def powerHistory(self):
         return [
             {
                 "power": self.get_power_history(modcon),
@@ -462,11 +458,9 @@ class Contract(object):
             'tariffId': self.tarifa[1],
             'tariff_': self.currentTariff,
             'tariffHistory': self.tariffHistory,
-            'power': int(self.potencia * 1000),
+            'power': self.power,
             'power_': self.currentPower,
             'powerHistory': self.powerHistory,
-            'terciaryPower': self.tertiaryPower,
-            'tertiaryPowerHistory': self.tertiaryPowerHistory,
             'climaticZone': self.climaticZone,
             'activityCode': self.cnae[1],
             'customer': {
