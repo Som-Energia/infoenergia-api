@@ -45,7 +45,7 @@ class Contract(object):
             str(period[0]).split(':')[0]: float(period[1]) * 1000
                 for period in zip(modcon['potencies_periode'].split()[::2], modcon['potencies_periode'].split()[1::2])
             }
-        if modcon['tarifa'][1]=='2.0TD':
+        if modcon['tarifa'][1] == '2.0TD':
             power_history = {'P1-2': power_history['P1'],
                              'P3': power_history['P2']}
         return power_history
@@ -113,15 +113,12 @@ class Contract(object):
             return {}
         period_obj = self._erp.model('giscedata.polissa.potencia.contractada.periode')
         period_powers = period_obj.read([('polissa_id', '=', self.id)])
-        if self.tarifa[1] == '2.0TD':
-            return {
-            'P1-2': int(period_powers[0]['potencia'] * 1000),
-            'P3': int(period_powers[1]['potencia'] * 1000)
-            }
-        else:
-            return {
-            'P{}'.format(i): int(period['potencia'] * 1000) for i, period in enumerate(period_powers, 1)
-            }
+
+        return {
+            'P{}'.format(
+                ('1-2' if i == 1 else '3') if self.tarifa[1] == '2.0TD' else i
+            ): int(period['potencia'] * 1000) for i, period in enumerate(period_powers, 1)
+        }
 
 
     @property
