@@ -33,7 +33,7 @@ class Beedata(object):
             return bool(report)
 
         logger.info("start inserting doc for {}".format(contract_id))
-        result = await self.save_report(report)
+        result = await self.save_report(report, report_type)
         return bool(result)
 
     async def worker(self, queue, month, report_type, results):
@@ -65,8 +65,8 @@ class Beedata(object):
 
         return [report.decode() for report in unprocessed_reports]
 
-    async def save_report(self, reports):
-        result = await self.somenergia_db.infoenergia_reports.insert_many([
+    async def save_report(self, reports, report_type):
+        result = await self.somenergia_db[report_type].insert_many([
             {
                 'contractName': item['contractId'],
                 'beedataUpdateDate': item['_updated'],

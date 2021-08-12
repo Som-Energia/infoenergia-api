@@ -49,7 +49,7 @@ class TestReport(BaseTestCase):
             json={
               'id': "summer_2020",
               'contract_ids': ["0180471", "0010012", "1000010"],
-              'type': "infoenergia",
+              'type': "infoenergia_reports",
               'create_at': "2020-01-01",
               'month': '202011'
             },
@@ -86,7 +86,7 @@ class TestReport(BaseTestCase):
             json={
               'id': "summer_2020",
               'contract_ids': ["0180471", "0010012", "1000010"],
-              'type': "photovoltaic",
+              'type': "photovoltaic_reports",
               'create_at': "2020-01-01",
               'month': '202011'
             },
@@ -124,7 +124,7 @@ class TestBaseReportsAsync(BaseTestCaseAsync):
             status, report = await self.bapi.api_client.download_report(
                 contract_id="0090438",
                 month='202011',
-                report_type='infoenergia'
+                report_type='infoenergia_reports'
             )
         self.assertEqual(status, 200)
         self.assertIsNotNone(report)
@@ -136,7 +136,7 @@ class TestBaseReportsAsync(BaseTestCaseAsync):
             status, report = await self.bapi.api_client.download_report(
                 contract_id='2090438',
                 month='202011',
-                report_type='infoenergia'
+                report_type='infoenergia_reports'
             )
         self.assertEqual(status, 200)
         self.assertIsNone(report)
@@ -150,7 +150,7 @@ class TestBaseReportsAsync(BaseTestCaseAsync):
         async with aiohttp.ClientSession() as session:
             result = await self.bapi.process_one_report(
                 month='202011',
-                report_type='infoenergia',
+                report_type='infoenergia_reports',
                 contract_id=b"0090438"
             )
         self.assertTrue(result)
@@ -164,7 +164,7 @@ class TestBaseReportsAsync(BaseTestCaseAsync):
         async with aiohttp.ClientSession() as session:
             result = await self.bapi.process_one_report(
                 month='202011',
-                report_type='infoenergia',
+                report_type='infoenergia_reports',
                 contract_id=b"0090438",
             )
         self.assertFalse(result)
@@ -172,6 +172,7 @@ class TestBaseReportsAsync(BaseTestCaseAsync):
     @db_session
     @unittest_run_loop
     async def test__insert_or_update_report(self):
+        report_type = 'infoenergia_reports'
         report = [{
             'contractId': '1234567',
             '_updated': "2020-08-18T12:06:23Z",
@@ -179,6 +180,6 @@ class TestBaseReportsAsync(BaseTestCaseAsync):
             'month': '202009',
             'results': {},
         }]
-        reportId = await self.bapi.save_report(report)
+        reportId = await self.bapi.save_report(report, report_type)
         expectedReport = await self.app.mongo_client.somenergia.infoenergia_reports.find_one(reportId[0])
         self.assertEqual(reportId[0], expectedReport['_id'])

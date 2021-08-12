@@ -30,8 +30,8 @@ class BeedataApiClient(object):
         'login': 'authn/login',
         'logout': 'authn/logout',
         'download_report':  {
-            'infoenergia': f'{_api_version}/components',
-            'photovoltaic': f'{_api_version}/pvautosize'
+            'infoenergia_reports': f'{_api_version}/components',
+            'photovoltaic_reports': f'{_api_version}/pvautosize'
         }
     }
 
