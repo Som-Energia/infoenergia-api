@@ -29,7 +29,10 @@ class BeedataApiClient(object):
     _endpoints = {
         'login': 'authn/login',
         'logout': 'authn/logout',
-        'download_report': f'{_api_version}/components'
+        'download_report':  {
+            'infoenergia': f'{_api_version}/components',
+            'photovoltaic': f'{_api_version}/pvautosize'
+        }
     }
 
     _params = {
@@ -51,28 +54,30 @@ class BeedataApiClient(object):
         self.company_id = company_id
         self._headers = {
             'X-CompanyId': str(company_id)
-        }    
-
+        }
         self.api_sslcontext = ssl.create_default_context(
             purpose=ssl.Purpose.CLIENT_AUTH,
             cafile=self.cert_file
         )
         self.api_sslcontext.load_cert_chain(self.cert_file, self.__cert_key)
-        
+
         self.api_session = await self.login(username, password)
         return self
 
     async def _request(self, session, *args, **kwargs):
         frame = getouterframes(currentframe())[1]
-        calling_function = frame[3] 
+        calling_function = frame[3]
+
+        aux = self._endpoints[calling_function]
+        endpoint = aux if type(aux) is str else aux.get(kwargs.get('report_type'))
+
         url = os.path.join(
-            self.base_url, self._endpoints[calling_function]
+            self.base_url, endpoint
         )
         api_session = kwargs.get('api_session')
         headers = api_session and api_session.headers
         cookies = api_session and api_session.cookies
         url_params = self._get_url_params(calling_function, kwargs)
-
         if 'payload' in kwargs:
             async with session.post(
                 url, json=kwargs['payload'], headers=headers, cookies=cookies, ssl=kwargs.get('ssl')
@@ -112,23 +117,24 @@ class BeedataApiClient(object):
                 cookies=response.cookies,
                 headers=self._headers
             )
-    
+
     async def logout(self):
         async with aiohttp.ClientSession() as session:
             return await self._request(session, api_session=self.api_session, ssl=self.api_sslcontext)
 
-    async def download_report(self, contract_id, month):
+    async def download_report(self, contract_id, month, report_type):
         async with aiohttp.ClientSession() as session:
             response = await self._request(
                 session,
                 where=[{'contractId': f'\"{contract_id}\"', 'month': month}],
                 api_session=self.api_session,
-                ssl=self.api_sslcontext
+                ssl=self.api_sslcontext,
+                report_type=report_type
             )
             if response.content["_meta"]["total"] == 0:
                 return response.status, None
             return response.status, response.content['_items']
-    
+
     def _get_url_params(self, calling_function, kwargs):
         url_params = self._params.get(calling_function, {})
         if url_params and kwargs:

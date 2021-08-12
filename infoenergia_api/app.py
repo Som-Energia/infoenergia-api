@@ -93,10 +93,10 @@ async def server_init(app, loop):
     app.mongo_client = AsyncIOMotorClient(app.config.MONGO_CONF, io_loop=loop)
 
 
-# @app.listener('after_server_stop')
-# async def shutdown_app(app, loop):
-#     logger.info("Shuting down api... ")
-#     app.redis.close()
-#     await app.redis.wait_closed()
-#     app.mongo_client.close()
-#     app.thread_pool.shutdown()
+@app.listener('after_server_stop')
+async def shutdown_app(app, loop):
+    logger.info("Shuting down api... ")
+    app.redis.close()
+    await app.redis.wait_closed()
+    app.mongo_client.close()
+    app.thread_pool.shutdown()
