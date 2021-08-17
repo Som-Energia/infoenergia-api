@@ -103,7 +103,7 @@ class TestBaseTariff(BaseTestCase):
             response.json,
             {
                 'count': 5,
-                'data': {}  # self.json4test['price20TD']['data_OnePriceId']
+                'data': self.json4test['price20TD']['data_MoreThanOnePriceId']
             }
 
         )
