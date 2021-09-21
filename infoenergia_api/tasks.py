@@ -110,24 +110,6 @@ def get_powerHistory(erp_client, modcons_id):
         for modcon in find_changes(erp_client, modcons_id, 'potencia')]
 
 
-def get_tertiaryPower(erp_client, tariff, contract_id):
-    """
-    Terciary Power:
-     {
-        "P1": 20000,
-        "P2": 20000,
-        "P3": 20000
-    }
-    """
-    if '2.' in tariff:
-        return {}
-    period_obj = erp_client.model('giscedata.polissa.potencia.contractada.periode')
-    period_powers = period_obj.read([('polissa_id', '=', contract_id)])
-    return {
-     'P{}'.format(i): int(period['potencia'] * 1000) for i, period in enumerate(period_powers, 1)
-    }
-
-
 def get_devices(erp_client, device_ids):
     """
     All devices:

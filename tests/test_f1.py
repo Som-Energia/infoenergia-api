@@ -159,7 +159,7 @@ class TestF1(BaseTestCase):
             response.json,
             {
                 'count': 1,
-                'total_results': 3563,
+                'total_results': 3610,
                 'cursor': 'N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=',
                 'next_page': 'http://{}/f1?cursor=N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=&limit=1'.format(response.url.netloc),
                 'data': [self.json4test['f1pagination']['contract_data_20TD'][0]]

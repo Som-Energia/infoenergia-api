@@ -11,8 +11,10 @@ from tests.base import BaseTestCase
 class TestModContracts(BaseTestCase):
     patch_next_cursor = 'infoenergia_api.contrib.pagination.PaginationLinksMixin._next_cursor'
 
+    @mock.patch(patch_next_cursor)
     @db_session
-    def test__get_modcontracts__canceled(self):
+    def test__get_modcontracts__canceled(self, next_cursor_mock):
+        next_cursor_mock.return_value = 'N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0='
         user = self.get_or_create_user(
             username='someone',
             password='123412345',
@@ -26,6 +28,7 @@ class TestModContracts(BaseTestCase):
             'from_': '2019-09-17',
             'to_': '2019-09-17',
             'type': 'canceled',
+            'limit': 1
         }
         _, response = self.client.get(
             '/modcontracts',
@@ -40,8 +43,10 @@ class TestModContracts(BaseTestCase):
         self.assertDictEqual(
             response.json,
             {
-                'total_results': 8,
-                'count': 8,
+                'total_results': 34,
+                'count': 1,
+                'cursor': 'N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=',
+                'next_page': 'http://{}/modcontracts?cursor=N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=&limit=1'.format(response.url.netloc),
                 'data': self.json4test['contracts_canceled']['contract_data']
             }
         )
@@ -80,7 +85,7 @@ class TestModContracts(BaseTestCase):
         self.assertDictEqual(
             response.json,
             {
-                'total_results': 60,
+                'total_results': 59,
                 'count': 1,
                 'cursor': 'N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=',
                 'next_page': 'http://{}/modcontracts?cursor=N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=&limit=1'.format(response.url.netloc),

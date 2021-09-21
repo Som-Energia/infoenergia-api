@@ -17,7 +17,6 @@ class Cch(object):
         self = cls()
         self._erp = app.erp_client
         self._executor = app.thread_pool
-        self._loop = app.loop
         self._mongo = app.mongo_client.somenergia
         self._collection = collection
         self._Cch = self._mongo[self._collection]
@@ -108,8 +107,8 @@ class Cch(object):
                 'dateUpdate': (self.update_at).strftime("%Y-%m-%d %H:%M:%S"),
             }
 
-    async def cch_measures(self, user):
-        contractId = await self._loop.run_in_executor(
+    async def cch_measures(self, user, request):
+        contractId = await request.app.loop.run_in_executor(
             self._executor, get_contract_id, self._erp, self.name, user
         )
         if contractId:

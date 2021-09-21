@@ -28,21 +28,21 @@ class PaginationTest(TestCase):
         pagination_list = Pagination(element_list, 2)
 
         page = pagination_list.page('MA==')
-        self.assertListEqual(page, element_list[:2])
+        self.assertListEqual(page[0], element_list[:2])
 
     def test__page__negative_cursor(self):
         element_list = [num for num in range(0, 10)]
         pagination_list = Pagination(element_list, 2)
 
         page = pagination_list.page('LTE=')
-        self.assertListEqual(page, element_list[:2])
+        self.assertListEqual(page[0], element_list[:2])
 
     def test__page__out_of_range_cursor(self):
         element_list = [num for num in range(0, 10)]
         pagination_list = Pagination(element_list, 2)
 
         page = pagination_list.page('MTA=')
-        self.assertListEqual(page, element_list[8:10])
+        self.assertListEqual(page[0], element_list[8:10])
 
     def test__next_cursor(self):
         element_list = [num for num in range(0, 10)]
@@ -65,7 +65,7 @@ class PaginationTest(TestCase):
 
         next_cursor = pagination_list.next_cursor
         next_cursor = pagination_list.next_cursor
-        self.assertEqual(len(pagination_list.page(next_cursor)), 1)
+        self.assertEqual(len(pagination_list.page(next_cursor)[0]), 1)
 
         last_cursor = pagination_list.next_cursor
         self.assertFalse(last_cursor)
