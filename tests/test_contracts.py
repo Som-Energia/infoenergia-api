@@ -1,5 +1,6 @@
 from passlib.hash import pbkdf2_sha256
 from pony.orm import db_session
+from unittest import mock
 
 from tests.base import BaseTestCase
 
@@ -7,6 +8,7 @@ from infoenergia_api.contrib import Contract
 
 
 class TestBaseContracts(BaseTestCase):
+    patch_next_cursor = 'infoenergia_api.contrib.pagination.PaginationLinksMixin._next_cursor'
 
     @db_session
     def test__get_contracts_by_id__2A(self):
@@ -38,8 +40,11 @@ class TestBaseContracts(BaseTestCase):
         )
         self.delete_user(user)
 
+
+    @mock.patch(patch_next_cursor)
     @db_session
-    def test__get_contracts__20DHS(self):
+    def test__get_contracts__20TD(self, next_cursor_mock):
+        next_cursor_mock.return_value = 'N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0='
         user = self.get_or_create_user(
             username='someone',
             password='123412345',
@@ -50,10 +55,11 @@ class TestBaseContracts(BaseTestCase):
         )
         token = self.get_auth_token(user.username, "123412345")
         params = {
-            'from_': '2019-10-03',
-            'to_': '2019-10-09',
-            'tariff': '2.0DHS',
+            'from_': '2015-10-03',
+            'to_': '2015-10-03',
+            'tariff': '2.0TD',
             'juridic_type': 'physical_person',
+            'limit': 1
         }
         _, response = self.client.get(
             '/contracts',
@@ -68,12 +74,53 @@ class TestBaseContracts(BaseTestCase):
         self.assertDictEqual(
             response.json,
             {
-                'count': 2,
-                'data': self.json4test['contracts_20DHS']['contract_data'],
-                'total_results': 2
+                'count': 1,
+                'data': self.json4test['contract_20TD'],
+                'total_results': 12,
+                'cursor': 'N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=',
+                'next_page':'http://{}/contracts?cursor=N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=&limit=1'.format(response.url.netloc),
             }
         )
         self.delete_user(user)
+
+
+    @db_session
+    def test__get_contracts__30TD(self):
+        user = self.get_or_create_user(
+            username='someone',
+            password='123412345',
+            email='someone@somenergia.coop',
+            partner_id=1,
+            is_superuser=True,
+            category='partner'
+        )
+        token = self.get_auth_token(user.username, "123412345")
+        params = {
+            'from_': '2012-07-12',
+            'to_': '2012-07-14',
+            'tariff': '3.0TD',
+            'limit': 1
+        }
+        _, response = self.client.get(
+            '/contracts',
+            params=params,
+            headers={
+                'Authorization': 'Bearer {}'.format(token)
+            },
+            timeout=None
+        )
+
+        self.assertEqual(response.status, 200)
+        self.assertDictEqual(
+            response.json,
+            {
+                'count': 1,
+                'data': self.json4test['contract_30TD'],
+                'total_results': 1,
+            }
+        )
+        self.delete_user(user)
+
 
     @db_session
     def test__get_contracts__3X(self):
@@ -183,10 +230,10 @@ class TestContracts(BaseTestCase):
         self.assertDictEqual(
             tariff,
             {
-              'dateEnd': '2020-11-21T00:00:00-00:15Z',
-              'dateStart': '2020-11-12T00:00:00-00:15Z',
-              'tariffId': '2.0A',
-              'tariffPriceId': 4
+              'dateEnd': '2021-11-21T00:00:00-00:15Z',
+              'dateStart': '2021-06-01T00:00:00-00:15Z',
+              'tariffId': '2.0TD',
+              'tariffPriceId': 101
             }
         )
 
@@ -203,10 +250,16 @@ class TestContracts(BaseTestCase):
                     'tariffPriceId': 4
                 },
                 {
-                    'dateEnd': '2022-03-31T00:00:00-00:15Z',
+                    'dateEnd': '2021-05-31T00:00:00-00:15Z',
                     'dateStart': '2019-06-06T00:00:00-00:15Z',
                     'tariffId': '2.0DHS',
-                    'tariffPriceId': 18
+                    'tariffPriceId': 18,
+                },
+                {
+                    'dateEnd': '2021-12-30T00:00:00-00:15Z',
+                    'dateStart': '2021-06-01T00:00:00-00:15Z',
+                    'tariffId': '2.0TD',
+                    'tariffPriceId': 101
                 }
             ]
         )
@@ -217,9 +270,9 @@ class TestContracts(BaseTestCase):
         self.assertDictEqual(
             power,
             {
-                'power': 3400,
-                'dateStart': '2020-11-12T00:00:00-00:15Z',
-                'dateEnd': '2020-11-21T00:00:00-00:15Z',
+                'power': {'P1-2': 3400, 'P3': 3400},
+                'dateStart': '2021-06-01T00:00:00-00:15Z',
+                'dateEnd': '2021-11-21T00:00:00-00:15Z',
                 'measurement_point': '05'
             }
         )
@@ -231,31 +284,26 @@ class TestContracts(BaseTestCase):
             power,
             [
                 {
-                    'power': 6600,
+                    'power': {'P1': 6600.0},
                     'dateStart': '2011-11-22T00:00:00-00:15Z',
                     'dateEnd': '2019-09-01T00:00:00-00:15Z',
                     'measurement_point': '05'
                 },
                 {
-                    'power': 3400,
+                    'power': {'P1': 3400.0},
                     'dateStart': '2019-09-02T00:00:00-00:15Z',
-                    'dateEnd': '2020-11-21T00:00:00-00:15Z',
+                    'dateEnd': '2021-05-31T00:00:00-00:15Z',
+                    'measurement_point': '05'
+                },
+                {
+                    'power': {'P1-2': 3400.0, 'P3': 3400.0},
+                    'dateStart': '2021-06-01T00:00:00-00:15Z',
+                    'dateEnd': '2021-11-21T00:00:00-00:15Z',
                     'measurement_point': '05'
                 },
             ]
         )
 
-    def test__get_tertiaryPower(self):
-        contract = Contract(self.contract_id_3X)
-        tertiary_power = contract.tertiaryPower
-        self.assertEqual(
-            tertiary_power,
-            {
-                'P1': 4000,
-                'P2': 4000,
-                'P3': 15001
-            }
-        )
 
     def test__get_climaticZone_from_cups(self):
         contract = Contract(self.contract_id)
@@ -346,7 +394,7 @@ class TestContracts(BaseTestCase):
         version = contract.version
         self.assertEqual(
             version,
-            7
+            5
         )
 
     def test__get_experimentalgroup(self):
@@ -362,7 +410,7 @@ class TestContracts(BaseTestCase):
         self_consumption = contract.selfConsumption
         self.assertEqual(
             self_consumption,
-            'Sin Autoconsumo'
+            '[00] - Sin Autoconsumo'
         )
 
     def test__get_juridicType_physical_person(self):

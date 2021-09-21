@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+from unittest import mock
 
 from passlib.hash import pbkdf2_sha256
 from pony.orm import db_session
@@ -8,6 +9,7 @@ from tests.base import BaseTestCase
 
 
 class TestModContracts(BaseTestCase):
+    patch_next_cursor = 'infoenergia_api.contrib.pagination.PaginationLinksMixin._next_cursor'
 
     @db_session
     def test__get_modcontracts__canceled(self):
@@ -45,8 +47,11 @@ class TestModContracts(BaseTestCase):
         )
         self.delete_user(user)
 
+
+    @mock.patch(patch_next_cursor)
     @db_session
-    def test__get_modcontracts__tariffOrPower(self):
+    def test__get_modcontracts__tariffOrPower(self, next_cursor_mock):
+        next_cursor_mock.return_value = 'N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0='
         user = self.get_or_create_user(
             username='someone',
             password='123412345',
@@ -57,9 +62,10 @@ class TestModContracts(BaseTestCase):
         )
         token = self.get_auth_token(user.username, "123412345")
         params = {
-            'from_': '2019-10-19',
-            'to_': '2019-10-19',
+            'from_': '2021-06-02',
+            'to_': '2021-06-02',
             'type': 'tariff_power',
+            'limit': 1
         }
         _, response = self.client.get(
             '/modcontracts',
@@ -74,8 +80,10 @@ class TestModContracts(BaseTestCase):
         self.assertDictEqual(
             response.json,
             {
-                'total_results': 1,
+                'total_results': 60,
                 'count': 1,
+                'cursor': 'N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=',
+                'next_page': 'http://{}/modcontracts?cursor=N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=&limit=1'.format(response.url.netloc),
                 'data': self.json4test['contracts_mod_tariff_power']['contract_data']
             }
         )
