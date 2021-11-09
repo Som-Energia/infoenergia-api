@@ -29,10 +29,7 @@ class BeedataApiClient(object):
     _endpoints = {
         'login': 'authn/login',
         'logout': 'authn/logout',
-        'download_report':  {
-            'infoenergia_reports': f'{_api_version}/components',
-            'photovoltaic_reports': f'{_api_version}/pvautosize'
-        }
+        'download_report': f'{_api_version}/components',
     }
 
     _params = {
@@ -40,6 +37,7 @@ class BeedataApiClient(object):
             'where': '',
         }
     }
+
 
     @classmethod
     async def create(
@@ -68,8 +66,7 @@ class BeedataApiClient(object):
         frame = getouterframes(currentframe())[1]
         calling_function = frame[3]
 
-        aux = self._endpoints[calling_function]
-        endpoint = aux if type(aux) is str else aux.get(kwargs.get('report_type'))
+        endpoint = self._endpoints[calling_function]
 
         url = os.path.join(
             self.base_url, endpoint
@@ -122,14 +119,26 @@ class BeedataApiClient(object):
         async with aiohttp.ClientSession() as session:
             return await self._request(session, api_session=self.api_session, ssl=self.api_sslcontext)
 
+    def get_request_filter(self, contract_id, month, report_type):
+
+        request_filter = {'contractId': f'\"{contract_id}\"'}
+
+        if report_type == 'photovoltaic_reports':
+            request_filter['type'] = 'FV'
+        else:
+            request_filter['month'] = month
+
+        return [request_filter]
+
     async def download_report(self, contract_id, month, report_type):
+        request_filter = self.get_request_filter(contract_id, month, report_type)
+        
         async with aiohttp.ClientSession() as session:
             response = await self._request(
                 session,
-                where=[{'contractId': f'\"{contract_id}\"', 'month': month}],
+                where=request_filter,
                 api_session=self.api_session,
-                ssl=self.api_sslcontext,
-                report_type=report_type
+                ssl=self.api_sslcontext
             )
             if response.content["_meta"]["total"] == 0:
                 return response.status, None
