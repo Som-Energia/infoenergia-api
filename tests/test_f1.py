@@ -379,3 +379,23 @@ class TestInvoice(BaseTestCase):
         f1_measures = invoice.f1_measures
 
         self.assertDictEqual(f1_measures, self.json4test['invoices_f1_by_contract_id']['contract_data'][0])
+
+    def test__f1_maximeter(self):
+        invoice = Invoice(13281874)
+ 
+        f1_maximeter = invoice.f1_maximeter
+        self.assertListEqual(f1_maximeter, [
+            {
+                'dateStart':'2021-06-01',
+                'dateEnd':'2021-09-10',
+                'maxPower':4.956,
+                'period':'2.0TD (P2)'
+            },
+            {
+                'dateStart':'2021-06-01',
+                'dateEnd':'2021-09-11',
+                'maxPower':2.632,
+                'period':'2.0TD (P1)'
+            },
+            ]
+        )
