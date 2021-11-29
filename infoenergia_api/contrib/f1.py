@@ -17,6 +17,7 @@ class Invoice(object):
         'lectures_potencia_ids',
         'lectures_energia_ids',
         'tarifa_acces_id',
+        'maximetre_consumidor_ids'
     ]
 
     def __init__(self, invoice_id):
@@ -24,7 +25,6 @@ class Invoice(object):
 
         self._erp = app.erp_client
         self._FacturacioFactura = self._erp.model('giscedata.facturacio.factura')
-
         for name, value in self._FacturacioFactura.read(invoice_id, self.FIELDS).items():
             setattr(self, name, value)
 
@@ -127,6 +127,26 @@ class Invoice(object):
         } for measure in measures if measure['tipus'] == 'activa']
 
     @property
+    def f1_maximeter(self):
+        """
+        f1_maximeter: {
+            'dateStart': 2021-06-01,
+            'dateEnd': 2021-09-10,
+            'maxPower': 4.95,
+            'period': '2.0TD (P2)'
+        """
+        maximeter_obj=self._erp.model('giscedata.f1.maximetre.consumidor')
+        maximeters = maximeter_obj.read(self.maximetre_consumidor_ids) or []
+
+        return[{
+            'dateStart':maximeter['data_inici'],
+            'dateEnd':maximeter['data_final'],
+            'maxPower':maximeter['maximetre'],
+            'period':maximeter['periode_id'][1]
+        } for maximeter in maximeters]
+
+
+    @property
     def f1_measures(self):
         return {
             'contractId': self.polissa_id[1],
@@ -138,7 +158,8 @@ class Invoice(object):
             'devices': self.devices,
             'power_measurements': self.f1_power_kW,
             'reactive_energy_measurements': self.f1_reactive_energy_kVArh,
-            'active_energy_measurements': self.f1_active_energy_kWh
+            'active_energy_measurements': self.f1_active_energy_kWh,
+            'maximeter': self.f1_maximeter
         }
 
 
