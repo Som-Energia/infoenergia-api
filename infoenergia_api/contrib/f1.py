@@ -136,7 +136,7 @@ class Invoice(object):
             'period': '2.0TD (P2)'
         """
         maximeter_obj=self._erp.model('giscedata.f1.maximetre.consumidor')
-        maximeters = maximeter_obj.read(self.maximetre_consumidor_ids)
+        maximeters = maximeter_obj.read(self.maximetre_consumidor_ids) or []
 
         return[{
             'dateStart':maximeter['data_inici'],

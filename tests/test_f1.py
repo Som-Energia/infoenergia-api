@@ -399,3 +399,9 @@ class TestInvoice(BaseTestCase):
             },
             ]
         )
+
+    def test__f1_maximeter__without_results(self):
+        invoice = Invoice(self.invoice_id_2x)
+
+        f1_maximeter = invoice.f1_maximeter
+        self.assertListEqual(f1_maximeter, [])
