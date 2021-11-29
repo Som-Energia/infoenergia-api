@@ -1664,6 +1664,36 @@ components:
                   units: 'kWh'
                 },
               ]
+        maximeter:
+          type: array
+          description: current F1 maximeter information
+          items:
+            type: object
+            properties:
+              dateStart:
+                type: string
+              dateEnd:
+                type: string
+              maxPower:
+                type: number
+                format: float
+              period:
+                type: string
+            example:
+              [
+                {
+                  dateStart: "2021-06-01",
+                  dateEnd: "2021-09-10",
+                  maxPower: 4.95,
+                  period: "2.0TD (P2)"
+                },
+                {
+                  dateStart: "2021-06-01",
+                  dateEnd: "2021-09-10",
+                  maxPower: 2.85,
+                  period: "2.0TD (P1)"
+                },
+              ]
     cch:
       type: object
       properties:
