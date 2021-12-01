@@ -387,15 +387,15 @@ class TestInvoice(BaseTestCase):
         self.assertListEqual(f1_maximeter, [
             {
                 'dateStart':'2021-06-01',
-                'dateEnd':'2021-09-10',
-                'maxPower':4.956,
-                'period':'2.0TD (P2)'
+                'dateEnd':'2021-09-09',
+                'maxPower':4.352,
+                'period':'2.0TD (P1)'
             },
             {
                 'dateStart':'2021-06-01',
-                'dateEnd':'2021-09-11',
-                'maxPower':2.632,
-                'period':'2.0TD (P1)'
+                'dateEnd':'2021-09-09',
+                'maxPower':2.5,
+                'period':'2.0TD (P2)'
             },
             ]
         )
