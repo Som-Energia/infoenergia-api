@@ -86,7 +86,7 @@ class TestBaseCch(BaseTestCase):
             response.json,
             {
                 'count': 50,
-                'total_results': 171243,
+                'total_results': 243026,
                 'cursor': 'N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=',
                 'next_page':'http://{}/cch?type=tg_cchfact&cursor=N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=&limit=50'.format(response.url.netloc),
                 'data': self.json4test['f5d_all']['cch_data'],

@@ -24,7 +24,7 @@ class TestF1(BaseTestCase):
         token = self.get_auth_token(user.username, "123412345")
 
         request, response = self.client.get(
-            '/f1/{}?limit=1'.format(self.json4test['invoices_f1_by_contract_id']['contractId']),
+            '/f1/{}'.format(self.json4test['invoices_f1_by_contract_id']['contractId']),
             headers={
                 'Authorization': 'Bearer {}'.format(token)
             },
