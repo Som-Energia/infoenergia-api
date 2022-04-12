@@ -49,7 +49,7 @@ class TestReport(BaseTestCase):
             json={
               'id': "summer_2020",
               'contract_ids': ["0180471", "0010012", "1000010"],
-              'type': "infoenergia_reports",
+              'type': 'CCH',
               'create_at': "2020-01-01",
               'month': '202011'
             },
@@ -63,8 +63,8 @@ class TestReport(BaseTestCase):
                 'reports': 3,
             }
         )
-        self.delete_user(user)
 
+        self.delete_user(user)
 
     @db_session
     def test__post_photovoltaic_contracts(self):
@@ -91,7 +91,20 @@ class TestReport(BaseTestCase):
             },
             timeout=None
         )
+        self.assertEqual(response.status, 200)
+        self.assertDictEqual(
+            response.json,
+            {
+                'reports': 3,
+            }
+        )
+        self.delete_user(user)
 
+    def test__login_to_beedata(self):
+        bapi = Beedata(self.bapi, self.app.mongo_client, self.app.redis)
+        status = asyncio.run(
+            bapi.api_client.login(self.app.config.USERNAME, self.app.config.PASSWORD)
+        )
         self.assertEqual(response.status, 200)
         self.assertDictEqual(
             response.json,
@@ -106,6 +119,7 @@ class TestBaseReportsAsync(BaseTestCaseAsync):
 
     def setUp(self):
         super().setUp()
+        self.app.redis = fakeredis.FakeStrictRedis()
         self.app.mongo_client = AsyncIOMotorClient(self.app.config.MONGO_CONF)
         bapi_client = asyncio.run(BeedataApiClient.create(
             url=self.app.config.BASE_URL,
@@ -123,7 +137,7 @@ class TestBaseReportsAsync(BaseTestCaseAsync):
             status, report = await self.bapi.api_client.download_report(
                 contract_id="0090438",
                 month='202011',
-                report_type='infoenergia_reports'
+                report_type='CCH'
             )
         self.assertEqual(status, 200)
         self.assertIsNotNone(report)
@@ -133,9 +147,9 @@ class TestBaseReportsAsync(BaseTestCaseAsync):
     async def test__download_one_report__wrongid(self):
         async with aiohttp.ClientSession() as session:
             status, report = await self.bapi.api_client.download_report(
-                contract_id='2090438',
+                contract_id="1090438",
                 month='202011',
-                report_type='infoenergia_reports'
+                report_type='CCH'
             )
         self.assertEqual(status, 200)
         self.assertIsNone(report)
@@ -147,8 +161,8 @@ class TestBaseReportsAsync(BaseTestCaseAsync):
         async with aiohttp.ClientSession() as session:
             result = await self.bapi.process_one_report(
                 month='202011',
-                report_type='infoenergia_reports',
-                contract_id=b"0090438"
+                report_type='CCH',
+                contract_id=b'0090438'
             )
         self.assertTrue(result)
 
@@ -160,8 +174,8 @@ class TestBaseReportsAsync(BaseTestCaseAsync):
         async with aiohttp.ClientSession() as session:
             result = await self.bapi.process_one_report(
                 month='202011',
-                report_type='infoenergia_reports',
-                contract_id=b"0090438",
+                report_type='CCH',
+                contract_id=b"0090438"
             )
         self.assertFalse(result)
 
@@ -174,6 +188,7 @@ class TestBaseReportsAsync(BaseTestCaseAsync):
             '_updated': "2020-08-18T12:06:23Z",
             '_created':  "2020-08-18T12:06:23Z",
             'month': '202009',
+            'type': 'CCH',
             'results': {},
         }]
         reportId = await self.bapi.save_report(report, report_type)

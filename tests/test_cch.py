@@ -86,7 +86,7 @@ class TestBaseCch(BaseTestCase):
             response.json,
             {
                 'count': 50,
-                'total_results': 114333,
+                'total_results': 171243,
                 'cursor': 'N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=',
                 'next_page':'http://{}/cch?type=tg_cchfact&cursor=N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=&limit=50'.format(response.url.netloc),
                 'data': self.json4test['f5d_all']['cch_data'],
@@ -221,7 +221,8 @@ class TestBaseCch(BaseTestCase):
         params = {
             'from_': '2017-12-21',
             'to_': '2018-01-01',
-            'type': 'P1'
+            'type': 'P1',
+            'limit': 1
         }
         _, response = self.client.get(
             '/cch/' + self.json4test['p1']['contractId'],
@@ -235,11 +236,11 @@ class TestBaseCch(BaseTestCase):
         self.assertDictEqual(
             response.json,
             {
-                'count': 50,
+                'count': 1,
                 'total_results': 265,
                 'data': self.json4test['p1']['cch_data'],
                 'cursor': 'N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=',
-                'next_page':'http://{}/cch/0038808?type=P1&cursor=N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=&limit=50'.format(response.url.netloc),
+                'next_page':'http://{}/cch/0038808?type=P1&cursor=N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=&limit=1'.format(response.url.netloc),
 
             }
         )
@@ -262,7 +263,8 @@ class TestBaseCch(BaseTestCase):
         params = {
             'from_': '2020-01-28',
             'to_': '2020-01-29',
-            'type': 'P2'
+            'type': 'P2',
+            'limit': 1
         }
         _, response = self.client.get(
             '/cch/',
@@ -276,11 +278,11 @@ class TestBaseCch(BaseTestCase):
         self.assertDictEqual(
             response.json,
             {
-                'count': 50,
+                'count': 1,
                 'total_results': 435,
                 'data': self.json4test['p2']['cch_data'],
                 'cursor': 'N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=',
-                'next_page':'http://{}/cch?type=P2&cursor=N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=&limit=50'.format(response.url.netloc),
+                'next_page':'http://{}/cch?type=P2&cursor=N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=&limit=1'.format(response.url.netloc),
 
             }
         )

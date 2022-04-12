@@ -31,7 +31,7 @@ class ReportsView(PaginationLinksMixin, HTTPMethodView):
         )
         request.app.loop.create_task(
             Beedata(bapi, request.app.mongo_client, request.app.redis).process_reports(report_ids, month, report_type)
-         )
+        )
         response = {
             'reports': len(report_ids),
         }

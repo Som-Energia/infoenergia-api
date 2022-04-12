@@ -34,6 +34,8 @@ aiohttp = {extras = ["speedups"],version = "*"}
 pyyaml = "*"
 sentry-sdk = "*"
 aiocontextvars = "*"
+fakeredis = "*"
+vcrpy = "*"
 
 [requires]
 python_version = "3.8"

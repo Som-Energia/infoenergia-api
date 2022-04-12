@@ -86,22 +86,24 @@ class TariffPrice(object):
         """
         fields = [
             'name',
+            'base_price',
+            'price_discount',
             'price_surcharge',
         ]
         term_price = self._PricelistItem.read(items_id, fields)
         if term_type == 'GKWh':
             return [{
-                'period': tp['name'].split('_')[0],
-                'price': tp['price_surcharge'],
+                'period': tp['name'].split(' ')[1] if '2.0TD' in tp['name'] else tp['name'].split('_')[0],
+                'price': tp['base_price'] * (1 + tp['price_discount']) + tp['price_surcharge'],
                 'units': units,
                 } for tp in term_price
                 if tp['name'].find(term_type) > 0
-                if tp['name'].split('_')[0] != 'P3'
+                if 'P3' not in tp['name']
             ]
         else:
             return [{
-                'period': tp['name'].split('_')[0],
-                'price': tp['price_surcharge'],
+                'period': tp['name'].split(' ')[1] if '2.0TD' in tp['name'] else tp['name'].split('_')[0],
+                'price': tp['base_price'] * (1 + tp['price_discount']) + tp['price_surcharge'],
                 'units': units,
                 } for tp in term_price
                 if tp['name'].find(term_type) > 0

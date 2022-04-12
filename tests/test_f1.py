@@ -120,11 +120,93 @@ class TestF1(BaseTestCase):
                 'count': 1,
                 'total_results': 3,
                 'cursor': 'N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=',
-                'next_page': 'http://{}/f1?cursor=N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=&limit=1'.format(response.url.authority),
+                'next_page': 'http://{}/f1?cursor=N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=&limit=1'.format(response.url.netloc),
                 'data': [self.json4test['f1pagination']['contract_data'][0]]
             }
         )
         self.delete_user(user)
+
+
+    @mock.patch('infoenergia_api.contrib.pagination.PaginationLinksMixin._next_cursor')
+    @db_session
+    def test__get_f1_measure_pagination__20TD(self, next_cursor_mock):
+        next_cursor_mock.return_value = 'N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0='
+        user = self.get_or_create_user(
+            username='someone',
+            password='123412345',
+            email='someone@somenergia.coop',
+            partner_id=1,
+            is_superuser=True,
+            category='partner'
+        )
+        token = self.get_auth_token(user.username, "123412345")
+        params = {
+            'tariff': '2.0TD',
+            'limit': 1
+        }
+
+        request, response = self.client.get(
+            '/f1',
+            params=params,
+            headers={
+                'Authorization': 'Bearer {}'.format(token)
+            },
+            timeout=None
+        )
+
+        self.assertEqual(response.status, 200)
+        self.assertDictEqual(
+            response.json,
+            {
+                'count': 1,
+                'total_results': 3610,
+                'cursor': 'N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=',
+                'next_page': 'http://{}/f1?cursor=N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=&limit=1'.format(response.url.netloc),
+                'data': [self.json4test['f1pagination']['contract_data_20TD'][0]]
+            }
+        )
+        self.delete_user(user)
+
+    @mock.patch('infoenergia_api.contrib.pagination.PaginationLinksMixin._next_cursor')
+    @db_session
+    def test__get_f1_measure_pagination__30TD(self, next_cursor_mock):
+        next_cursor_mock.return_value = 'N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0='
+        user = self.get_or_create_user(
+            username='someone',
+            password='123412345',
+            email='someone@somenergia.coop',
+            partner_id=1,
+            is_superuser=True,
+            category='partner'
+        )
+        token = self.get_auth_token(user.username, "123412345")
+        params = {
+            'tariff': '3.0TD',
+            'limit': 1
+        }
+
+        request, response = self.client.get(
+            '/f1',
+            params=params,
+            headers={
+                'Authorization': 'Bearer {}'.format(token)
+            },
+            timeout=None
+        )
+
+        self.assertEqual(response.status, 200)
+        self.assertDictEqual(
+            response.json,
+            {
+                'count': 1,
+                'total_results': 9,
+                'cursor': 'N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=',
+                'next_page': 'http://{}/f1?cursor=N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=&limit=1'.format(response.url.netloc),
+                'data': [self.json4test['f1pagination']['contract_data_30TD'][0]]
+            }
+        )
+        self.delete_user(user)
+
 
     @skip('review pagination process in PaginationLinksMixin')
     @mock.patch('infoenergia_api.contrib.f1.get_invoices')
@@ -155,7 +237,7 @@ class TestF1(BaseTestCase):
                 'count': 1,
                 'total_results': 1,
                 'cursor': 'N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=',
-                'next_page': 'http://{}/f1?cursor=N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=&limit=1'.format(response.url.authority),
+                'next_page': 'http://{}/f1?cursor=N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=&limit=1'.format(response.url.netloc),
                 'data': [self.json4test['f1pagination']['contract_data'][0]]
             }
         )
@@ -297,3 +379,29 @@ class TestInvoice(BaseTestCase):
         f1_measures = invoice.f1_measures
 
         self.assertDictEqual(f1_measures, self.json4test['invoices_f1_by_contract_id']['contract_data'][0])
+
+    def test__f1_maximeter(self):
+        invoice = Invoice(13281874)
+ 
+        f1_maximeter = invoice.f1_maximeter
+        self.assertListEqual(f1_maximeter, [
+            {
+                'dateStart':'2021-06-01',
+                'dateEnd':'2021-09-10',
+                'maxPower':4.956,
+                'period':'2.0TD (P2)'
+            },
+            {
+                'dateStart':'2021-06-01',
+                'dateEnd':'2021-09-11',
+                'maxPower':2.632,
+                'period':'2.0TD (P1)'
+            },
+            ]
+        )
+
+    def test__f1_maximeter__without_results(self):
+        invoice = Invoice(self.invoice_id_2x)
+
+        f1_maximeter = invoice.f1_maximeter
+        self.assertListEqual(f1_maximeter, [])

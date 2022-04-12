@@ -40,6 +40,10 @@ Now our api is ready to run. You can simply execute `pipenv run python run.py` a
 
 #### Changes
 
+### 1.5.0
+- Adapted endpoints to new tolls
+
+
 ### 1.4.1
 - Authentication fixes in report endpoint
 

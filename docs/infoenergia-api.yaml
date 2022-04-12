@@ -22,7 +22,7 @@ tags:
 - name: f1
   description: All information about contract f1 measurements
 - name: cch
-  description: cch curves
+  description: All hourly curves
 - name: reports
   description: Reports to infoenergia
 - name: measurements
@@ -34,9 +34,8 @@ paths:
     get:
       tags:
       - contracts
-      summary: Obtain all contracts information
-      description: 'Get contracts information depending on some date and tariff
-        parameters'
+      summary: Obtain contract information
+      description: Get contracts information depending on date and tariff parameters
       operationId: server.get_contracts
       parameters:
       - name: tariff
@@ -50,12 +49,14 @@ paths:
           default: None
           enum:
             - None
+            - 2.0TD
             - 2.0A
             - 2.1A
             - 2.0DHA
             - 2.0DHS
             - 2.1DHA
             - 2.1DHS
+            - 3.0TD
             - 3.0A
             - 3.1A
             - 3.1A-LB
@@ -139,7 +140,7 @@ paths:
                       next:
                         type: string
                         description: url of next results. If null, you are in the last page
-                        example: "https://apinertgia.somenergia.coop/contracts?limit=5&cursor=dXNlcjpVMEc5V0ZYTlo"
+                        example: "https://apinergia.somenergia.coop/contracts?limit=5&cursor=dXNlcjpVMEc5V0ZYTlo"
         400:
           description: Invalid status value
           content: {}
@@ -149,7 +150,7 @@ paths:
     get:
       tags:
       - contracts
-      summary: Find contract by ID
+      summary: Find a contract by ID
       description: Returns a single contract
       operationId: server.get_contract_by_id
       parameters:
@@ -189,7 +190,7 @@ paths:
       tags:
       - modcontracts
       summary: Obtain all contracts with contract amendments.
-      description: Get all contracts one or more contract amendments by date and type.
+      description: Get all contracts with one or more contract amendments by date and type.
       operationId: server.get_modcontracts
       parameters:
       - name: type
@@ -403,8 +404,7 @@ paths:
       tags:
       - f1
       summary: Obtain all F1 information
-      description: 'Get detailed F1 information depending on date and tariff
-        parameters'
+      description: Get detailed F1 information depending on date and tariff parameters
       operationId: server.get_f1_measures
       parameters:
       - name: tariff
@@ -418,12 +418,14 @@ paths:
           default: None
           enum:
             - None
+            - 2.0TD
             - 2.0A
             - 2.1A
             - 2.0DHA
             - 2.0DHS
             - 2.1DHA
             - 2.1DHS
+            - 3.0TD
             - 3.0A
             - 3.1A
             - 3.1A-LB
@@ -591,8 +593,8 @@ paths:
     get:
       tags:
       - cch
-      summary: Obtain cch curves
-      description: Get cch curves information depending on some date and tariff parameters
+      summary: Obtain hourly curves
+      description: Get hourly curves information depending on type of curve, date or tariff parameters
       operationId: server.get_cch
       parameters:
       - name: tariff
@@ -606,12 +608,14 @@ paths:
           default: None
           enum:
             - None
+            - 2.0TD
             - 2.0A
             - 2.1A
             - 2.0DHA
             - 2.0DHS
             - 2.1DHA
             - 2.1DHS
+            - 3.0TD
             - 3.0A
             - 3.1A
             - 3.1A-LB
@@ -620,7 +624,12 @@ paths:
             - 6.1B
       - name: type
         in: query
-        description: type of cch, tg_cchfact are F5D and tg_cchval are P5D
+        description: type of hourly curve. You can choose from
+            tg_cchfact (Curve used for billing. It has F5D format and should not have holes);
+            tg_cchval (Validated curve. Includes only the hourly records validated by the meter. It has P5D format);
+            tg_f1 (Curve used for billing. It has F1 format and should not have holes);
+            P1 (Validated curve. Includes only the hourly records validated by the meter. It has P1 format);
+            P2 (Validated curve. Includes curves every fifteen minutes validated by the meter. It has P2 format);
         required: true
         style: form
         explode: false
@@ -748,12 +757,14 @@ paths:
           default: None
           enum:
             - None
+            - 2.0TD
             - 2.0A
             - 2.1A
             - 2.0DHA
             - 2.0DHS
             - 2.1DHA
             - 2.1DHS
+            - 3.0TD
             - 3.0A
             - 3.1A
             - 3.1A-LB
@@ -762,7 +773,12 @@ paths:
             - 6.1B
       - name: type
         in: query
-        description: type of cch, tg_cchfact are F5D and tg_cchval are P5D
+        description: type of hourly curve. You can choose from
+            tg_cchfact (Curve used for billing. It has F5D format and should not have holes);
+            tg_cchval (Validated curve. Includes only the hourly records validated by the meter. It has P5D format);
+            tg_f1 (Curve used for billing. It has F1 format and should not have holes);
+            P1 (Validated curve. Includes only the hourly records validated by the meter. It has P1 format);
+            P2 (Validated curve. Includes curves every fifteen minutes validated by the meter. It has P2 format);
         required: true
         style: form
         explode: false
@@ -777,7 +793,7 @@ paths:
             - P2
       - name: from_
         in: query
-        description: Get all CCH from this date on. In format YYYY-MM-DD
+        description: Get all curves from this date on. In format YYYY-MM-DD
         required: false
         style: form
         explode: true
@@ -787,7 +803,7 @@ paths:
           example: '2019-08-01'
       - name: to_
         in: query
-        description: Get all CCH until this date. In format YYYY-MM-DD
+        description: Get all curves until this date. In format YYYY-MM-DD
         required: false
         style: form
         explode: true
@@ -797,7 +813,7 @@ paths:
           example: '2019-08-10'
       - name: downloaded_from
         in: query
-        description: Get all CCH downloaded from this date on at 00:00 hours. In format YYYY-MM-DD
+        description: Get all curves downloaded from this date on at 00:00 hours. In format YYYY-MM-DD
         required: false
         style: form
         explode: true
@@ -807,7 +823,7 @@ paths:
           example: '2019-08-01'
       - name: downloaded_to
         in: query
-        description: Get all CCH downloaded until this date at 00:00 hours. In format YYYY-MM-DD
+        description: Get all curves downloaded until this date at 00:00 hours. In format YYYY-MM-DD
         required: false
         style: form
         explode: true
@@ -907,7 +923,7 @@ paths:
         description: 'Get detailed prices for each tariff depending on date'
         operationId: server.get_tariff
         parameters:
-        - name: tariff
+        - name: type
           in: query
           description: Choose a tariff to filter
           required: false
@@ -918,12 +934,14 @@ paths:
             default: None
             enum:
               - None
+              - 2.0TD
               - 2.0A
               - 2.1A
               - 2.0DHA
               - 2.0DHS
               - 2.1DHA
               - 2.1DHS
+              - 3.0TD
               - 3.0A
               - 3.1A
               - 3.1A-LB
@@ -1131,21 +1149,31 @@ components:
           nullable: true
           description: contract cancelation date
           example: null
+        autoconsumo:
+          type: string
+          description: Type of selfconsumption
+          example: "[00] - Sin Autoconsumo"
+        juridicType:
+          type: string
+          description: juridic type (physical or juridc person)
+          example: "physicalPerson"
         tariffId:
           type: string
-          description: contracted tariff id
-          example:  "tariffID-123"
+          description: contracted tariff name
+          example:  "2.0TD"
         tariff_:
           type: object
           description: tariff information
           items:
             type: object
             properties:
-              tariff:
+              tariffId:
                 type: string
-              tariffCostId:
+                description: tariff name
+              tariffPriceId:
                 type: number
                 format: integer
+                description: price id for contracted tariff (see tariff endpoint)
               dateStart:
                 type: string
                 format: date-time
@@ -1165,12 +1193,12 @@ components:
           items:
             type: object
             properties:
-              tariff:
+              tariffId:
                 type: string
-              tariffCostId:
+              tariffPriceId:
                 type: number
                 format: integer
-                description: cost id for contracted tariff
+                description: price id for contracted tariff (see tariff endpoint)
               dateStart:
                 type: string
                 format: date-time
@@ -1178,17 +1206,22 @@ components:
                 type: string
                 format: date-time
           example:
-              {
-                "tariff": "2.0A",
-                "tariffCostId": 123,
-                "dateStart": "2019-08-11T00:00:00Z",
-                "dateEnd": "2019-08-11T00:00:00Z",
-              }
+            {
+              "tariff": "2.0A",
+              "tariffCostId": 123,
+              "dateStart": "2019-08-11T00:00:00Z",
+              "dateEnd": "2019-08-11T00:00:00Z",
+            }
         power:
           type: integer
           format: int64
-          description: contracted power
-          example: 123
+          description: contracted power by period
+          example:
+            {
+              "P1": 20000,
+              "P2": 20000,
+              "P3": 30000  
+            }
         power_:
           type: object
           description: power information
@@ -1197,6 +1230,7 @@ components:
             properties:
               power:
                 type: integer
+                description: contracted power by period
               dateStart:
                 type: string
                 format: date-time
@@ -1207,14 +1241,18 @@ components:
                 type: string
           example:
               {
-                "power": 123,
+                "power": {
+                  "P1": 20000,
+                  "P2": 20000,
+                  "P3": 20000
+                },
                 "dateStart": "2019-08-11T00:00:00Z",
                 "dateEnd": null,
                 "measurement_point": "05"
               }
         powerHistory:
           type: array
-          description: power history
+          description: power history of a contract
           items:
             type: object
             properties:
@@ -1235,19 +1273,6 @@ components:
                 "dateEnd": "2019-08-11T00:00:00Z",
                 "measurement_point": "05"
               }
-        tertiaryPower:
-          type: object
-          description: 3.0 power values
-          items:
-            type: object
-            properties:
-              p1:
-                type: integer
-              p2:
-                type: integer
-              p3:
-                type: integer
-          example: {"p1": 20000, "p2": 20000, "p3": 20000}
         climaticZone:
           type: string
           description:  climatic zone code
@@ -1497,7 +1522,7 @@ components:
           example: contractId-123
         invoiceId:
           type: string
-          description: invoide ID
+          description: invoice ID
           example: invoiceId-123
         dateStart:
           type: string
@@ -1511,7 +1536,7 @@ components:
           description: invoice end date
         tariffId:
           type: string
-          description: contracted tariff id
+          description: contracted tariff name
           example: 2.0A
         meteringPointId:
           type: string
@@ -1639,6 +1664,36 @@ components:
                   units: 'kWh'
                 },
               ]
+        maximeter:
+          type: array
+          description: current F1 maximeter information
+          items:
+            type: object
+            properties:
+              dateStart:
+                type: string
+              dateEnd:
+                type: string
+              maxPower:
+                type: number
+                format: float
+              period:
+                type: string
+            example:
+              [
+                {
+                  dateStart: "2021-06-01",
+                  dateEnd: "2021-09-10",
+                  maxPower: 4.95,
+                  period: "2.0TD (P2)"
+                },
+                {
+                  dateStart: "2021-06-01",
+                  dateEnd: "2021-09-10",
+                  maxPower: 2.85,
+                  period: "2.0TD (P1)"
+                },
+              ]
     cch:
       type: object
       properties:
@@ -1716,7 +1771,6 @@ components:
           format: date
           description: file updated at this date
           example: "2020-09-01T16:37:05Z"
-
     tariff:
       type: object
       properties:
