@@ -20,7 +20,6 @@ from infoenergia_api.api.registration.login import (InvitationUrlToken,
                                                     authenticate, extra_views)
 from infoenergia_api.api.tariff import bp_tariff
 from infoenergia_api.api.registration.models import db, retrieve_user
-from infoenergia_api.contrib import BeedataApiClient
 
 from . import VERSION
 
@@ -75,16 +74,6 @@ def build_app():
         )
         db.generate_mapping(create_tables=True)
         app.db = db
-
-        bapi = BeedataApiClient.create(
-            url=app.config.BASE_URL,
-            username=app.config.USERNAME,
-            password=app.config.PASSWORD,
-            company_id=app.config.COMPANY_ID,
-            cert_file=app.config.CERT_FILE,
-            cert_key=app.config.KEY_FILE
-        )
-        app.bapi = bapi
 
     except Exception as e:
         msg = "An error ocurred building Infoenergia API: %s"

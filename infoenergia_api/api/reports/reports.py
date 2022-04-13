@@ -4,12 +4,12 @@ from sanic.response import json
 from sanic.views import HTTPMethodView
 from sanic_jwt.decorators import protected, inject_user
 
-from infoenergia_api.contrib import Beedata, BeedataApiClient, get_report_ids, PaginationLinksMixin
-
+from infoenergia_api.contrib import Beedata, get_report_ids, PaginationLinksMixin
+from infoenergia_api.beedata_api import BeedataApiMixin
 
 bp_reports = Blueprint('reports')
 
-class ReportsView(PaginationLinksMixin, HTTPMethodView):
+class ReportsView(PaginationLinksMixin, BeedataApiMixin, HTTPMethodView):
     decorators = [
         inject_user(),
         protected(),
@@ -22,7 +22,7 @@ class ReportsView(PaginationLinksMixin, HTTPMethodView):
         report_ids, month, report_type = await get_report_ids(request)
 
         request.app.loop.create_task(
-            Beedata(request.app.bapi, request.app.mongo_client, request.app.redis).process_reports(report_ids, month, report_type)
+            Beedata(self.bapi, request.app.mongo_client, request.app.redis).process_reports(report_ids, month, report_type)
         )
         response = {
             'reports': len(report_ids),
