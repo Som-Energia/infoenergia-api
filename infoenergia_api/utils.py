@@ -18,7 +18,6 @@ def make_utc_timestamp(timestamp):
     datetime_obj_utc = datetime_obj.replace(tzinfo=timezone('Europe/Madrid'))
     return datetime_obj_utc.isoformat('T') + 'Z'
 
-
 def get_id_for_contract(obj, modcontract_ids):
     ids = (
         obj.search([('modcontractual_id', '=', ids)])

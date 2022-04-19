@@ -105,14 +105,9 @@ class TestReport(BaseTestCase):
         status = asyncio.run(
             bapi.api_client.login(self.app.config.USERNAME, self.app.config.PASSWORD)
         )
-        self.assertEqual(response.status, 200)
-        self.assertDictEqual(
-            response.json,
-            {
-                'reports': 3,
-            }
-        )
-        self.delete_user(user)
+
+        self.assertNotEqual(status.token, None)
+
 
 
 class TestBaseReportsAsync(BaseTestCaseAsync):
