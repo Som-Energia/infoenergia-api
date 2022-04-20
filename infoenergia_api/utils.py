@@ -185,10 +185,12 @@ def get_contract_id(erp_client, cups, user):
             ('active', '=', True),
             ('state', '=', 'activa'),
             ('emp_allow_send_data', '=', True),
-            ('cups', 'ilike', cups[:20])
+            ('cups.name', '=', cups)
         ]
     filters = get_contract_user_filters(erp_client, user, filters)
     contract = contract_obj.search(filters)
-
+    if not contract:
+        filters += [('cups.name', 'ilike', cups[:20])]
+        contract = contract_obj.search(filters)
     if contract:
         return contract_obj.read(contract, ['name'])[0]['name']

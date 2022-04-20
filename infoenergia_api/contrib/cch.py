@@ -107,17 +107,28 @@ class Cch(object):
                 'dateUpdate': (self.update_at).strftime("%Y-%m-%d %H:%M:%S"),
             }
 
-    async def cch_measures(self, user, request):
-        contractId = await request.app.loop.run_in_executor(
-            self._executor, get_contract_id, self._erp, self.name, user
-        )
+    async def cch_measures(self, user, request, contractId=None):
         if contractId:
             return {
                 'contractId': contractId,
                 'meteringPointId': make_uuid('giscedata.cups.ps', self.name),
                 'measurements': self.measurements
             }
-        return {}
+        else:
+            contractId = await request.app.loop.run_in_executor(
+                self._executor,
+                get_contract_id,
+                self._erp,
+                self.name,
+                user,
+            )
+            if contractId:
+                return {
+                    'contractId': contractId,
+                    'meteringPointId': make_uuid('giscedata.cups.ps', self.name),
+                    'measurements': self.measurements
+                }
+            return {}
 
 
 async def async_get_cch(request, contractId=None):
