@@ -20,8 +20,8 @@ class TestContracts(TestCase):
             tariff_json,
             {
                 'tariffId': '2.1A',
-                'dateStart': '2019-10-01T00:00:00-00:15Z',
-                'dateEnd': '2021-05-31T00:00:00-00:15Z'
+                'dateStart': '2019-10-01T00:00:00+01:00',
+                'dateEnd': '2021-05-31T00:00:00+01:00'
             }
         )
 
@@ -35,13 +35,13 @@ class TestContracts(TestCase):
             [
                 {
                     'tariffId': '2.0A',
-                    'dateStart': '2012-11-28T00:00:00-00:15Z',
-                    'dateEnd': '2019-05-31T00:00:00-00:15Z'
+                    'dateStart': '2012-11-28T00:00:00+01:00',
+                    'dateEnd': '2019-05-31T00:00:00+01:00'
                 },
                 {
                     'tariffId': '2.0DHA',
-                    'dateStart': '2019-06-01T00:00:00-00:15Z',
-                    'dateEnd': '2021-05-31T00:00:00-00:15Z'
+                    'dateStart': '2019-06-01T00:00:00+01:00',
+                    'dateEnd': '2021-05-31T00:00:00+01:00'
                 }
             ]
         )
@@ -52,8 +52,8 @@ class TestContracts(TestCase):
             power_json,
             {
                 'power': 12500,
-                'dateStart': '2019-10-01T00:00:00-00:15Z',
-                'dateEnd': '2021-05-31T00:00:00-00:15Z'
+                'dateStart': '2019-10-01T00:00:00+01:00',
+                'dateEnd': '2021-05-31T00:00:00+01:00'
             }
         )
 
@@ -67,13 +67,13 @@ class TestContracts(TestCase):
             [
                 {
                     'power': 6600,
-                    'dateStart': '2011-11-22T00:00:00-00:15Z',
-                    'dateEnd': '2019-09-01T00:00:00-00:15Z'
+                    'dateStart': '2011-11-22T00:00:00+01:00',
+                    'dateEnd': '2019-09-01T00:00:00+01:00'
                 },
                 {
                     'power': 3400,
-                    'dateStart': '2019-09-02T00:00:00-00:15Z',
-                    'dateEnd': '2021-05-31T00:00:00-00:15Z'
+                    'dateStart': '2019-09-02T00:00:00+01:00',
+                    'dateEnd': '2021-05-31T00:00:00+01:00'
                 },
             ]
         )
@@ -84,7 +84,7 @@ class TestContracts(TestCase):
             devices_json,
             [
                 {
-                    'dateStart': '2019-10-03T00:00:00-00:15Z',
+                    'dateStart': '2019-10-03T00:00:00+01:00',
                     'dateEnd': None,
                     'deviceId': '5fe0a4b4-8e6c-56d8-a74e-97f979411a62'
                 }

@@ -1,7 +1,6 @@
 import uuid
 from datetime import datetime
-
-from pytz import timezone
+import pytz
 
 from .api.registration.models import UserCategory
 
@@ -11,12 +10,13 @@ def make_uuid(model, model_id):
     return str(uuid.uuid5(uuid.NAMESPACE_OID, token))
 
 
-def make_utc_timestamp(timestamp):
-    if not timestamp:
+def make_timestamp(date):
+    if not date:
         return None
-    datetime_obj = datetime.strptime(timestamp, '%Y-%m-%d')
-    datetime_obj_utc = datetime_obj.replace(tzinfo=timezone('Europe/Madrid'))
-    return datetime_obj_utc.isoformat('T') + 'Z'
+    tz = pytz.timezone('Europe/Madrid')
+    datetime_obj = datetime.strptime(date, '%Y-%m-%d')
+    return tz.localize(datetime_obj).isoformat('T')
+
 
 def get_id_for_contract(obj, modcontract_ids):
     ids = (

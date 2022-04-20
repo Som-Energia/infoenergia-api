@@ -3,7 +3,7 @@ from datetime import datetime
 from infoenergia_api.contrib.climatic_zones import ine_to_zc
 from infoenergia_api.contrib.postal_codes import ine_to_dp
 
-from .utils import make_utc_timestamp, make_uuid, get_request_filters, get_contract_user_filters
+from .utils import make_timestamp, make_uuid, get_request_filters, get_contract_user_filters
 
 
 def find_changes(erp_client, modcons_id, field):
@@ -44,8 +44,8 @@ def get_current_tariff(erp_client, modcons_id):
 
     return {
         "tariffId": modcon['tarifa'][1],
-        "dateStart": make_utc_timestamp(modcon['data_inici']),
-        "dateEnd": make_utc_timestamp(modcon['data_final'])
+        "dateStart": make_timestamp(modcon['data_inici']),
+        "dateEnd": make_timestamp(modcon['data_final'])
     }
 
 
@@ -67,8 +67,8 @@ def get_tariffHistory(erp_client, modcons_ids):
     return [
         {
             "tariffId": modcon['tarifa'][1],
-            "dateStart": make_utc_timestamp(modcon['data_inici']),
-            "dateEnd": make_utc_timestamp(modcon['data_final'])
+            "dateStart": make_timestamp(modcon['data_inici']),
+            "dateEnd": make_timestamp(modcon['data_final'])
         }
         for modcon in find_changes(erp_client, modcons_ids, 'tarifa')]
 
@@ -85,8 +85,8 @@ def get_current_power(erp_client, modcons_id):
     modcon = find_changes(erp_client, modcons_id, 'potencia')[-1]
     return {
         "power": int(modcon['potencia'] * 1000),
-        "dateStart": make_utc_timestamp(modcon['data_inici']),
-        "dateEnd": make_utc_timestamp(modcon['data_final'])
+        "dateStart": make_timestamp(modcon['data_inici']),
+        "dateEnd": make_timestamp(modcon['data_final'])
     }
 
 
@@ -104,8 +104,8 @@ def get_powerHistory(erp_client, modcons_id):
     return [
         {
             "power": int(modcon['potencia'] * 1000),
-            "dateStart": make_utc_timestamp(modcon['data_inici']),
-            "dateEnd": make_utc_timestamp(modcon['data_final'])
+            "dateStart": make_timestamp(modcon['data_inici']),
+            "dateEnd": make_timestamp(modcon['data_final'])
         }
         for modcon in find_changes(erp_client, modcons_id, 'potencia')]
 
@@ -115,7 +115,7 @@ def get_devices(erp_client, device_ids):
     All devices:
     [
       {
-        'dateStart': '2019-10-03T00:00:00-00:15Z',
+        'dateStart': '2019-10-03T00:00:00+01:00',
         'dateEnd': None,
         'deviceId': 'ee3f4996-788e-59b3-9530-0e02d99b45b7'
       }
@@ -130,8 +130,8 @@ def get_devices(erp_client, device_ids):
     for comptador in compt_obj.read(device_ids, fields) or []:
         devices.append(
             {
-                'dateStart': make_utc_timestamp(comptador['data_alta']),
-                'dateEnd': make_utc_timestamp(comptador['data_baixa']),
+                'dateStart': make_timestamp(comptador['data_alta']),
+                'dateEnd': make_timestamp(comptador['data_baixa']),
                 'deviceId': make_uuid(
                     'giscedata.lectures.comptador',
                     comptador['id']
