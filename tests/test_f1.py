@@ -293,7 +293,7 @@ class TestInvoice(BaseTestCase):
             devices,
             [
                 {
-                    'dateStart': '2011-12-23T00:00:00-00:15Z',
+                    'dateStart': '2011-12-23T00:00:00+01:00',
                     'dateEnd': None,
                     'deviceId': 'ab201f66-4da7-517b-be40-13b7e0de7429'
                 }

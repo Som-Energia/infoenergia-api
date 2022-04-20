@@ -6,7 +6,7 @@ from infoenergia_api.contrib.postal_codes import ine_to_dp
 
 from ..tasks import find_changes
 from ..utils import (get_id_for_contract, get_request_filters,
-                     get_contract_user_filters, make_utc_timestamp, make_uuid)
+                     get_contract_user_filters, make_timestamp, make_uuid)
 
 
 class Contract(object):
@@ -67,8 +67,8 @@ class Contract(object):
         return {
             "tariffId": modcon['tarifa'][1],
             "tariffPriceId": modcon['llista_preu'][0],
-            "dateStart": make_utc_timestamp(modcon['data_inici']),
-            "dateEnd": make_utc_timestamp(modcon['data_final'])
+            "dateStart": make_timestamp(modcon['data_inici']),
+            "dateEnd": make_timestamp(modcon['data_final'])
         }
 
     @property
@@ -93,8 +93,8 @@ class Contract(object):
             {
                 "tariffId": modcon['tarifa'][1],
                 "tariffPriceId": modcon['llista_preu'][0],
-                "dateStart": make_utc_timestamp(modcon['data_inici']),
-                "dateEnd": make_utc_timestamp(modcon['data_final'])
+                "dateStart": make_timestamp(modcon['data_inici']),
+                "dateEnd": make_timestamp(modcon['data_final'])
             }
             for modcon in find_changes(self._erp, self.modcontractuals_ids, 'tarifa')]
 
@@ -139,8 +139,8 @@ class Contract(object):
         modcon = find_changes(self._erp, self.modcontractual_activa[0], 'potencia')[-1]
         return {
             "power": self.power,
-            "dateStart": make_utc_timestamp(modcon['data_inici']),
-            "dateEnd": make_utc_timestamp(modcon['data_final']),
+            "dateStart": make_timestamp(modcon['data_inici']),
+            "dateEnd": make_timestamp(modcon['data_final']),
             "measurement_point": modcon['agree_tipus']
         }
 
@@ -150,8 +150,8 @@ class Contract(object):
         return [
             {
                 "power": self.get_power_history(modcon),
-                "dateStart": make_utc_timestamp(modcon['data_inici']),
-                "dateEnd": make_utc_timestamp(modcon['data_final']),
+                "dateStart": make_timestamp(modcon['data_inici']),
+                "dateEnd": make_timestamp(modcon['data_final']),
                 "measurement_point": modcon['agree_tipus']
             }
             for modcon in find_changes(self._erp, self.modcontractuals_ids, 'potencies_periode')
@@ -356,7 +356,7 @@ class Contract(object):
         All devices:
         [
           {
-            'dateStart': '2019-10-03T00:00:00-00:15Z',
+            'dateStart': '2019-10-03T00:00:00+01:00',
             'dateEnd': None,
             'deviceId': 'ee3f4996-788e-59b3-9530-0e02d99b45b7'
           }
@@ -372,8 +372,8 @@ class Contract(object):
         for comptador in compt_obj.read(self.comptadors, fields) or []:
             devices.append(
                 {
-                    'dateStart': make_utc_timestamp(comptador['data_alta']),
-                    'dateEnd': make_utc_timestamp(comptador['data_baixa']),
+                    'dateStart': make_timestamp(comptador['data_alta']),
+                    'dateEnd': make_timestamp(comptador['data_baixa']),
                     'deviceId': make_uuid(
                         'giscedata.lectures.comptador',
                         comptador['id']
@@ -448,8 +448,8 @@ class Contract(object):
             'contractId': self.name,
             'ownerId': make_uuid('res.partner', self.titular[0]),
             'payerId': make_uuid('res.partner', self.pagador[0]),
-            'dateStart': make_utc_timestamp(self.data_alta),
-            'dateEnd': make_utc_timestamp(self.data_baixa),
+            'dateStart': make_timestamp(self.data_alta),
+            'dateEnd': make_timestamp(self.data_baixa),
             'autoconsumo': self.selfConsumption,
             'juridicType': self.juridicType,
             'tariffId': self.tarifa[1],

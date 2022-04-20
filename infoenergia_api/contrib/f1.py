@@ -2,7 +2,7 @@ import functools
 import re
 from sanic.request import RequestParameters
 
-from infoenergia_api.utils import (get_request_filters, make_utc_timestamp,
+from infoenergia_api.utils import (get_request_filters, make_timestamp,
                                    make_uuid, get_invoice_user_filters)
 
 
@@ -34,7 +34,7 @@ class Invoice(object):
         All devices:
         [
           {
-            'dateStart': '2019-10-03T00:00:00-00:15Z',
+            'dateStart': '2019-10-03T00:00:00+01:00',
             'dateEnd': None,
             'deviceId': 'ee3f4996-788e-59b3-9530-0e02d99b45b7'
           }
@@ -50,8 +50,8 @@ class Invoice(object):
         for comptador in compt_obj.read(self.comptadors, fields) or []:
             devices.append(
                 {
-                    'dateStart': make_utc_timestamp(comptador['data_alta']),
-                    'dateEnd': make_utc_timestamp(comptador['data_baixa']),
+                    'dateStart': make_timestamp(comptador['data_alta']),
+                    'dateEnd': make_timestamp(comptador['data_baixa']),
                     'deviceId': make_uuid(
                         'giscedata.lectures.comptador',
                         comptador['id']
@@ -156,8 +156,8 @@ class Invoice(object):
         return {
             'contractId': self.polissa_id[1],
             'invoiceId': make_uuid('giscedata.facturacio.factura', self.id),
-            'dateStart': make_utc_timestamp(self.data_inici),
-            'dateEnd': make_utc_timestamp(self.data_final),
+            'dateStart': make_timestamp(self.data_inici),
+            'dateEnd': make_timestamp(self.data_final),
             'tariffId': self.tarifa_acces_id[1],
             'meteringPointId': make_uuid('giscedata.cups.ps',self.cups_id[1]),
             'devices': self.devices,

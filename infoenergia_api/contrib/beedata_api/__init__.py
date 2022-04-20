@@ -29,7 +29,7 @@ class BeedataApiClient(object):
     _endpoints = {
         'login': 'authn/login',
         'logout': 'authn/logout',
-        'download_report': f'{_api_version}/components'
+        'download_report': f'{_api_version}/components',
     }
 
     _params = {
@@ -37,6 +37,7 @@ class BeedataApiClient(object):
             'where': '',
         }
     }
+
 
     @classmethod
     async def create(
@@ -51,28 +52,29 @@ class BeedataApiClient(object):
         self.company_id = company_id
         self._headers = {
             'X-CompanyId': str(company_id)
-        }    
-
+        }
         self.api_sslcontext = ssl.create_default_context(
             purpose=ssl.Purpose.CLIENT_AUTH,
             cafile=self.cert_file
         )
         self.api_sslcontext.load_cert_chain(self.cert_file, self.__cert_key)
-        
+
         self.api_session = await self.login(username, password)
         return self
 
     async def _request(self, session, *args, **kwargs):
         frame = getouterframes(currentframe())[1]
-        calling_function = frame[3] 
+        calling_function = frame[3]
+
+        endpoint = self._endpoints[calling_function]
+
         url = os.path.join(
-            self.base_url, self._endpoints[calling_function]
+            self.base_url, endpoint
         )
         api_session = kwargs.get('api_session')
         headers = api_session and api_session.headers
         cookies = api_session and api_session.cookies
         url_params = self._get_url_params(calling_function, kwargs)
-
         if 'payload' in kwargs:
             async with session.post(
                 url, json=kwargs['payload'], headers=headers, cookies=cookies, ssl=kwargs.get('ssl')
@@ -117,12 +119,24 @@ class BeedataApiClient(object):
         async with aiohttp.ClientSession() as session:
             return await self._request(session, api_session=self.api_session, ssl=self.api_sslcontext)
 
-    async def download_report(self, contract_id, month, type):
+    def get_request_filter(self, contract_id, month, report_type):
 
+        request_filter = {'contractId': f'\"{contract_id}\"'}
+
+        if report_type == 'photovoltaic_reports':
+            request_filter['type'] = 'FV'
+        else:
+            request_filter['month'] = month
+
+        return [request_filter]
+
+    async def download_report(self, contract_id, month, report_type):
+        request_filter = self.get_request_filter(contract_id, month, report_type)
+        
         async with aiohttp.ClientSession() as session:
             response = await self._request(
                 session,
-                where=[{'contractId': f'\"{contract_id}\"', 'month': month, 'type': f'\"{type}\"'}],
+                where=request_filter,
                 api_session=self.api_session,
                 ssl=self.api_sslcontext
             )

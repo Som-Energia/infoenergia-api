@@ -230,8 +230,8 @@ class TestContracts(BaseTestCase):
         self.assertDictEqual(
             tariff,
             {
-              'dateEnd': '2021-11-21T00:00:00-00:15Z',
-              'dateStart': '2021-06-01T00:00:00-00:15Z',
+              'dateEnd': '2021-11-21T00:00:00+01:00',
+              'dateStart': '2021-06-01T00:00:00+01:00',
               'tariffId': '2.0TD',
               'tariffPriceId': 101
             }
@@ -244,20 +244,20 @@ class TestContracts(BaseTestCase):
             tariff_history,
             [
                 {
-                    'dateEnd': '2019-06-05T00:00:00-00:15Z',
-                    'dateStart': '2011-12-31T00:00:00-00:15Z',
+                    'dateEnd': '2019-06-05T00:00:00+01:00',
+                    'dateStart': '2011-12-31T00:00:00+01:00',
                     'tariffId': '2.0A',
                     'tariffPriceId': 4
                 },
                 {
-                    'dateEnd': '2021-05-31T00:00:00-00:15Z',
-                    'dateStart': '2019-06-06T00:00:00-00:15Z',
+                    'dateEnd': '2021-05-31T00:00:00+01:00',
+                    'dateStart': '2019-06-06T00:00:00+01:00',
                     'tariffId': '2.0DHS',
                     'tariffPriceId': 18,
                 },
                 {
-                    'dateEnd': '2021-12-30T00:00:00-00:15Z',
-                    'dateStart': '2021-06-01T00:00:00-00:15Z',
+                    'dateEnd': '2021-12-30T00:00:00+01:00',
+                    'dateStart': '2021-06-01T00:00:00+01:00',
                     'tariffId': '2.0TD',
                     'tariffPriceId': 101
                 }
@@ -271,8 +271,8 @@ class TestContracts(BaseTestCase):
             power,
             {
                 'power': {'P1-2': 3400, 'P3': 3400},
-                'dateStart': '2021-06-01T00:00:00-00:15Z',
-                'dateEnd': '2021-11-21T00:00:00-00:15Z',
+                'dateStart': '2021-06-01T00:00:00+01:00',
+                'dateEnd': '2021-11-21T00:00:00+01:00',
                 'measurement_point': '05'
             }
         )
@@ -285,20 +285,20 @@ class TestContracts(BaseTestCase):
             [
                 {
                     'power': {'P1': 6600.0},
-                    'dateStart': '2011-11-22T00:00:00-00:15Z',
-                    'dateEnd': '2019-09-01T00:00:00-00:15Z',
+                    'dateStart': '2011-11-22T00:00:00+01:00',
+                    'dateEnd': '2019-09-01T00:00:00+01:00',
                     'measurement_point': '05'
                 },
                 {
                     'power': {'P1': 3400.0},
-                    'dateStart': '2019-09-02T00:00:00-00:15Z',
-                    'dateEnd': '2021-05-31T00:00:00-00:15Z',
+                    'dateStart': '2019-09-02T00:00:00+01:00',
+                    'dateEnd': '2021-05-31T00:00:00+01:00',
                     'measurement_point': '05'
                 },
                 {
                     'power': {'P1-2': 3400.0, 'P3': 3400.0},
-                    'dateStart': '2021-06-01T00:00:00-00:15Z',
-                    'dateEnd': '2021-11-21T00:00:00-00:15Z',
+                    'dateStart': '2021-06-01T00:00:00+01:00',
+                    'dateEnd': '2021-11-21T00:00:00+01:00',
                     'measurement_point': '05'
                 },
             ]

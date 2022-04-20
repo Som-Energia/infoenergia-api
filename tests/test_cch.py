@@ -86,7 +86,7 @@ class TestBaseCch(BaseTestCase):
             response.json,
             {
                 'count': 50,
-                'total_results': 243026,
+                'total_results': 409913,
                 'cursor': 'N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=',
                 'next_page':'http://{}/cch?type=tg_cchfact&cursor=N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=&limit=50'.format(response.url.netloc),
                 'data': self.json4test['f5d_all']['cch_data'],
@@ -240,8 +240,7 @@ class TestBaseCch(BaseTestCase):
                 'total_results': 265,
                 'data': self.json4test['p1']['cch_data'],
                 'cursor': 'N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=',
-                'next_page':'http://{}/cch/0038808?type=P1&cursor=N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=&limit=1'.format(response.url.netloc),
-
+                'next_page':'http://{}/cch/0020309?type=P1&cursor=N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=&limit=1'.format(response.url.netloc),
             }
         )
         self.delete_user(user)
@@ -279,7 +278,7 @@ class TestBaseCch(BaseTestCase):
             response.json,
             {
                 'count': 1,
-                'total_results': 435,
+                'total_results': 629,
                 'data': self.json4test['p2']['cch_data'],
                 'cursor': 'N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=',
                 'next_page':'http://{}/cch?type=P2&cursor=N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=&limit=1'.format(response.url.netloc),

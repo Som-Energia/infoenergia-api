@@ -26,24 +26,20 @@ class Beedata(object):
 
         self.N_WORKERS = kwargs.get('n_workers', 10)
 
-    async def process_one_report(self, month, type, contract_id):
+    async def process_one_report(self, month, report_type, contract_id):
         logger.info("start download of {}".format(contract_id.decode()))
-        status, report = await self.api_client.download_report(
-            contract_id.decode(),
-            month,
-            type
-        )
+        status, report = await self.api_client.download_report(contract_id.decode(), month, report_type)
         if report is None:
             return bool(report)
 
         logger.info("start inserting doc for {}".format(contract_id))
-        result = await self.save_report(report)
+        result = await self.save_report(report, report_type)
         return bool(result)
 
-    async def worker(self, queue, month, type, results):
+    async def worker(self, queue, month, report_type, results):
         while True:
             contract_id = await queue.get()
-            result = await self.process_one_report(month, type, contract_id)
+            result = await self.process_one_report(month, report_type, contract_id)
             results.append(result)
             if result:
                 await self._redis.lrem(b"key:reports", 0, contract_id)
@@ -51,10 +47,10 @@ class Beedata(object):
             # track of remaining work and know when everything is done.
             queue.task_done()
 
-    async def process_reports(self, contractIdsList, month, type):
+    async def process_reports(self, contractIdsList, month, report_type):
         queue = asyncio.Queue(self.N_WORKERS)
         results = []
-        workers = [asyncio.create_task(self.worker(queue, month, type, results)) for _ in range(self.N_WORKERS)]
+        workers = [asyncio.create_task(self.worker(queue, month, report_type, results)) for _ in range(self.N_WORKERS)]
         for contractId in contractIdsList:
             await queue.put(contractId) # Feed the contractIds to the workers.
         await queue.join() # Wait for all enqueued items to be processed.
@@ -69,8 +65,8 @@ class Beedata(object):
 
         return [report.decode() for report in unprocessed_reports]
 
-    async def save_report(self, reports):
-        result = await self.somenergia_db.infoenergia_reports.insert_many([
+    async def save_report(self, reports, report_type):
+        result = await self.somenergia_db[report_type].insert_many([
             {
                 'contractName': item['contractId'],
                 'beedataUpdateDate': item['_updated'],
