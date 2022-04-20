@@ -1,4 +1,5 @@
 
+import unittest
 import aiohttp
 import asyncio
 import json as jsonlib
@@ -65,6 +66,40 @@ class TestReport(BaseTestCase):
 
         self.delete_user(user)
 
+    @db_session
+    def test__post_photovoltaic_contracts(self):
+        user = self.get_or_create_user(
+            username='someone',
+            password='123412345',
+            email='someone@somenergia.coop',
+            partner_id=1,
+            is_superuser=True,
+            category='partner'
+        )
+        token = self.get_auth_token(user.username, "123412345")
+        _, response = self.client.post(
+            '/reports/',
+            headers={
+                'Authorization': 'Bearer {}'.format(token)
+            },
+            json={
+              'id': "summer_2020",
+              'contract_ids': ["0068759", "0010012", "1000010"],
+              'type': "photovoltaic_reports",
+              'create_at': "2020-01-01",
+              'month': '202011'
+            },
+            timeout=None
+        )
+        self.assertEqual(response.status, 200)
+        self.assertDictEqual(
+            response.json,
+            {
+                'reports': 3,
+            }
+        )
+        self.delete_user(user)
+
     def test__login_to_beedata(self):
         bapi = Beedata(self.bapi, self.app.mongo_client, self.app.redis)
         status = asyncio.run(
@@ -72,6 +107,7 @@ class TestReport(BaseTestCase):
         )
 
         self.assertNotEqual(status.token, None)
+
 
 
 class TestBaseReportsAsync(BaseTestCaseAsync):
@@ -96,7 +132,7 @@ class TestBaseReportsAsync(BaseTestCaseAsync):
             status, report = await self.bapi.api_client.download_report(
                 contract_id="0090438",
                 month='202011',
-                type='CCH'
+                report_type='CCH'
             )
         self.assertEqual(status, 200)
         self.assertIsNotNone(report)
@@ -108,35 +144,32 @@ class TestBaseReportsAsync(BaseTestCaseAsync):
             status, report = await self.bapi.api_client.download_report(
                 contract_id="1090438",
                 month='202011',
-                type='CCH'
+                report_type='CCH'
             )
         self.assertEqual(status, 200)
         self.assertIsNone(report)
 
-    @mock.patch('infoenergia_api.contrib.reports.Beedata.save_report')
     @db_session
     @unittest_run_loop
-    async def test__process_one_valid_report(self, saved_report_mock):
-        saved_report_mock.return_value = '1234'
-
+    async def test__process_one_valid_report(self):
+        self.bapi.save_report = mock.AsyncMock(return_value='1234')
         async with aiohttp.ClientSession() as session:
             result = await self.bapi.process_one_report(
                 month='202011',
-                type='CCH',
+                report_type='CCH',
                 contract_id=b'0090438'
             )
         self.assertTrue(result)
 
-    @mock.patch('infoenergia_api.contrib.reports.Beedata.save_report')
     @db_session
     @unittest_run_loop
-    async def test__process_one_invalid_report(self, saved_report_mock):
-        saved_report_mock.return_value = ''
+    async def test__process_one_invalid_report(self):
+        self.bapi.save_report = mock.AsyncMock(return_value='')
 
         async with aiohttp.ClientSession() as session:
             result = await self.bapi.process_one_report(
                 month='202011',
-                type='CCH',
+                report_type='CCH',
                 contract_id=b"0090438"
             )
         self.assertFalse(result)
@@ -144,6 +177,7 @@ class TestBaseReportsAsync(BaseTestCaseAsync):
     @db_session
     @unittest_run_loop
     async def test__insert_or_update_report(self):
+        report_type = 'infoenergia_reports'
         report = [{
             'contractId': '1234567',
             '_updated': "2020-08-18T12:06:23Z",
@@ -152,6 +186,30 @@ class TestBaseReportsAsync(BaseTestCaseAsync):
             'type': 'CCH',
             'results': {},
         }]
-        reportId = await self.bapi.save_report(report)
+        reportId = await self.bapi.save_report(report, report_type)
         expectedReport = await self.app.mongo_client.somenergia.infoenergia_reports.find_one(reportId[0])
         self.assertEqual(reportId[0], expectedReport['_id'])
+
+    @unittest_run_loop
+    async def test__download_one_report__expected_infoenergia_fields(self):
+        async with aiohttp.ClientSession() as session:
+            status, report = await self.bapi.api_client.download_report(
+                contract_id="0068759",
+                month='202011',
+                report_type='infoenergia_reports'
+            )
+        self.assertEqual(status, 200)
+        self.assertIsNotNone(report)
+        self.assertTrue('seasonalProfile' in report[0]['results'])
+
+    @unittest_run_loop
+    async def test__download_one_report__expected_photovoltaic_fields(self):
+        async with aiohttp.ClientSession() as session:
+            status, report = await self.bapi.api_client.download_report(
+                contract_id="0068759",
+                month=None,
+                report_type='photovoltaic_reports'
+            )
+        self.assertEqual(status, 200)
+        self.assertIsNotNone(report)
+        self.assertTrue('pvAutoSize' in report[0]['results'])
