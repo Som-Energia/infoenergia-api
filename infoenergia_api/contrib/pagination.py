@@ -103,7 +103,7 @@ class PaginationLinksMixin:
                 args.get('cursor').encode()
             ).decode().split(':')
             results_pagination = pickle.loads(
-                await request.app.redis.get(request_id)
+                await request.app.ctx.redis.get(request_id)
             )
             results_ids, total_results = results_pagination.page(cursor)
             links = await self._pagination_links(
@@ -123,10 +123,10 @@ class PaginationLinksMixin:
                 links = await self._pagination_links(
                     request, request_id, results_pagination, **kwargs
                 )
-                await request.app.redis.set(
+                await request.app.ctx.redis.set(
                     request_id, pickle.dumps(results_pagination)
                 )
-                await request.app.redis.expire(
+                await request.app.ctx.redis.expire(
                     request_id, request.app.config.get('RESULTS_TTL', 60)
                 )
         return results_ids, links, total_results

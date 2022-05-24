@@ -351,7 +351,7 @@ def get_experimentalgroup(erp_client, cups_id):
 
 
 def get_cups(request, contractId=None):
-    contract_obj = request.app.erp_client.model('giscedata.polissa')
+    contract_obj = request.app.ctx.erp_client.model('giscedata.polissa')
     filters = [
         ('active', '=', True),
         ('state', '=', 'activa'),
@@ -360,12 +360,12 @@ def get_cups(request, contractId=None):
     ]
 
     filters = get_contract_user_filters(
-        request.app.erp_client, request.ctx.user, filters
+        request.app.ctx.erp_client, request.ctx.user, filters
     )
 
     if request.args:
         filters = get_request_filters(
-            request.app.erp_client,
+            request.app.ctx.erp_client,
             request,
             filters,
         )

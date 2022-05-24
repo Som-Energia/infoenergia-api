@@ -35,7 +35,7 @@ class Contract(object):
     def __init__(self, contract_id):
         from infoenergia_api.app import app
 
-        self._erp = app.erp_client
+        self._erp = app.ctx.erp_client
         self._Polissa = self._erp.model('giscedata.polissa')
         for name, value in self._Polissa.read(contract_id, self.FIELDS).items():
             setattr(self, name, value)
@@ -477,7 +477,7 @@ class Contract(object):
 
 
 def get_contracts(request, contractId=None):
-    contract_obj = request.app.erp_client.model('giscedata.polissa')
+    contract_obj = request.app.ctx.erp_client.model('giscedata.polissa')
     filters = [
         ('active', '=', True),
         ('state', '=', 'activa'),
@@ -485,12 +485,12 @@ def get_contracts(request, contractId=None):
     ]
 
     filters = get_contract_user_filters(
-        request.app.erp_client, request.ctx.user, filters
+        request.app.ctx.erp_client, request.ctx.user, filters
     )
 
     if request.args:
         filters = get_request_filters(
-            request.app.erp_client,
+            request.app.ctx.erp_client,
             request,
             filters,
         )
@@ -504,7 +504,7 @@ def get_contracts(request, contractId=None):
 async def async_get_contracts(request, id_contract=None):
     try:
         contracts = await request.app.loop.run_in_executor(
-            request.app.thread_pool,
+            request.app.ctx.thread_pool,
             functools.partial(get_contracts, request, id_contract)
         )
     except Exception as e:

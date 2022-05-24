@@ -29,7 +29,7 @@ class TariffView(PaginationLinksMixin, HTTPMethodView):
 
         tariff_json = list(filter(None, [
             await request.app.loop.run_in_executor(
-                request.app.thread_pool, lambda: TariffPrice(tariff_price_id).tariff
+                request.app.ctx.thread_pool, lambda: TariffPrice(tariff_price_id).tariff
             ) for tariff_price_id in tariff_price_ids
         ]))
 
@@ -63,7 +63,7 @@ class TariffContractIdView(PaginationLinksMixin, HTTPMethodView):
 
         tariff_json = list(filter(None, [
             await request.app.loop.run_in_executor(
-                request.app.thread_pool, lambda: TariffPrice(tariff_price_id).tariff
+                request.app.ctx.thread_pool, lambda: TariffPrice(tariff_price_id).tariff
             ) for tariff_price_id in tariff_price_ids
         ]))
 

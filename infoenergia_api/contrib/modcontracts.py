@@ -5,19 +5,19 @@ from ..utils import get_juridic_filter, get_invoice_user_filters
 
 
 def get_modcontracts(request, contractId=None):
-    modcon_obj = request.app.erp_client.model('giscedata.polissa.modcontractual')
-    contract_obj = request.app.erp_client.model('giscedata.polissa')
+    modcon_obj = request.app.ctx.erp_client.model('giscedata.polissa.modcontractual')
+    contract_obj = request.app.ctx.erp_client.model('giscedata.polissa')
 
     filters = [
         ('polissa_id.emp_allow_send_data', '=', True),
     ]
     filters = get_invoice_user_filters(
-        request.app.erp_client, request.ctx.user, filters
+        request.app.ctx.erp_client, request.ctx.user, filters
     )
 
     if 'juridic_type' in request.args:
         filters += get_juridic_filter(
-            request.app.erp_client,
+            request.app.ctx.erp_client,
             request.args['juridic_type'][0],
         )
 
@@ -36,7 +36,6 @@ def get_modcontracts(request, contractId=None):
             ('data_inici', '<=', request.args['to_'][0])
         ])
 
-
     modcontract_ids = modcon_obj.search(filters, context={'active_test': False})
 
     filter_mods = [('modcontractual_activa', 'in', modcontract_ids)]
@@ -51,7 +50,7 @@ def get_modcontracts(request, contractId=None):
 async def async_get_modcontracts(request, id_contract=None):
     try:
         result = await request.app.loop.run_in_executor(
-            request.app.thread_pool,
+            request.app.ctx.thread_pool,
             functools.partial(get_modcontracts, request, id_contract)
         )
     except Exception as e:

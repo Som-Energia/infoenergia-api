@@ -12,7 +12,7 @@ class ReactiveEnergyPrice(object):
     def create(cls):
         from infoenergia_api.app import app
         self = cls()
-        self._erp = app.erp_client
+        self._erp = app.ctx.erp_client
         self._PricelistItem = self._erp.model('product.pricelist.item')
         return self
 
@@ -66,7 +66,7 @@ class TariffPrice(object):
     def __init__(self, price_id):
         from infoenergia_api.app import app
 
-        self._erp = app.erp_client
+        self._erp = app.ctx.erp_client
         self._Priceversion = self._erp.model('product.pricelist.version')
         self._Pricelist = self._erp.model('product.pricelist')
         self._PricelistItem = self._erp.model('product.pricelist.item')
@@ -144,8 +144,8 @@ class TariffPrice(object):
             }
 
 def get_tariff_prices(request, contractId=None):
-    tariff_obj = request.app.erp_client.model('giscedata.polissa.tarifa')
-    contract_obj = request.app.erp_client.model('giscedata.polissa')
+    tariff_obj = request.app.ctx.erp_client.model('giscedata.polissa.tarifa')
+    contract_obj = request.app.ctx.erp_client.model('giscedata.polissa')
     filters = [
         ('active', '=', True),
     ]
@@ -154,7 +154,7 @@ def get_tariff_prices(request, contractId=None):
             return [int(request.args['tariffPriceId'][0])]
         else:
             filters = get_request_filters(
-                request.app.erp_client,
+                request.app.ctx.erp_client,
                 request,
                 filters,
             )
@@ -173,7 +173,7 @@ def get_tariff_prices(request, contractId=None):
 async def async_get_tariff_prices(request, contractId=None):
     try:
         tariff = await request.app.loop.run_in_executor(
-            request.app.thread_pool,
+            request.app.ctx.thread_pool,
             functools.partial(get_tariff_prices, request, contractId)
         )
     except Exception as e:

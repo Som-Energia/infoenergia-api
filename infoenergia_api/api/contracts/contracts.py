@@ -26,7 +26,7 @@ class ContractsIdView(PaginationLinksMixin, HTTPMethodView):
         )
 
         contract_json = [await request.app.loop.run_in_executor(
-                request.app.thread_pool, lambda: Contract(contract_id).contracts
+                request.app.ctx.thread_pool, lambda: Contract(contract_id).contracts
             ) for contract_id in contracts_ids
         ]
 
@@ -57,7 +57,7 @@ class ContractsView(PaginationLinksMixin, HTTPMethodView):
 
         contracts_json = [
             await request.app.loop.run_in_executor(
-                request.app.thread_pool, lambda: Contract(contract_id).contracts
+                request.app.ctx.thread_pool, lambda: Contract(contract_id).contracts
             ) for contract_id in contracts_ids
         ]
 

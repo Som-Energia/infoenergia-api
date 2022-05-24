@@ -23,7 +23,7 @@ class Invoice(object):
     def __init__(self, invoice_id):
         from infoenergia_api.app import app
 
-        self._erp = app.erp_client
+        self._erp = app.ctx.erp_client
         self._FacturacioFactura = self._erp.model('giscedata.facturacio.factura')
         for name, value in self._FacturacioFactura.read(invoice_id, self.FIELDS).items():
             setattr(self, name, value)
@@ -170,14 +170,14 @@ class Invoice(object):
 
 def get_invoices(request, contractId=None):
     args = RequestParameters(request.args)
-    factura_obj = request.app.erp_client.model('giscedata.facturacio.factura')
+    factura_obj = request.app.ctx.erp_client.model('giscedata.facturacio.factura')
     filters = [
         ('polissa_state', '=', 'activa'),
         ('type', '=', 'in_invoice'),
         ('polissa_id.emp_allow_send_data', '=', True),
     ]
     filters = get_invoice_user_filters(
-        request.app.erp_client, request.ctx.user, filters
+        request.app.ctx.erp_client, request.ctx.user, filters
     )
 
     if contractId:
@@ -187,7 +187,7 @@ def get_invoices(request, contractId=None):
 
     if args:
         filters = get_request_filters(
-            request.app.erp_client,
+            request.app.ctx.erp_client,
             request,
             filters,
         )
@@ -199,7 +199,7 @@ def get_invoices(request, contractId=None):
 async def async_get_invoices(request, id_contract=None):
     try:
         invoices = await request.app.loop.run_in_executor(
-            request.app.thread_pool,
+            request.app.ctx.thread_pool,
             functools.partial(get_invoices, request, id_contract)
         )
     except Exception as e:

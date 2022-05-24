@@ -1,3 +1,4 @@
+from base64 import decode
 import os
 from concurrent import futures
 
@@ -36,7 +37,7 @@ def build_app():
 
     app = Sanic('infoenergia-api')
     try:
-        app.config.from_object(config)
+        app.update_config(config)
 
         InitializeJWT(
             app,
@@ -58,8 +59,8 @@ def build_app():
             host='localhost:9000'
         )
 
-        app.thread_pool = futures.ThreadPoolExecutor(app.config.MAX_THREADS)
-        app.erp_client = Client(
+        app.ctx.thread_pool = futures.ThreadPoolExecutor(app.config.MAX_THREADS)
+        app.ctx.erp_client = Client(
             transport=PoolTransport(secure=app.config.TRANSPORT_POOL_CONF['secure']),
             **app.config.ERP_CONF
         )
@@ -73,7 +74,7 @@ def build_app():
             create_db=True
         )
         db.generate_mapping(create_tables=True)
-        app.db = db
+        app.ctx.db = db
 
     except Exception as e:
         msg = "An error ocurred building Infoenergia API: %s"
@@ -89,14 +90,14 @@ app = build_app()
 
 @app.listener('before_server_start')
 async def server_init(app, loop):
-    app.redis = await aioredis.create_redis_pool(app.config.REDIS_CONF)
-    app.mongo_client = AsyncIOMotorClient(app.config.MONGO_CONF, io_loop=loop)
+    app.ctx.redis = aioredis.from_url(
+        app.config.REDIS_CONF, encoding='utf-8', decode_responses=True
+    )
+    app.ctx.mongo_client = AsyncIOMotorClient(app.config.MONGO_CONF, io_loop=loop)
 
 
 @app.listener('after_server_stop')
 async def shutdown_app(app, loop):
     logger.info("Shuting down api... ")
-    app.redis.close()
-    await app.redis.wait_closed()
-    app.mongo_client.close()
-    app.thread_pool.shutdown()
+    app.ctx.mongo_client.close()
+    app.ctx.thread_pool.shutdown()

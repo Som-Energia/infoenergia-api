@@ -4,16 +4,16 @@ from sanic.log import logger
 
 
 async def get_report_ids(request):
-    await request.app.redis.delete(b"key:reports")
+    await request.app.ctx.redis.delete(b"key:reports")
     key, value = b"key:reports", "{}"
 
     ids = ["{}".format(id).encode() for id in request.json['contract_ids']]
-    reports = await request.app.redis.rpush(
+    reports = await request.app.ctx.redis.rpush(
         key,
         *ids
     )
     logger.info("There are {} contractIds in redis to process".format(reports))
-    report_ids = await request.app.redis.lrange(key, 0, -1)
+    report_ids = await request.app.ctx.redis.lrange(key, 0, -1)
     return report_ids, request.json['month'], request.json['type']
 
 
