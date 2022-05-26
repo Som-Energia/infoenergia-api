@@ -31,7 +31,8 @@ class F1MeasuresContractIdView(PaginationLinksMixin, HTTPMethodView):
 
         f1_measure_json = [
             await request.app.loop.run_in_executor(
-                request.app.ctx.thread_pool, lambda: Invoice(invoice_id).f1_measures
+                request.app.ctx.thread_pool,
+                lambda invoice_id=invoice_id: Invoice(invoice_id).f1_measures
             ) for invoice_id in invoices_ids
         ]
 
@@ -63,7 +64,8 @@ class F1MeasuresView(PaginationLinksMixin, HTTPMethodView):
 
         f1_measure_json = [
             await request.app.loop.run_in_executor(
-                request.app.ctx.thread_pool, lambda: Invoice(invoice_id).f1_measures
+                request.app.ctx.thread_pool,
+                lambda invoice_id=invoice_id: Invoice(invoice_id).f1_measures
             ) for invoice_id in invoices_ids
         ]
 

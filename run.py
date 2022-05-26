@@ -6,7 +6,12 @@ def main(host, port):
     from infoenergia_api import app
 
     try:
-        app.run(host=host, port=port, debug=True)
+        app.run(
+            host=host,
+            port=port,
+            debug=True,
+            auto_reload=True,
+        )
     except (KeyboardInterrupt, SystemExit):
         print("You kill me!!")
     finally:
@@ -26,8 +31,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "-p", "--port",
         help="TCP/IP port to serve (default: %(default)r",
-        type=str,
-        default="9000"
+        type=int,
+        default=9000
     )
 
     args = parser.parse_args()

@@ -1,4 +1,3 @@
-from base64 import decode
 import os
 from concurrent import futures
 
@@ -91,7 +90,7 @@ app = build_app()
 @app.listener('before_server_start')
 async def server_init(app, loop):
     app.ctx.redis = aioredis.from_url(
-        app.config.REDIS_CONF, encoding='utf-8', decode_responses=True
+        app.config.REDIS_CONF
     )
     app.ctx.mongo_client = AsyncIOMotorClient(app.config.MONGO_CONF, io_loop=loop)
 

@@ -1,12 +1,14 @@
-import functools
+import asyncio
 from datetime import datetime
+
+from sanic.log import logger
 
 from infoenergia_api.contrib.climatic_zones import ine_to_zc
 from infoenergia_api.contrib.postal_codes import ine_to_dp
 
 from ..tasks import find_changes
-from ..utils import (get_id_for_contract, get_request_filters,
-                     get_contract_user_filters, make_timestamp, make_uuid)
+from ..utils import (get_contract_user_filters, get_id_for_contract,
+                     get_request_filters, make_timestamp, make_uuid)
 
 
 class Contract(object):
@@ -34,13 +36,22 @@ class Contract(object):
 
     def __init__(self, contract_id):
         from infoenergia_api.app import app
+        logger.debug('Creating object for contract %d', contract_id)
 
         self._erp = app.ctx.erp_client
         self._Polissa = self._erp.model('giscedata.polissa')
         for name, value in self._Polissa.read(contract_id, self.FIELDS).items():
             setattr(self, name, value)
 
-    def  get_power_history(self, modcon):
+        logger.debug('Created object for contract %d', contract_id)
+
+    @classmethod
+    async def create(cls, contract_id):
+        loop = asyncio.get_running_loop()
+        self = await loop.run_in_executor(None, cls, contract_id)
+        return self
+
+    def get_power_history(self, modcon):
         power_history = {
             str(period[0]).split(':')[0]: float(period[1]) * 1000
                 for period in zip(modcon['potencies_periode'].split()[::2], modcon['potencies_periode'].split()[1::2])
@@ -49,7 +60,6 @@ class Contract(object):
             power_history = {'P1-2': power_history['P1'],
                              'P3': power_history['P2']}
         return power_history
-
 
     @property
     def currentTariff(self):
@@ -98,7 +108,6 @@ class Contract(object):
             }
             for modcon in find_changes(self._erp, self.modcontractuals_ids, 'tarifa')]
 
-
     @property
     def power(self):
         """
@@ -119,7 +128,6 @@ class Contract(object):
                 ('1-2' if i == 1 else '3') if self.tarifa[1] == '2.0TD' else i
             ): int(period['potencia'] * 1000) for i, period in enumerate(period_powers, 1)
         }
-
 
     @property
     def currentPower(self):
@@ -143,7 +151,6 @@ class Contract(object):
             "dateEnd": make_timestamp(modcon['data_final']),
             "measurement_point": modcon['agree_tipus']
         }
-
 
     @property
     def powerHistory(self):
@@ -442,9 +449,8 @@ class Contract(object):
         else:
             return 'physicalPerson'
 
-    @property
-    def contracts(self):
-        return {
+    def __iter__(self):
+        yield from {
             'contractId': self.name,
             'ownerId': make_uuid('res.partner', self.titular[0]),
             'payerId': make_uuid('res.partner', self.pagador[0]),
@@ -473,7 +479,7 @@ class Contract(object):
             'version': self.version,
             'experimentalGroupUserTest': False,
             'experimentalGroupUser': self.experimentalGroup
-        }
+        }.items()
 
 
 def get_contracts(request, contractId=None):
@@ -504,9 +510,36 @@ def get_contracts(request, contractId=None):
 async def async_get_contracts(request, id_contract=None):
     try:
         contracts = await request.app.loop.run_in_executor(
-            request.app.ctx.thread_pool,
-            functools.partial(get_contracts, request, id_contract)
+            None,
+            get_contracts, request, id_contract
         )
     except Exception as e:
         raise e
     return contracts
+
+
+class ContractResponseMixin(object):
+
+    async def get_response_contracts(self, request, contracts_ids):
+        contracts= [
+            await Contract.create(contract_id)
+            for contract_id in contracts_ids
+        ]
+
+        contracts_json = []
+        todo = [
+            request.app.loop.run_in_executor(
+                request.app.ctx.thread_pool, dict, contract
+            ) for contract in contracts
+        ]
+        while todo:
+            logger.debug(f"Dumping to dict {len(todo)} contracs")
+            done, todo = await asyncio.wait(todo, timeout=request.app.config.TASK_TIMEOUT)
+            for task in done:
+                contracts_json.append(task.result())
+
+        response = {
+            'count': len(contracts_json),
+            'data': contracts_json
+        }
+        return response

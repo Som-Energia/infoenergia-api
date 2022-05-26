@@ -14,13 +14,13 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__fil
 SECRET_KEY = '1234'
 
 # Max threads in pool
-MAX_THREADS = 5
+MAX_THREADS = 200
 
 # Max concurrent tasks
 MAX_TASKS = 1
 
 # I will wait until this timeout seconds
-TASK_TIMEOUT = 30
+TASK_TIMEOUT = 0.5
 
 # Response timeout
 RESPONSE_TIMEOUT = 36000

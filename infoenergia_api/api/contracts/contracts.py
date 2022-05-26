@@ -2,15 +2,16 @@ from sanic import Blueprint
 from sanic.log import logger
 from sanic.response import json
 from sanic.views import HTTPMethodView
-from sanic_jwt.decorators import protected, inject_user
+from sanic_jwt.decorators import inject_user, protected
 
-from infoenergia_api.contrib.contracts import async_get_contracts, Contract
-from infoenergia_api.contrib import PaginationLinksMixin
+from infoenergia_api.contrib import (ContractResponseMixin,
+                                     PaginationLinksMixin)
+from infoenergia_api.contrib.contracts import async_get_contracts
 
 bp_contracts = Blueprint('contracts')
 
 
-class ContractsIdView(PaginationLinksMixin, HTTPMethodView):
+class ContractsIdView(ContractResponseMixin, PaginationLinksMixin, HTTPMethodView):
     decorators = [
         inject_user(),
         protected(),
@@ -19,27 +20,23 @@ class ContractsIdView(PaginationLinksMixin, HTTPMethodView):
     endpoint_name = 'contracts.get_contract_by_id'
 
     async def get(self, request, contractId, user):
-        logger.info("Getting contracts")
+        logger.info(f"Getting contract information for contract {contractId}")
         request.ctx.user = user
         contracts_ids, links, total_results = await self.paginate_results(
             request, function=async_get_contracts, contractId=contractId
         )
 
-        contract_json = [await request.app.loop.run_in_executor(
-                request.app.ctx.thread_pool, lambda: Contract(contract_id).contracts
-            ) for contract_id in contracts_ids
-        ]
+        contract_response = await self.get_response_contracts(request, contracts_ids)
 
         response = {
             'total_results': total_results,
-            'count': len(contract_json),
-            'data': contract_json
         }
+        response.update(contract_response)
         response.update(links)
         return json(response)
 
 
-class ContractsView(PaginationLinksMixin, HTTPMethodView):
+class ContractsView(ContractResponseMixin, PaginationLinksMixin, HTTPMethodView):
     decorators = [
         inject_user(),
         protected(),
@@ -55,19 +52,15 @@ class ContractsView(PaginationLinksMixin, HTTPMethodView):
             function=async_get_contracts
         )
 
-        contracts_json = [
-            await request.app.loop.run_in_executor(
-                request.app.ctx.thread_pool, lambda: Contract(contract_id).contracts
-            ) for contract_id in contracts_ids
-        ]
+        contracts_response = await self.get_response_contracts(request, contracts_ids)
 
         response = {
             'total_results': total_results,
-            'count': len(contracts_json),
-            'data': contracts_json
         }
+        response.update(contracts_response)
         response.update(links)
         return json(response)
+
 
 
 bp_contracts.add_route(

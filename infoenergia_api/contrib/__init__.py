@@ -1,4 +1,4 @@
-from .contracts import Contract
+from .contracts import Contract, ContractResponseMixin
 from .f1 import Invoice, get_invoices
 from .pagination import Pagination, PaginationLinksMixin
 from .cch import Cch
