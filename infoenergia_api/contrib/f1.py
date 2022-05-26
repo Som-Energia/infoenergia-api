@@ -150,7 +150,6 @@ class Invoice(object):
             'period':maximeter['periode_id'][1]
         } for maximeter in maximeters]
 
-
     @property
     def f1_measures(self):
         return {

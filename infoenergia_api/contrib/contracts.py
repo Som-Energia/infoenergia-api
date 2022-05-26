@@ -1,10 +1,9 @@
 import asyncio
 from datetime import datetime
 
-from sanic.log import logger
-
 from infoenergia_api.contrib.climatic_zones import ine_to_zc
 from infoenergia_api.contrib.postal_codes import ine_to_dp
+from sanic.log import logger
 
 from ..tasks import find_changes
 from ..utils import (get_contract_user_filters, get_id_for_contract,
@@ -54,7 +53,7 @@ class Contract(object):
     def get_power_history(self, modcon):
         power_history = {
             str(period[0]).split(':')[0]: float(period[1]) * 1000
-                for period in zip(modcon['potencies_periode'].split()[::2], modcon['potencies_periode'].split()[1::2])
+            for period in zip(modcon['potencies_periode'].split()[::2], modcon['potencies_periode'].split()[1::2])
             }
         if modcon['tarifa'][1] == '2.0TD':
             power_history = {'P1-2': power_history['P1'],
@@ -510,36 +509,8 @@ def get_contracts(request, contractId=None):
 async def async_get_contracts(request, id_contract=None):
     try:
         contracts = await request.app.loop.run_in_executor(
-            None,
-            get_contracts, request, id_contract
+            None, get_contracts, request, id_contract
         )
     except Exception as e:
         raise e
     return contracts
-
-
-class ContractResponseMixin(object):
-
-    async def get_response_contracts(self, request, contracts_ids):
-        contracts= [
-            await Contract.create(contract_id)
-            for contract_id in contracts_ids
-        ]
-
-        contracts_json = []
-        todo = [
-            request.app.loop.run_in_executor(
-                request.app.ctx.thread_pool, dict, contract
-            ) for contract in contracts
-        ]
-        while todo:
-            logger.debug(f"Dumping to dict {len(todo)} contracs")
-            done, todo = await asyncio.wait(todo, timeout=request.app.config.TASK_TIMEOUT)
-            for task in done:
-                contracts_json.append(task.result())
-
-        response = {
-            'count': len(contracts_json),
-            'data': contracts_json
-        }
-        return response

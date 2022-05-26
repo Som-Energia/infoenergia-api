@@ -1,17 +1,16 @@
+from infoenergia_api.contrib import (Contract, PageNotFoundError,
+                                     PaginationLinksMixin, ResponseMixin)
+from infoenergia_api.contrib.contracts import async_get_contracts
 from sanic import Blueprint
 from sanic.log import logger
 from sanic.response import json
 from sanic.views import HTTPMethodView
 from sanic_jwt.decorators import inject_user, protected
 
-from infoenergia_api.contrib import (ContractResponseMixin,
-                                     PaginationLinksMixin)
-from infoenergia_api.contrib.contracts import async_get_contracts
-
 bp_contracts = Blueprint('contracts')
 
 
-class ContractsIdView(ContractResponseMixin, PaginationLinksMixin, HTTPMethodView):
+class ContractsIdView(ResponseMixin, PaginationLinksMixin, HTTPMethodView):
     decorators = [
         inject_user(),
         protected(),
@@ -22,21 +21,30 @@ class ContractsIdView(ContractResponseMixin, PaginationLinksMixin, HTTPMethodVie
     async def get(self, request, contractId, user):
         logger.info(f"Getting contract information for contract {contractId}")
         request.ctx.user = user
-        contracts_ids, links, total_results = await self.paginate_results(
-            request, function=async_get_contracts, contractId=contractId
-        )
 
-        contract_response = await self.get_response_contracts(request, contracts_ids)
+        try:
+            contracts_ids, links, total_results = await self.paginate_results(
+                request, function=async_get_contracts, contractId=contractId
+            )
+        except PageNotFoundError as e:
+            return self.error_response(e)
 
-        response = {
-            'total_results': total_results,
-        }
-        response.update(contract_response)
-        response.update(links)
-        return json(response)
+        else:
+            contracts = [
+                await Contract.create(contract_id) for contract_id in contracts_ids
+            ]
+
+            base_response = {
+                'total_results': total_results,
+                **links
+            }
+            response_body = await self.make_response_body(
+                request, contracts, base_response
+            )
+            return json(response_body)
 
 
-class ContractsView(ContractResponseMixin, PaginationLinksMixin, HTTPMethodView):
+class ContractsView(ResponseMixin, PaginationLinksMixin, HTTPMethodView):
     decorators = [
         inject_user(),
         protected(),
@@ -47,20 +55,27 @@ class ContractsView(ContractResponseMixin, PaginationLinksMixin, HTTPMethodView)
     async def get(self, request, user):
         logger.info("Getting contracts")
         request.ctx.user = user
-        contracts_ids, links, total_results = await self.paginate_results(
-            request,
-            function=async_get_contracts
+        try:
+            contracts_ids, links, total_results = await self.paginate_results(
+                request,
+                function=async_get_contracts
+            )
+        except PageNotFoundError as e:
+            return self.error_response(e)
+
+
+        contracts = [
+            await Contract.create(contract_id) for contract_id in contracts_ids
+        ]
+        base_response = {
+            'total_results': total_results,
+            **links
+        }
+        response_body = await self.make_response_body(
+            request, contracts, base_response
         )
 
-        contracts_response = await self.get_response_contracts(request, contracts_ids)
-
-        response = {
-            'total_results': total_results,
-        }
-        response.update(contracts_response)
-        response.update(links)
-        return json(response)
-
+        return json(response_body)
 
 
 bp_contracts.add_route(

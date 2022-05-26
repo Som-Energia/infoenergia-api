@@ -1,5 +1,6 @@
 import os
 from concurrent import futures
+from urllib import response
 
 import aioredis
 import sentry_sdk
@@ -18,6 +19,7 @@ from infoenergia_api.api.modcontracts import bp_modcontracts
 from infoenergia_api.api.reports import bp_reports
 from infoenergia_api.api.registration.login import (InvitationUrlToken,
                                                     authenticate, extra_views)
+from infoenergia_api.api.registration.utils import ApiAuthResponses
 from infoenergia_api.api.tariff import bp_tariff
 from infoenergia_api.api.registration.models import db, retrieve_user
 
@@ -42,7 +44,8 @@ def build_app():
             app,
             authenticate=authenticate,
             retrieve_user=retrieve_user,
-            class_views=extra_views
+            class_views=extra_views,
+            responses_class=ApiAuthResponses,
         )
         app.blueprint(bp_contracts)
         app.blueprint(bp_f1_measures)

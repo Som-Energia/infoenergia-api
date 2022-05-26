@@ -1,13 +1,17 @@
 import pickle
+from base64 import urlsafe_b64decode, urlsafe_b64encode
 from datetime import datetime
-from base64 import urlsafe_b64encode, urlsafe_b64decode
-
-from sanic.log import logger
 
 from infoenergia_api.utils import make_uuid
+from sanic.log import logger
 
 
 class DecodeException(Exception):
+    pass
+
+
+class PageNotFoundError(Exception):
+    code = 'page_not_found'
     pass
 
 
@@ -99,12 +103,17 @@ class PaginationLinksMixin:
         total_results = 0
 
         if 'cursor' in args:
+            encoded_cursor = args.get('cursor', '')
             request_id, cursor = urlsafe_b64decode(
-                args.get('cursor').encode()
+                encoded_cursor.encode()
             ).decode().split(':')
-            results_pagination = pickle.loads(
-                await request.app.ctx.redis.get(request_id)
-            )
+            binary_results = await request.app.ctx.redis.get(request_id)
+            if not binary_results:
+                raise PageNotFoundError(
+                    f"Sorry cursor {encoded_cursor} is no available"
+                )
+
+            results_pagination = pickle.loads(binary_results)
             results_ids, total_results = results_pagination.page(cursor)
             links = await self._pagination_links(
                 request, request_id, results_pagination, **kwargs
