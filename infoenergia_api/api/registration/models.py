@@ -48,6 +48,9 @@ class User(db.Entity):
             for attr in attrs
         }
 
+    def __repr__(self):
+        return f"<User:{self.username}>"
+
 
 @db_session
 def get_user(username):

@@ -2,6 +2,7 @@ import asyncio
 
 from sanic.log import logger
 from sanic.response import json
+from sentry_sdk import capture_exception
 
 
 class ResponseMixin(object):
@@ -41,16 +42,19 @@ class ResponseMixin(object):
         return json(response, status=400)
 
     @staticmethod
-    def unauthorized_error(exception):
+    def unauthorized_error_response(exception):
+        reason = exception.args[0]
         response = {
             'error': {
                 'code': 'unauthorized',
-                'message': str(exception)
+                'message': ''.join(reason)
             }
         }
         return json(response, 401)
 
-    def unexpected_error_response(self, exception):
+    @staticmethod
+    def unexpected_error_response(exception):
+        capture_exception(exception)
         response = {
             'error': {
                 'code': 'unexpected_error',

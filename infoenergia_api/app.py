@@ -1,6 +1,5 @@
 import os
 from concurrent import futures
-from urllib import response
 
 import aioredis
 import sentry_sdk
@@ -8,9 +7,11 @@ from erppeek import Client
 from motor.motor_asyncio import AsyncIOMotorClient
 from pool_transport import PoolTransport
 from sanic import Sanic
+from sanic.exceptions import NotFound
 from sanic.log import logger
 from sanic_jwt import Initialize as InitializeJWT
 from sentry_sdk.integrations.sanic import SanicIntegration
+from sanic_jwt.exceptions import AuthenticationFailed, Unauthorized
 
 from infoenergia_api.api.contracts import bp_contracts
 from infoenergia_api.api.f1_measures import bp_f1_measures
@@ -22,7 +23,7 @@ from infoenergia_api.api.registration.login import (InvitationUrlToken,
 from infoenergia_api.api.registration.utils import ApiAuthResponses
 from infoenergia_api.api.tariff import bp_tariff
 from infoenergia_api.api.registration.models import db, retrieve_user
-
+from infoenergia_api.contrib.mixins import ResponseMixin
 from . import VERSION
 
 
@@ -53,7 +54,6 @@ def build_app():
         app.blueprint(bp_cch_measures)
         app.blueprint(bp_reports)
         app.blueprint(bp_tariff)
-
 
         app.add_route(
             InvitationUrlToken.as_view(),
@@ -103,3 +103,13 @@ async def shutdown_app(app, loop):
     logger.info("Shuting down api... ")
     app.ctx.mongo_client.close()
     app.ctx.thread_pool.shutdown()
+
+
+@app.exception(AuthenticationFailed, Unauthorized)
+async def unauthorized_errors(request, exception):
+    return ResponseMixin.unauthorized_error_response(exception)
+
+
+@app.exception(Exception)
+async def unauthorized_errors(request, exception):
+    return ResponseMixin.unexpected_error_response(exception)

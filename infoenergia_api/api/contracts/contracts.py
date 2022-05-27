@@ -63,7 +63,6 @@ class ContractsView(ResponseMixin, PaginationLinksMixin, HTTPMethodView):
         except PageNotFoundError as e:
             return self.error_response(e)
 
-
         contracts = [
             await Contract.create(contract_id) for contract_id in contracts_ids
         ]
