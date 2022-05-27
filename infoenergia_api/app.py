@@ -7,8 +7,8 @@ from erppeek import Client
 from motor.motor_asyncio import AsyncIOMotorClient
 from pool_transport import PoolTransport
 from sanic import Sanic
-from sanic.exceptions import NotFound
 from sanic.log import logger
+from sanic.signals import Event
 from sanic_jwt import Initialize as InitializeJWT
 from sentry_sdk.integrations.sanic import SanicIntegration
 from sanic_jwt.exceptions import AuthenticationFailed, Unauthorized
@@ -113,3 +113,17 @@ async def unauthorized_errors(request, exception):
 @app.exception(Exception)
 async def unauthorized_errors(request, exception):
     return ResponseMixin.unexpected_error_response(exception)
+
+
+@app.signal(Event.HTTP_LIFECYCLE_EXCEPTION)
+async def http_lifecycle_handle_handler(request, exception):
+    if hasattr(request.ctx, 'user'):
+        sentry_sdk.set_user({
+            'username': request.ctx.user.username,
+            'email': request.ctx.user.email
+        })
+
+
+@app.signal(Event.HTTP_LIFECYCLE_COMPLETE)
+async def http_lifecycle_comple_handler(conn_info):
+    sentry_sdk.set_user(None)
