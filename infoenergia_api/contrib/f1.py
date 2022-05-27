@@ -28,6 +28,11 @@ class Invoice(object):
         for name, value in self._FacturacioFactura.read(invoice_id, self.FIELDS).items():
             setattr(self, name, value)
 
+    @classmethod
+    async def create(cls, invoice_id):
+        self = cls(invoice_id)
+        return self
+
     @property
     def devices(self):
         """
@@ -166,6 +171,9 @@ class Invoice(object):
             'maximeter': self.f1_maximeter
         }
 
+    def __iter__(self):
+        yield from self.f1_measures.items()
+
 
 def get_invoices(request, contractId=None):
     args = RequestParameters(request.args)
@@ -198,8 +206,7 @@ def get_invoices(request, contractId=None):
 async def async_get_invoices(request, id_contract=None):
     try:
         invoices = await request.app.loop.run_in_executor(
-            request.app.ctx.thread_pool,
-            functools.partial(get_invoices, request, id_contract)
+            None, get_invoices, request, id_contract
         )
     except Exception as e:
         raise e

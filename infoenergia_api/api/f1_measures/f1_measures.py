@@ -8,11 +8,13 @@ from sanic_jwt.decorators import inject_user, protected
 
 from infoenergia_api.contrib.f1 import async_get_invoices, Invoice
 from infoenergia_api.contrib import PaginationLinksMixin
+from infoenergia_api.contrib.mixins import ResponseMixin
+from infoenergia_api.contrib.pagination import PageNotFoundError
 
 bp_f1_measures = Blueprint('f1')
 
 
-class F1MeasuresContractIdView(PaginationLinksMixin, HTTPMethodView):
+class F1MeasuresContractIdView(ResponseMixin, PaginationLinksMixin, HTTPMethodView):
 
     decorators = [
         inject_user(),
@@ -25,27 +27,28 @@ class F1MeasuresContractIdView(PaginationLinksMixin, HTTPMethodView):
         logger.info("Getting f1 measures for contract: %s", contractId)
         request.ctx.user = user
 
-        invoices_ids, links, total_results = await self.paginate_results(
-            request, function=async_get_invoices, contractId=contractId
-        )
+        try: 
+            invoices_ids, links, total_results = await self.paginate_results(
+                request, function=async_get_invoices, contractId=contractId
+            )
+        except PageNotFoundError as e:
+            return self.error_response(e)
+        else:
+            invoices = [
+                await Invoice.create(invoice_id) for invoice_id in invoices_ids
+            ]
 
-        f1_measure_json = [
-            await request.app.loop.run_in_executor(
-                request.app.ctx.thread_pool,
-                lambda invoice_id=invoice_id: Invoice(invoice_id).f1_measures
-            ) for invoice_id in invoices_ids
-        ]
-
-        response = {
-            'total_results': total_results,
-            'count': len(f1_measure_json),
-            'data': f1_measure_json
-        }
-        response.update(links)
-        return json(response)
+            base_response = {
+                'total_results': total_results,
+                **links
+            }
+            response_body = await self.make_response_body(
+                request, invoices, base_response
+            )
+            return json(response_body)
 
 
-class F1MeasuresView(PaginationLinksMixin, HTTPMethodView):
+class F1MeasuresView(ResponseMixin, PaginationLinksMixin, HTTPMethodView):
 
     decorators = [
         inject_user(),
@@ -57,25 +60,26 @@ class F1MeasuresView(PaginationLinksMixin, HTTPMethodView):
     async def get(self, request, user):
         logger.info("Getting f1 measures")
         request.ctx.user = user
-        invoices_ids, links, total_results = await self.paginate_results(
-            request,
-            function=async_get_invoices
-        )
+        try:
+            invoices_ids, links, total_results = await self.paginate_results(
+                request,
+                function=async_get_invoices
+            )
+        except PageNotFoundError as e:
+            return self.error_response(e)
+        else:
+            invoices = [
+                await Invoice.create(invoice_id) for invoice_id in invoices_ids
+            ]
 
-        f1_measure_json = [
-            await request.app.loop.run_in_executor(
-                request.app.ctx.thread_pool,
-                lambda invoice_id=invoice_id: Invoice(invoice_id).f1_measures
-            ) for invoice_id in invoices_ids
-        ]
-
-        response = {
-            'total_results': total_results,
-            'count': len(f1_measure_json),
-            'data': f1_measure_json
-        }
-        response.update(links)
-        return json(response)
+            base_response = {
+                'total_results': total_results,
+                **links
+            }
+            response_body = await self.make_response_body(
+                request, invoices, base_response
+            )
+            return json(response_body)
 
 
 bp_f1_measures.add_route(
