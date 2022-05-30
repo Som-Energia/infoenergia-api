@@ -32,6 +32,16 @@ class ResponseMixin(object):
         }
         return response
 
+    @staticmethod
+    def empty_body_response():
+        response = {
+            'error': {
+                'code': 'empty_body',
+                'message': 'Body is empty, request will be not processed'
+            }
+        }
+        return json(response, status=400)
+
     def error_response(self, exception):
         response = {
             'error': {

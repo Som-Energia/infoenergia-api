@@ -8,10 +8,8 @@ async def get_report_ids(request):
     key, value = b"key:reports", "{}"
 
     ids = ["{}".format(id).encode() for id in request.json['contract_ids']]
-    reports = await request.app.ctx.redis.rpush(
-        key,
-        *ids
-    )
+    reports = await request.app.ctx.redis.rpush(key, *ids)
+
     logger.info("There are {} contractIds in redis to process".format(reports))
     report_ids = await request.app.ctx.redis.lrange(key, 0, -1)
     return report_ids, request.json['month'], request.json['type']
@@ -47,12 +45,18 @@ class Beedata(object):
             # track of remaining work and know when everything is done.
             queue.task_done()
 
-    async def process_reports(self, contractIdsList, month, report_type):
+    async def process_reports(self, contract_ids, month, report_type):
         queue = asyncio.Queue(self.N_WORKERS)
         results = []
-        workers = [asyncio.create_task(self.worker(queue, month, report_type, results)) for _ in range(self.N_WORKERS)]
-        for contractId in contractIdsList:
-            await queue.put(contractId) # Feed the contractIds to the workers.
+
+        # report_ids, month, report_type = await get_report_ids(request)
+
+        workers = [
+            asyncio.create_task(self.worker(queue, month, report_type, results))
+            for _ in range(self.N_WORKERS)
+        ]
+        for contract_id in contract_ids:
+            await queue.put(contract_id) # Feed the contract_id to the workers.
         await queue.join() # Wait for all enqueued items to be processed.
 
         for worker in workers:

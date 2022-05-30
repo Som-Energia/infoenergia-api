@@ -7,6 +7,7 @@ from erppeek import Client
 from motor.motor_asyncio import AsyncIOMotorClient
 from pool_transport import PoolTransport
 from sanic import Sanic
+from sanic_ext.exceptions import ValidationError
 from sanic.log import logger
 from sanic.signals import Event
 from sanic_jwt import Initialize as InitializeJWT
@@ -108,6 +109,11 @@ async def shutdown_app(app, loop):
 @app.exception(AuthenticationFailed, Unauthorized)
 async def unauthorized_errors(request, exception):
     return ResponseMixin.unauthorized_error_response(exception)
+
+
+@app.exception(ValidationError)
+async def validation_error(request, exception):
+    return ResponseMixin.error_response(exception)
 
 
 @app.exception(Exception)
