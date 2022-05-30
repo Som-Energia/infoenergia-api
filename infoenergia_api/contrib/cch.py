@@ -116,11 +116,7 @@ class Cch(object):
             }
         else:
             contractId = await request.app.loop.run_in_executor(
-                self._executor,
-                get_contract_id,
-                self._erp,
-                self.name,
-                user,
+                None, get_contract_id, self._erp, self.name, user,
             )
             if contractId:
                 return {
@@ -140,7 +136,7 @@ async def async_get_cch(request, contractId=None):
 
     if contractId:
         cups = await request.app.loop.run_in_executor(
-            request.app.thread_pool, get_cups, request, contractId
+            None, get_cups, request, contractId
         )
         if not cups:
             return []

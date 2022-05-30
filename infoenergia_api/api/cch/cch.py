@@ -6,11 +6,13 @@ from sanic_jwt.decorators import inject_user, protected
 
 from infoenergia_api.contrib.cch import async_get_cch, Cch
 from infoenergia_api.contrib import PaginationLinksMixin
+from infoenergia_api.contrib.mixins import ResponseMixin
+from infoenergia_api.contrib.pagination import PageNotFoundError
 
 bp_cch_measures = Blueprint('cch')
 
 
-class CchMeasuresContractIdView(PaginationLinksMixin, HTTPMethodView):
+class CchMeasuresContractIdView(ResponseMixin, PaginationLinksMixin, HTTPMethodView):
 
     decorators = [
         inject_user(),
@@ -23,27 +25,31 @@ class CchMeasuresContractIdView(PaginationLinksMixin, HTTPMethodView):
         logger.info("Getting cch measures for contract: %s", contractId)
         request.ctx.user = user
 
-        cch_ids, links, total_results = await self.paginate_results(
-            request,
-            function=async_get_cch, contractId=contractId
-        )
-        collection = request.args['type'][0]
-        if collection in ('P1', 'P2'):
-            collection = 'tg_p1'
-        cch_measure_json = [
-            await (await Cch.create(cch_id, collection)).cch_measures(user, request, contractId) for cch_id in cch_ids
-        ]
+        try:
+            cch_ids, links, total_results = await self.paginate_results(
+                request,
+                function=async_get_cch, contractId=contractId
+            )
+        except PageNotFoundError as e:
+            return self.error_response(e)
+        else:
+            collection = request.args['type'][0]
+            if collection in ('P1', 'P2'):
+                collection = 'tg_p1'
+            cch_measure_json = [
+                await (await Cch.create(cch_id, collection)).cch_measures(user, request, contractId) for cch_id in cch_ids
+            ]
 
-        response = {
-            'total_results': total_results,
-            'count': len(cch_measure_json),
-            'data': cch_measure_json
-        }
-        response.update(links)
-        return json(response)
+            response = {
+                'total_results': total_results,
+                'count': len(cch_measure_json),
+                'data': cch_measure_json
+            }
+            response.update(links)
+            return json(response)
 
 
-class CchMeasuresView(PaginationLinksMixin, HTTPMethodView):
+class CchMeasuresView(ResponseMixin, PaginationLinksMixin, HTTPMethodView):
 
     decorators = [
         inject_user(),
@@ -55,26 +61,28 @@ class CchMeasuresView(PaginationLinksMixin, HTTPMethodView):
     async def get(self, request, user):
         request.ctx.user = user
         logger.info("Getting cch measures")
-        cch_ids, links, total_results = await self.paginate_results(
-            request,
-            function=async_get_cch
-        )
+        try:
+            cch_ids, links, total_results = await self.paginate_results(
+                request, function=async_get_cch
+            )
+        except PageNotFoundError as e:
+            return self.error_response(e)
+        else:
+            collection = request.args['type'][0]
+            if collection in ('P1', 'P2'):
+                collection = 'tg_p1'
+            cch_measure_json = [
+                await (await Cch.create(cch_id, collection)).cch_measures(user, request)
+                for cch_id in cch_ids
+            ]
 
-        collection = request.args['type'][0]
-        if collection in ('P1', 'P2'):
-            collection = 'tg_p1'
-        cch_measure_json = [
-            await (await Cch.create(cch_id, collection)).cch_measures(user, request)
-            for cch_id in cch_ids
-        ]
-
-        response = {
-            'total_results': total_results,
-            'count': len(cch_measure_json),
-            'data': cch_measure_json
-        }
-        response.update(links)
-        return json(response)
+            response = {
+                'total_results': total_results,
+                'count': len(cch_measure_json),
+                'data': cch_measure_json
+            }
+            response.update(links)
+            return json(response)
 
 
 bp_cch_measures.add_route(
