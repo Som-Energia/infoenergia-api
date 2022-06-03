@@ -25,8 +25,10 @@ class Beedata(object):
         self.N_WORKERS = kwargs.get('n_workers', 10)
 
     async def process_one_report(self, month, report_type, contract_id):
-        logger.info("start download of {}".format(contract_id.decode()))
-        status, report = await self.api_client.download_report(contract_id.decode(), month, report_type)
+        logger.info("start download of {}".format(contract_id))
+        status, report = await self.api_client.download_report(
+            contract_id, month, report_type
+        )
         if report is None:
             return bool(report)
 
@@ -48,8 +50,6 @@ class Beedata(object):
     async def process_reports(self, contract_ids, month, report_type):
         queue = asyncio.Queue(self.N_WORKERS)
         results = []
-
-        # report_ids, month, report_type = await get_report_ids(request)
 
         workers = [
             asyncio.create_task(self.worker(queue, month, report_type, results))

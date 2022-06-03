@@ -23,6 +23,8 @@ SANIC_JWT_SECRET = SECRET_KEY
 
 INVITATION_EXP_DAYS = 1
 
+USE_UVLOOP = False
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': True,

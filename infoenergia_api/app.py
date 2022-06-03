@@ -7,7 +7,6 @@ from erppeek import Client
 from motor.motor_asyncio import AsyncIOMotorClient
 from pool_transport import PoolTransport
 from sanic import Sanic
-from sanic_ext.exceptions import ValidationError
 from sanic.log import logger
 from sanic.signals import Event
 from sanic_jwt import Initialize as InitializeJWT
@@ -31,12 +30,12 @@ from . import VERSION
 def build_app():
     from config import config
 
-    sentry_sdk.init(
-        dsn=config.SENTRY_DSN,
-        integrations=[SanicIntegration()],
-        release=VERSION,
-        environment=os.environ.get('INFOENERGIA_MODULE_SETTINGS').split('.')[-1]
-    )
+    # sentry_sdk.init(
+    #     dsn=config.SENTRY_DSN,
+    #     integrations=[SanicIntegration()],
+    #     release=VERSION,
+    #     environment=os.environ.get('INFOENERGIA_MODULE_SETTINGS').split('.')[-1]
+    # )
 
     app = Sanic('infoenergia-api')
     try:
@@ -111,13 +110,8 @@ async def unauthorized_errors(request, exception):
     return ResponseMixin.unauthorized_error_response(exception)
 
 
-@app.exception(ValidationError)
-async def validation_error(request, exception):
-    return ResponseMixin.error_response(exception)
-
-
 @app.exception(Exception)
-async def unauthorized_errors(request, exception):
+async def unexpected_errors(request, exception):
     return ResponseMixin.unexpected_error_response(exception)
 
 

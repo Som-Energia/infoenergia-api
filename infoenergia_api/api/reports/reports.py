@@ -2,7 +2,6 @@ from sanic import Blueprint
 from sanic.log import logger
 from sanic.response import json
 from sanic.views import HTTPMethodView
-from sanic_ext import validate
 from sanic_jwt.decorators import protected, inject_user
 from infoenergia_api.api.reports.validators import ReportsBody
 
@@ -20,7 +19,6 @@ class ReportsView(ResponseMixin, PaginationLinksMixin, BeedataApiMixin, HTTPMeth
 
     endpoint_name = 'reports.reports'
 
-    @validate(ReportsBody)
     async def post(self, request, user):
         try:
             body = request.json
@@ -31,8 +29,8 @@ class ReportsView(ResponseMixin, PaginationLinksMixin, BeedataApiMixin, HTTPMeth
         else:
             request.app.loop.create_task(
                 Beedata(
-                    self.bapi, request.app.ctx.mongo_client, request.app.ctx.redis
-                ).process_reports(body['contract_ids'], body['month'], body['report_type'])
+                    await self.bapi, request.app.ctx.mongo_client, request.app.ctx.redis
+                ).process_reports(body['contract_ids'], body['month'], body['type'])
             )
             response = {
                 'reports': len(body['contract_ids']),

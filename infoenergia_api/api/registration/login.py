@@ -20,8 +20,6 @@ async def authenticate(request):
     if not username or not password:
         raise exceptions.AuthenticationFailed("Missing username or password.")
     
-    import pdb; pdb.set_trace()
-
     user = get_user(username)
 
     if user and pbkdf2_sha256.verify(password, user.password):
