@@ -2,7 +2,7 @@ import os
 os.environ.setdefault('INFOENERGIA_MODULE_SETTINGS', 'config.settings.testing')
 
 from concurrent import futures
-from unittest import TestCase, IsolatedAsyncioTestCase
+from unittest import TestCase
 from aiohttp.test_utils import AioHTTPTestCase
 from aiohttp import web
 
@@ -28,12 +28,11 @@ class BaseTestCaseAsync(AioHTTPTestCase):
         return self.app
 
 
-class BaseTestCase(IsolatedAsyncioTestCase):
+class BaseTestCase(TestCase):
 
     def setUp(self):
         from infoenergia_api import app
         self.app = app
-        TestManager(self.app)
 
         self.client = app.test_client
         self.maxDiff = None
@@ -68,6 +67,6 @@ class BaseTestCase(IsolatedAsyncioTestCase):
             'username': username,
             'password': password,
         }
-        _, response = await self.client.post('/auth', json=auth_body)
+        _, response = await self.app.asgi_client.post('/auth', json=auth_body)
         token = response.json.get('access_token', None)
         return token

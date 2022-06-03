@@ -1,12 +1,12 @@
-import asyncio
 import os
 
+import pytest
 import vcr
 
 from infoenergia_api.contrib import ApiException, BeedataApiClient
-from tests.base import BaseTestCase
 
-class TestBeedataApiClient(BaseTestCase):
+
+class TestBeedataApiClient():
 
     @property
     def beedata_api_correct_credentials(self):
@@ -31,27 +31,27 @@ class TestBeedataApiClient(BaseTestCase):
         )
     
     @vcr.use_cassette('tests/fixtures/vcr_cassetes/login_ok.yaml')
-    def test__BeedataApiClient_ok(self):
+    async def test__BeedataApiClient__ok(self):
         # given the correct credentials from a beedata client
         credentials = self.beedata_api_correct_credentials
 
         # when we create a new instances of BeedataApiClient
-        beedata_api = asyncio.run(BeedataApiClient.create(**credentials))
+        beedata_api = await BeedataApiClient.create(**credentials)
 
         # then we have an instance of BeedataApiClient
-        self.assertIsInstance(beedata_api, BeedataApiClient)
+        assert isinstance(beedata_api, BeedataApiClient)
         # and a new api_session is created
-        self.assertIsNotNone(beedata_api.api_session)
+        assert beedata_api.api_session is not None
 
     @vcr.use_cassette('tests/fixtures/vcr_cassetes/login_ko.yaml')
-    def test__BeedataApiClient_ko(self):
+    async def test__BeedataApiClient__ko(self):
         # given the correct credentials from a beedata client
         credentials = self.beedata_api_bad_credentials
 
         # when we create a new instances of BeedataApiClient
-        with self.assertRaises(ApiException) as exception_manager:
-            beedata_api = asyncio.run(BeedataApiClient.create(**credentials))
+        with pytest.raises(ApiException) as exception_manager:
+            beedata_api = await BeedataApiClient.create(**credentials)
 
         # then we have an ApiException instance with an unauthorized message
-        error = exception_manager.exception
-        self.assertEqual(str(error), 'Authentication failure')
+        error = exception_manager.value
+        assert str(error) == 'Authentication failure'
