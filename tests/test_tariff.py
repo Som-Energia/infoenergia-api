@@ -1,5 +1,3 @@
-from unittest import mock, skip
-
 from pony.orm import db_session
 
 from infoenergia_api.contrib import TariffPrice, ReactiveEnergyPrice

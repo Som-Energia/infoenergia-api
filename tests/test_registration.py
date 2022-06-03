@@ -1,6 +1,6 @@
 from passlib.hash import pbkdf2_sha256
 from pony.orm import db_session
-from sanic_jwt import BaseEndpoint, exceptions
+from sanic_jwt import exceptions
 
 from tests.base import BaseTestCase, User
 

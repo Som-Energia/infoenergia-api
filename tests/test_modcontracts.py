@@ -1,8 +1,5 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
 from unittest import mock
 
-from passlib.hash import pbkdf2_sha256
 from pony.orm import db_session
 
 from tests.base import BaseTestCase

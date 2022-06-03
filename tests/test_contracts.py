@@ -1,4 +1,3 @@
-from passlib.hash import pbkdf2_sha256
 from pony.orm import db_session
 from unittest import mock
 

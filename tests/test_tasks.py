@@ -1,6 +1,3 @@
-import os
-os.environ.setdefault('INFOENERGIA_MODULE_SETTINGS', 'config.settings.testing')
-
 from unittest import TestCase
 
 from erppeek import Client

@@ -2,7 +2,7 @@ from unittest import mock, skip
 
 from pony.orm import db_session
 
-from infoenergia_api.contrib import Invoice, get_invoices
+from infoenergia_api.contrib import Invoice
 
 from tests.base import BaseTestCase
 

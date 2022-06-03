@@ -1,7 +1,6 @@
 import asyncio
 import os
 
-import aiohttp
 import vcr
 
 from infoenergia_api.contrib import ApiException, BeedataApiClient
