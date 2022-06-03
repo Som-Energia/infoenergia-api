@@ -1,15 +1,6 @@
-import asyncio
 from unittest import mock
 
-import aiohttp
-import fakeredis
-import pytest
-from aiohttp.test_utils import unittest_run_loop
-from motor.motor_asyncio import AsyncIOMotorClient
-from pony.orm import db_session
-
-from infoenergia_api.contrib import Beedata, BeedataApiClient
-from tests.base import BaseTestCaseAsync
+from infoenergia_api.contrib import Beedata
 
 
 class TestReport:

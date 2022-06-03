@@ -29,13 +29,15 @@ from . import VERSION
 
 def build_app():
     from config import config
-
-    # sentry_sdk.init(
-    #     dsn=config.SENTRY_DSN,
-    #     integrations=[SanicIntegration()],
-    #     release=VERSION,
-    #     environment=os.environ.get('INFOENERGIA_MODULE_SETTINGS').split('.')[-1]
-    # )
+    ## Triki if until https://github.com/sanic-org/sanic/pull/2451 is resolved
+    if (environment := os.environ.get(
+        'INFOENERGIA_MODULE_SETTINGS').split('.')[-1] != 'testing'):
+        sentry_sdk.init(
+            dsn=config.SENTRY_DSN,
+            integrations=[SanicIntegration()],
+            release=VERSION,
+            environment=environment
+        )
 
     app = Sanic('infoenergia-api')
     try:
