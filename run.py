@@ -3,7 +3,7 @@ import sys
 
 
 def main(host, port):
-    from infoenergia_api import app
+    from infoenergia_api.app import app
 
     try:
         app.run(

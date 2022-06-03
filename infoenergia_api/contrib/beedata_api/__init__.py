@@ -37,12 +37,11 @@ class BeedataApiClient(object):
         }
     }
 
-
     @classmethod
     async def create(
         cls, url, username, password, company_id, cert_file, cert_key, **kwargs
     ):
-        self = cls()  
+        self = cls()
         self.base_url = url
         self.username = username
         self.__password = password
@@ -74,6 +73,7 @@ class BeedataApiClient(object):
         headers = api_session and api_session.headers
         cookies = api_session and api_session.cookies
         url_params = self._get_url_params(calling_function, kwargs)
+
         if 'payload' in kwargs:
             async with session.post(
                 url, json=kwargs['payload'], headers=headers, cookies=cookies, ssl=kwargs.get('ssl')
@@ -86,7 +86,10 @@ class BeedataApiClient(object):
                         cookies=response.cookies,
                         status=response.status
                     )
-                raise ApiException(content.get('error', 'Unexpected request'), response.status) 
+                raise ApiException(
+                    content.get('error', 'Unexpected request'), response.status
+                )
+
         async with session.get(
             url, params=url_params, headers=headers, cookies=cookies, ssl=kwargs.get('ssl')
         ) as response:
@@ -98,14 +101,16 @@ class BeedataApiClient(object):
                     cookies=response.cookies,
                     status=response.status
                 )
-            raise ApiException(content.get('error', 'Unexpected request'), response.status) 
+            raise ApiException(
+                content.get('error', 'Unexpected request'), response.status
+            )
 
     async def login(self, username=None, password=None):
         login_credentials = {
             "username": username or self.username,
             "password": password or self.__password
         }
-        
+
         async with aiohttp.ClientSession() as session:
             response = await self._request(session, payload=login_credentials, ssl=False)
             return self.ApiSession(
@@ -131,7 +136,7 @@ class BeedataApiClient(object):
 
     async def download_report(self, contract_id, month, report_type):
         request_filter = self.get_request_filter(contract_id, month, report_type)
-        
+
         async with aiohttp.ClientSession() as session:
             response = await self._request(
                 session,

@@ -1,8 +1,11 @@
+import os
+import pyexpat
 from unittest.mock import AsyncMock
 
 import fakeredis
 import nest_asyncio
 import pytest
+import yaml
 from motor.motor_asyncio import AsyncIOMotorClient
 from passlib.hash import pbkdf2_sha256
 from pony.orm import commit, db_session
@@ -90,6 +93,13 @@ async def auth_token(app, user):
 
 
 @pytest.fixture
+def scenarios(app):
+    with open(os.path.join(app.config.BASE_DIR, 'tests/json4test.yaml')) as f:
+        scenarios = yaml.safe_load(f.read())
+    return scenarios
+
+
+@pytest.fixture
 def mock_process_reports(monkeypatch):
     async_mock = AsyncMock()
     monkeypatch.setattr(
@@ -97,3 +107,32 @@ def mock_process_reports(monkeypatch):
         async_mock
     )
     return async_mock
+
+
+@pytest.fixture
+def mocked_next_cursor(monkeypatch):
+    next_cursor_mock = 'N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0='
+    monkeypatch.setattr(
+        'infoenergia_api.contrib.pagination.PaginationLinksMixin._next_cursor',
+        next_cursor_mock
+    )
+
+
+@pytest.fixture
+def f5d_id():
+    return '5c2dd783cb2f477212c77abb'
+
+
+@pytest.fixture
+def f1_id():
+    return '5e1d8d9612cd738e89bb3cfb'
+
+
+@pytest.fixture
+def p1_id():
+     return '5e1d8dd112cd738e89bc42eb'
+
+
+@pytest.fixture
+def p2_id():
+    return '5e3011f912cd738e8991aca7'

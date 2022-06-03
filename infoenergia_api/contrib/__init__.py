@@ -1,5 +1,6 @@
 from .beedata_api import ApiException, BeedataApiClient
-from .cch import Cch
+from .cch import BaseCch as Cch
+from .cch import TgCchF1, TgCchF5d, TgCchP1, TgCchVal
 from .contracts import Contract
 from .f1 import Invoice, get_invoices
 from .mixins import ResponseMixin
