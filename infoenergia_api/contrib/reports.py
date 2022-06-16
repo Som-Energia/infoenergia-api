@@ -2,6 +2,8 @@ import asyncio
 
 from sanic.log import logger
 
+from config import config
+
 
 async def get_report_ids(request):
     await request.app.ctx.redis.delete(b"key:reports")
@@ -15,7 +17,7 @@ async def get_report_ids(request):
     return report_ids, request.json['month'], request.json['type']
 
 
-class Beedata(object):
+class BeedataReports(object):
 
     def __init__(self, api_client, mongo_con, redis, **kwargs):
         self.api_client = api_client
@@ -24,48 +26,47 @@ class Beedata(object):
 
         self.N_WORKERS = kwargs.get('n_workers', 10)
 
-    async def process_one_report(self, month, report_type, contract_id):
-        logger.info("start download of {}".format(contract_id))
-        status, report = await self.api_client.download_report(
-            contract_id, month, report_type
-        )
-        if report is None:
-            return bool(report)
+    async def process_one_report(self, month, report_type, contract_id, sem):
+        with sem:
+            logger.info("start download of {}".format(contract_id))
+            status, report = await self.api_client.download_report(
+                contract_id, month, report_type
+            )
+            if report is None:
+                return bool(report)
 
-        logger.info("start inserting doc for {}".format(contract_id))
-        result = await self.save_report(report, report_type)
-        return bool(result)
-
-    async def worker(self, queue, month, report_type, results):
-        while True:
-            contract_id = await queue.get()
-            result = await self.process_one_report(month, report_type, contract_id)
-            results.append(result)
-            if result:
-                await self._redis.lrem(b"key:reports", 0, contract_id)
-            # To do: Mark the item as processed, allowing queue.join() to keep
-            # track of remaining work and know when everything is done.
-            queue.task_done()
+            logger.info("start inserting doc for {}".format(contract_id))
+            result = await self.save_report(report, report_type)
+            return bool(result)
 
     async def process_reports(self, contract_ids, month, report_type):
-        queue = asyncio.Queue(self.N_WORKERS)
-        results = []
+        sem = asyncio.Semaphore(self.N_WORKERS)
+        results = {}
 
-        workers = [
-            asyncio.create_task(self.worker(queue, month, report_type, results))
-            for _ in range(self.N_WORKERS)
+        tasks = [
+            {
+                asyncio.create_task(
+                    self.process_one_report(month, report_type, contract_id, sem)
+                ): contract_id
+            } for contract_id in contract_ids
         ]
-        for contract_id in contract_ids:
-            await queue.put(contract_id) # Feed the contract_id to the workers.
-        await queue.join() # Wait for all enqueued items to be processed.
 
-        for worker in workers:
-            worker.cancel()
+        to_do = tasks
+        while to_do:
+            done, to_do = asyncio.wait(to_do, timeout=config.TASKS_TIMEOUT)
+            for task in done:
+                try:
+                    result = task.result()
+                    results[result] = results.get(result, []).append(tasks[task])
+                except Exception as e:
+                    msg = 'An unexpected error ocurred procesing task {} for ' \
+                          'contract_id {}, reason: {}'
+                    logger.error(msg.format(task, tasks[task], e))
+                    results[False] = results.get(False, []).append(tasks[task])
 
-        unprocessed_reports = await self._redis.lrange(b"key:reports", 0, -1)
+        unprocessed_reports = results[False] 
         msg = 'The following {} reports were NOT processed: {}'
         logger.warning(msg.format(len(unprocessed_reports), unprocessed_reports))
-        await self.api_client.logout()
 
         return [report.decode() for report in unprocessed_reports]
 
