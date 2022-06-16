@@ -1,5 +1,3 @@
-import asyncio
-
 from config import config
 from infoenergia_api.contrib import BeedataApiClient
 
@@ -26,4 +24,3 @@ class BeedataApiMixin(object):
     @property
     async def bapi(self):
         return await BeedataApiManager.get_instance()
-

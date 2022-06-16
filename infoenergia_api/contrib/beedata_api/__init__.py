@@ -16,6 +16,20 @@ class ApiException(Exception):
         self.status_code = status_code
 
 
+def retry_expired(method):
+    async def inner(*args, **kwargs):
+        try:
+            res = await method(*args, **kwargs)
+        except ApiException as e:
+            if e.status_code == 401:
+                await args[0].reconnect()
+                res = await method(*args, **kwargs)
+        else:
+            return res
+
+    return inner
+
+
 class BeedataApiClient(object):
     '''
     Beedata Api Client for api described in:
@@ -29,6 +43,7 @@ class BeedataApiClient(object):
         'login': 'authn/login',
         'logout': 'authn/logout',
         'download_report': f'{_api_version}/components',
+        'reconnect': f'{_api_version}/'
     }
 
     _params = {
@@ -39,6 +54,7 @@ class BeedataApiClient(object):
 
     @classmethod
     async def create(
+
         cls, url, username, password, company_id, cert_file, cert_key, **kwargs
     ):
         self = cls()
@@ -122,6 +138,9 @@ class BeedataApiClient(object):
     async def logout(self):
         async with aiohttp.ClientSession() as session:
             return await self._request(session, api_session=self.api_session, ssl=self.api_sslcontext)
+    
+    async def reconnect(self):
+        self.api_session = await self.login(self.username, self.__password)
 
     def get_request_filter(self, contract_id, month, report_type):
 
@@ -134,6 +153,7 @@ class BeedataApiClient(object):
 
         return [request_filter]
 
+    @retry_expired
     async def download_report(self, contract_id, month, report_type):
         request_filter = self.get_request_filter(contract_id, month, report_type)
 
