@@ -77,6 +77,54 @@ class BeedataApiClient(object):
         self.api_session = await self.login(username, password)
         return self
 
+    async def login(self, username=None, password=None):
+        login_credentials = {
+            "username": username or self.username,
+            "password": password or self.__password
+        }
+
+        async with aiohttp.ClientSession() as session:
+            response = await self._request(session, payload=login_credentials, ssl=False)
+            return self.ApiSession(
+                token=response.content['token'],
+                cookies=response.cookies,
+                headers=self._headers
+            )
+
+    async def logout(self):
+        async with aiohttp.ClientSession() as session:
+            return await self._request(session, api_session=self.api_session, ssl=self.api_sslcontext)
+    
+    async def reconnect(self):
+        self.api_session = await self.login(self.username, self.__password)
+
+    @retry_expired
+    async def download_report(self, contract_id, month, report_type):
+        request_filter = self.get_request_filter(contract_id, month, report_type)
+
+        async with aiohttp.ClientSession() as session:
+            response = await self._request(
+                session,
+                where=request_filter,
+                api_session=self.api_session,
+                ssl=self.api_sslcontext
+            )
+            if response.content["_meta"]["total"] == 0:
+                return response.status, None
+            return response.status, response.content['_items']
+    
+    def get_request_filter(self, contract_id, month, report_type):
+
+        base_request_filter = {
+            'contractId': f'\"{contract_id}\"',
+            'mont': month
+        }
+
+        if report_type == 'photovoltaic_reports':
+            base_request_filter['type'] = 'FV'
+
+        return [base_request_filter]
+
     async def _request(self, session, *args, **kwargs):
         frame = getouterframes(currentframe())[1]
         calling_function = frame[3]
@@ -122,63 +170,16 @@ class BeedataApiClient(object):
                 content.get('error', 'Unexpected request'), response.status
             )
 
-    async def login(self, username=None, password=None):
-        login_credentials = {
-            "username": username or self.username,
-            "password": password or self.__password
-        }
-
-        async with aiohttp.ClientSession() as session:
-            response = await self._request(session, payload=login_credentials, ssl=False)
-            return self.ApiSession(
-                token=response.content['token'],
-                cookies=response.cookies,
-                headers=self._headers
-            )
-
-    async def logout(self):
-        async with aiohttp.ClientSession() as session:
-            return await self._request(session, api_session=self.api_session, ssl=self.api_sslcontext)
-    
-    async def reconnect(self):
-        self.api_session = await self.login(self.username, self.__password)
-
-    def get_request_filter(self, contract_id, month, report_type):
-
-        request_filter = {'contractId': f'\"{contract_id}\"'}
-
-        if report_type == 'photovoltaic_reports':
-            request_filter['type'] = 'FV'
-        else:
-            request_filter['month'] = month
-
-        return [request_filter]
-
-    @retry_expired
-    async def download_report(self, contract_id, month, report_type):
-        request_filter = self.get_request_filter(contract_id, month, report_type)
-
-        async with aiohttp.ClientSession() as session:
-            response = await self._request(
-                session,
-                where=request_filter,
-                api_session=self.api_session,
-                ssl=self.api_sslcontext
-            )
-            if response.content["_meta"]["total"] == 0:
-                return response.status, None
-            return response.status, response.content['_items']
-
     def _get_url_params(self, calling_function, kwargs):
         url_params = self._params.get(calling_function, {})
         if url_params and kwargs:
             for param in kwargs:
                 if param in url_params:
                     url_params[param] = ''.join(
-                        [' and '.join(
-                            [f'\"{field}\"=={value}'
-                            for field, value in condition.items()])
-                        for condition in kwargs[param]
+                        [
+                            ' and '.join([f'\"{field}\"=={value}'
+                                    for field, value in condition.items()])
+                            for condition in kwargs[param]
                         ]
                     )
 
