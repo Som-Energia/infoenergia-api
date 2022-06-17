@@ -23,7 +23,8 @@ def retry_expired(method):
         except ApiException as e:
             if e.status_code == 401:
                 await args[0].reconnect()
-                res = await method(*args, **kwargs)
+                return await method(*args, **kwargs)
+            raise e
         else:
             return res
 
