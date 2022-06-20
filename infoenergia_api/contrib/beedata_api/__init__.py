@@ -38,6 +38,12 @@ class BeedataApiClient(object):
     '''
     ApiSession = namedtuple('ApiSession', 'token, headers, cookies')
     ApiResponse = namedtuple('ApiResponse', 'content, headers, cookies, status')
+
+    REPORT_TYPES = {
+        'photovoltaic_reports': 'FV',
+        'infoenergia_reports': 'CCH'
+    }    
+
     _api_version = 'v1'
 
     _endpoints = {
@@ -115,15 +121,17 @@ class BeedataApiClient(object):
     
     def get_request_filter(self, contract_id, month, report_type):
 
-        base_request_filter = {
+        request_filter = {
             'contractId': f'\"{contract_id}\"',
-            'mont': month
+            'mont': month,
         }
+        if (type_ := self.REPORT_TYPES.get(report_type, '')):
+            request_filter['type'] = type_
 
         if report_type == 'photovoltaic_reports':
-            base_request_filter['type'] = 'FV'
+            del request_filter['month']
 
-        return [base_request_filter]
+        return [request_filter]
 
     async def _request(self, session, *args, **kwargs):
         frame = getouterframes(currentframe())[1]

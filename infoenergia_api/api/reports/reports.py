@@ -23,14 +23,15 @@ class ReportsView(ResponseMixin, PaginationLinksMixin, BeedataApiMixin, HTTPMeth
             body = request.json
             if not body:
                 return self.empty_body_response()
-        except Exception as e:
-            return self.unexpected_error_response(e)
-        else:
+            
             request.app.loop.create_task(
                 BeedataReports(
                     await self.bapi, request.app.ctx.mongo_client, request.app.ctx.redis
                 ).process_reports(body['contract_ids'], body['month'], body['type'])
             )
+        except Exception as e:
+            return self.unexpected_error_response(e)
+        else:
             response = {
                 'reports': len(body['contract_ids']),
             }
