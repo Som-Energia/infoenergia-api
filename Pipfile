@@ -17,6 +17,7 @@ sanic-testing = "*"
 pytest-env = "*"
 pytest-asyncio = "*"
 nest-asyncio = "*"
+pudb = "*"
 
 [packages]
 connexion = "*"
