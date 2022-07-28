@@ -18,6 +18,8 @@ pytest-env = "*"
 pytest-asyncio = "*"
 nest-asyncio = "*"
 pudb = "*"
+pre-commit = "*"
+black = "*"
 
 [packages]
 connexion = "*"
@@ -37,3 +39,4 @@ pool-transport = {git = "https://github.com/Som-Energia/pool_transport.git"}
 pyyaml = "*"
 sentry-sdk = "*"
 aiohttp = "*"
+hiredis = "*"
