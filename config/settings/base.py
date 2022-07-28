@@ -1,6 +1,6 @@
-'''
+"""
 Base and common settings for api configuration
-'''
+"""
 import os
 
 from environs import Env
@@ -11,7 +11,7 @@ env.read_env()
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Supermega secret key
-SECRET_KEY = '1234'
+SECRET_KEY = "1234"
 
 # Max threads in pool
 MAX_THREADS = 200
@@ -25,6 +25,6 @@ TASK_TIMEOUT = 0.5
 # Response timeout
 RESPONSE_TIMEOUT = 36000
 
-SANIC_JWT_USER_ID = 'id'
+SANIC_JWT_USER_ID = "id"
 
-SENTRY_DSN = env.str('SENTRY_DSN')
+SENTRY_DSN = env.str("SENTRY_DSN")

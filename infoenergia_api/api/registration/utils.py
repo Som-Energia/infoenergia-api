@@ -4,7 +4,6 @@ from sanic_jwt.exceptions import AuthenticationFailed, Unauthorized
 
 
 class ApiAuthResponses(Responses):
-
     @staticmethod
     def exception_response(request, exception):
         if isinstance(exception, (Unauthorized, AuthenticationFailed)):

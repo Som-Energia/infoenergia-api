@@ -18,8 +18,11 @@ from infoenergia_api.api.f1_measures import bp_f1_measures
 from infoenergia_api.api.cch import bp_cch_measures
 from infoenergia_api.api.modcontracts import bp_modcontracts
 from infoenergia_api.api.reports import bp_reports
-from infoenergia_api.api.registration.login import (InvitationUrlToken,
-                                                    authenticate, extra_views)
+from infoenergia_api.api.registration.login import (
+    InvitationUrlToken,
+    authenticate,
+    extra_views,
+)
 from infoenergia_api.api.registration.utils import ApiAuthResponses
 from infoenergia_api.api.tariff import bp_tariff
 from infoenergia_api.api.registration.models import db, retrieve_user
@@ -29,17 +32,20 @@ from . import VERSION
 
 def build_app():
     from config import config
+
     ## Triki if until https://github.com/sanic-org/sanic/pull/2451 is resolved
-    if (environment := os.environ.get(
-        'INFOENERGIA_MODULE_SETTINGS').split('.')[-1] != 'testing'):
+    if (
+        environment := os.environ.get("INFOENERGIA_MODULE_SETTINGS").split(".")[-1]
+        != "testing"
+    ):
         sentry_sdk.init(
             dsn=config.SENTRY_DSN,
             integrations=[SanicIntegration()],
             release=VERSION,
-            environment=environment
+            environment=environment,
         )
 
-    app = Sanic('infoenergia-api')
+    app = Sanic("infoenergia-api")
     try:
         app.update_config(config)
 
@@ -58,24 +64,21 @@ def build_app():
         app.blueprint(bp_tariff)
 
         app.add_route(
-            InvitationUrlToken.as_view(),
-            '/auth/invitationtoken',
-            host='localhost:9000'
+            InvitationUrlToken.as_view(), "/auth/invitationtoken", host="localhost:9000"
         )
 
         app.ctx.thread_pool = futures.ThreadPoolExecutor(app.config.MAX_THREADS)
         app.ctx.erp_client = Client(
-            transport=PoolTransport(secure=app.config.TRANSPORT_POOL_CONF['secure']),
-            **app.config.ERP_CONF
+            transport=PoolTransport(secure=app.config.TRANSPORT_POOL_CONF["secure"]),
+            **app.config.ERP_CONF,
         )
 
         db.bind(
-            provider='sqlite',
+            provider="sqlite",
             filename=os.path.join(
-                app.config.DATA_DIR,
-                '{}.sqlite3'.format(app.config.DB_CONF['database'])
+                app.config.DATA_DIR, "{}.sqlite3".format(app.config.DB_CONF["database"])
             ),
-            create_db=True
+            create_db=True,
         )
         db.generate_mapping(create_tables=True)
         app.ctx.db = db
@@ -92,15 +95,13 @@ def build_app():
 app = build_app()
 
 
-@app.listener('before_server_start')
+@app.listener("before_server_start")
 async def server_init(app, loop):
-    app.ctx.redis = aioredis.from_url(
-        app.config.REDIS_CONF
-    )
+    app.ctx.redis = aioredis.from_url(app.config.REDIS_CONF)
     app.ctx.mongo_client = AsyncIOMotorClient(app.config.MONGO_CONF, io_loop=loop)
 
 
-@app.listener('after_server_stop')
+@app.listener("after_server_stop")
 async def shutdown_app(app, loop):
     logger.info("Shuting down api... ")
     app.ctx.mongo_client.close()
@@ -119,11 +120,10 @@ async def unexpected_errors(request, exception):
 
 @app.signal(Event.HTTP_LIFECYCLE_EXCEPTION)
 async def http_lifecycle_handle_handler(request, exception):
-    if hasattr(request.ctx, 'user'):
-        sentry_sdk.set_user({
-            'username': request.ctx.user.username,
-            'email': request.ctx.user.email
-        })
+    if hasattr(request.ctx, "user"):
+        sentry_sdk.set_user(
+            {"username": request.ctx.user.username, "email": request.ctx.user.email}
+        )
 
 
 @app.signal(Event.HTTP_LIFECYCLE_COMPLETE)

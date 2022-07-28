@@ -73,7 +73,7 @@ Now our api is ready to run. You can simply execute `pipenv run python run.py` a
 
 ### 1.3.0
 - Added f5d endpoint
-- Support for parallel requests to one ERP 
+- Support for parallel requests to one ERP
 
 ### 1.2.1
 - Fixed minor bugs

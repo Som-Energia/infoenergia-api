@@ -22,17 +22,19 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Infoenergia api service")
 
     parser.add_argument(
-        "-H", "--host",
+        "-H",
+        "--host",
         help="host address to serve (default: %(default)r",
         type=str,
-        default="0.0.0.0"
+        default="0.0.0.0",
     )
 
     parser.add_argument(
-        "-p", "--port",
+        "-p",
+        "--port",
         help="TCP/IP port to serve (default: %(default)r",
         type=int,
-        default=9000
+        default=9000,
     )
 
     args = parser.parse_args()

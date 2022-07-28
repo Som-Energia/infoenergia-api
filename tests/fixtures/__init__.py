@@ -37,7 +37,7 @@ async def bapi(app):
         password=app.config.PASSWORD,
         company_id=app.config.COMPANY_ID,
         cert_file=app.config.CERT_FILE,
-        cert_key=app.config.KEY_FILE
+        cert_key=app.config.KEY_FILE,
     )
     bapi.login()
     yield bapi
@@ -53,18 +53,18 @@ async def beedata(bapi, app):
 @pytest.fixture
 @db_session
 def user():
-    user = User.get(username='someone')
+    user = User.get(username="someone")
     if not user:
         user = User(
-            username='someone',
-            password=pbkdf2_sha256.hash('password'),
-            email='someone@foo.bar',
+            username="someone",
+            password=pbkdf2_sha256.hash("password"),
+            email="someone@foo.bar",
             id_partner=1,
             is_superuser=True,
-            category='partner'
+            category="partner",
         )
         commit()
-    user._clear_psw = 'password'
+    user._clear_psw = "password"
     yield user
     user.delete()
 
@@ -84,17 +84,17 @@ def async_client(app):
 @pytest.fixture
 async def auth_token(app, user):
     auth_body = {
-        'username': user.username,
-        'password': user._clear_psw,
+        "username": user.username,
+        "password": user._clear_psw,
     }
-    _, response = await app.asgi_client.post('/auth', json=auth_body)
-    token = response.json.get('access_token', None)
+    _, response = await app.asgi_client.post("/auth", json=auth_body)
+    token = response.json.get("access_token", None)
     return token
 
 
 @pytest.fixture
 def scenarios(app):
-    with open(os.path.join(app.config.BASE_DIR, 'tests/json4test.yaml')) as f:
+    with open(os.path.join(app.config.BASE_DIR, "tests/json4test.yaml")) as f:
         scenarios = yaml.safe_load(f.read())
     return scenarios
 
@@ -103,36 +103,35 @@ def scenarios(app):
 def mock_process_reports(monkeypatch):
     async_mock = AsyncMock()
     monkeypatch.setattr(
-        'infoenergia_api.contrib.reports.Beedata.process_reports',
-        async_mock
+        "infoenergia_api.contrib.reports.Beedata.process_reports", async_mock
     )
     return async_mock
 
 
 @pytest.fixture
 def mocked_next_cursor(monkeypatch):
-    next_cursor_mock = 'N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0='
+    next_cursor_mock = "N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0="
     monkeypatch.setattr(
-        'infoenergia_api.contrib.pagination.PaginationLinksMixin._next_cursor',
-        next_cursor_mock
+        "infoenergia_api.contrib.pagination.PaginationLinksMixin._next_cursor",
+        next_cursor_mock,
     )
 
 
 @pytest.fixture
 def f5d_id():
-    return '5c2dd783cb2f477212c77abb'
+    return "5c2dd783cb2f477212c77abb"
 
 
 @pytest.fixture
 def f1_id():
-    return '5e1d8d9612cd738e89bb3cfb'
+    return "5e1d8d9612cd738e89bb3cfb"
 
 
 @pytest.fixture
 def p1_id():
-     return '5e1d8dd112cd738e89bc42eb'
+    return "5e1d8dd112cd738e89bc42eb"
 
 
 @pytest.fixture
 def p2_id():
-    return '5e3011f912cd738e8991aca7'
+    return "5e3011f912cd738e8991aca7"

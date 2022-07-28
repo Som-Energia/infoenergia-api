@@ -5,7 +5,7 @@ db = Database()
 
 
 class InvitationToken(db.Entity):
-    _table_ = 'invitation_tokens'
+    _table_ = "invitation_tokens"
 
     id = PrimaryKey(int, auto=True)
 
@@ -15,15 +15,15 @@ class InvitationToken(db.Entity):
 
 
 class UserCategory(enum.Enum):
-    ADMIN = 'admin'
+    ADMIN = "admin"
 
-    PARTNER = 'partner'
+    PARTNER = "partner"
 
-    ENERGETICA = 'Energética'
+    ENERGETICA = "Energética"
 
 
 class User(db.Entity):
-    _table_ = 'user'
+    _table_ = "user"
 
     id = PrimaryKey(int, auto=True)
 
@@ -40,13 +40,8 @@ class User(db.Entity):
     is_superuser = Required(bool)
 
     def to_dict(self):
-        attrs = [
-            'id', 'username', 'email', 'id_partner', 'is_superuser', 'category'
-        ]
-        return {
-            attr: getattr(self, attr, None)
-            for attr in attrs
-        }
+        attrs = ["id", "username", "email", "id_partner", "is_superuser", "category"]
+        return {attr: getattr(self, attr, None) for attr in attrs}
 
     def __repr__(self):
         return f"<User:{self.username}>"
@@ -62,7 +57,7 @@ async def retrieve_user(request, payload, *args, **kwargs):
     if not payload:
         return None
 
-    user_id = payload.get('id', None)
+    user_id = payload.get("id", None)
     with db_session:
         user = User.get(id=user_id)
 

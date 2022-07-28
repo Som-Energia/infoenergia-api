@@ -15,19 +15,19 @@ class TestUtils(BaseTestCase):
         self.erp = Client(**config.ERP_CONF)
         self.app.mongo_client = AsyncIOMotorClient(config.MONGO_CONF)
         self.loop = asyncio.get_event_loop()
-        self.f5d_id = '5c2dd783cb2f477212c77abb'
+        self.f5d_id = "5c2dd783cb2f477212c77abb"
 
     @db_session
     def test__valid_contract(self):
         user = self.get_or_create_user(
-            username='someone',
-            password='123412345',
-            email='someone@somenergia.coop',
+            username="someone",
+            password="123412345",
+            email="someone@somenergia.coop",
             partner_id=1,
             is_superuser=True,
-            category='partner'
+            category="partner",
         )
-        f5d = self.loop.run_until_complete(Cch.create(self.f5d_id, 'tg_cchfact'))
+        f5d = self.loop.run_until_complete(Cch.create(self.f5d_id, "tg_cchfact"))
         valid = get_contract_id(self.erp, f5d.name, user)
         self.assertTrue(valid)
         self.delete_user(user)
@@ -35,14 +35,14 @@ class TestUtils(BaseTestCase):
     @db_session
     def test__valid_contract_without_permission(self):
         user = self.get_or_create_user(
-            username='someone',
-            password='123412345',
-            email='someone@somenergia.coop',
+            username="someone",
+            password="123412345",
+            email="someone@somenergia.coop",
             partner_id=1,
             is_superuser=False,
-            category='Energética'
+            category="Energética",
         )
-        f5d = self.loop.run_until_complete(Cch.create(self.f5d_id, 'tg_cchfact'))
+        f5d = self.loop.run_until_complete(Cch.create(self.f5d_id, "tg_cchfact"))
         invalid = get_contract_id(self.erp, f5d.name, user)
         self.assertFalse(invalid)
         self.delete_user(user)
