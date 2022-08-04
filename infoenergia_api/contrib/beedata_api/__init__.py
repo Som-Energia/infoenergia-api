@@ -127,6 +127,7 @@ class BeedataApiClient(object):
             request_filter['type'] = 'FV'
         else:
             request_filter['month'] = month
+            request_filter['type'] = 'CCH'
 
         return [request_filter]
 

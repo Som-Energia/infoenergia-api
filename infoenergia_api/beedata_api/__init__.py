@@ -6,9 +6,9 @@ class BeedataApiManager(object):
     _bapi = None
 
     @classmethod
-    def get_instance(cls):
+    async def get_instance(cls):
         if cls._bapi is None:
-            cls._bapi = BeedataApiClient.create(
+            cls._bapi = await BeedataApiClient.create(
             url=config.BASE_URL,
             username=config.USERNAME,
             password=config.PASSWORD,
@@ -22,6 +22,7 @@ class BeedataApiManager(object):
 class BeedataApiMixin(object):
 
     @property
-    def bapi(self):
-        return BeedataApiManager.get_instance()
+    async def bapi(self):
+        return await BeedataApiManager.get_instance()
+    
 

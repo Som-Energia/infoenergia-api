@@ -49,7 +49,7 @@ class TestReport(BaseTestCase):
             json={
               'id': "summer_2020",
               'contract_ids': ["0180471", "0010012", "1000010"],
-              'type': 'CCH',
+              'type': 'infoenergia_reports',
               'create_at': "2020-01-01",
               'month': '202011'
             },
@@ -132,7 +132,7 @@ class TestBaseReportsAsync(BaseTestCaseAsync):
             status, report = await self.bapi.api_client.download_report(
                 contract_id="0090438",
                 month='202011',
-                report_type='CCH'
+                report_type='infoenergia_reports'
             )
         self.assertEqual(status, 200)
         self.assertIsNotNone(report)
@@ -144,7 +144,7 @@ class TestBaseReportsAsync(BaseTestCaseAsync):
             status, report = await self.bapi.api_client.download_report(
                 contract_id="1090438",
                 month='202011',
-                report_type='CCH'
+                report_type='infoenergia_reports'
             )
         self.assertEqual(status, 200)
         self.assertIsNone(report)
@@ -156,7 +156,7 @@ class TestBaseReportsAsync(BaseTestCaseAsync):
         async with aiohttp.ClientSession() as session:
             result = await self.bapi.process_one_report(
                 month='202011',
-                report_type='CCH',
+                report_type='infoenergia_reports',
                 contract_id=b'0090438'
             )
         self.assertTrue(result)
@@ -169,7 +169,7 @@ class TestBaseReportsAsync(BaseTestCaseAsync):
         async with aiohttp.ClientSession() as session:
             result = await self.bapi.process_one_report(
                 month='202011',
-                report_type='CCH',
+                report_type='infoenergia_reports',
                 contract_id=b"0090438"
             )
         self.assertFalse(result)
@@ -183,7 +183,7 @@ class TestBaseReportsAsync(BaseTestCaseAsync):
             '_updated': "2020-08-18T12:06:23Z",
             '_created':  "2020-08-18T12:06:23Z",
             'month': '202009',
-            'type': 'CCH',
+            'type': 'infoenergia_reports',
             'results': {},
         }]
         reportId = await self.bapi.save_report(report, report_type)
