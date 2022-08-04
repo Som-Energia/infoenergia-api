@@ -43,7 +43,7 @@ class InvitationUrlToken(HTTPMethodView):
             invitation_token = InvitationToken(
                 inv_token=jwt.encode(
                     payload, request.app.config.SECRET_KEY, algorithm='HS256'
-                ).decode(),
+                ),
                 used=False
             )
 
@@ -83,7 +83,7 @@ class Register(BaseEndpoint):
                     )
                 try:
                     payload = jwt.decode(
-                        invitation_token, request.app.config.SECRET_KEY
+                        invitation_token, request.app.config.SECRET_KEY, algorithms=["HS256"]
                     )
                 except jwt.ExpiredSignatureError as e:
                     return json(
