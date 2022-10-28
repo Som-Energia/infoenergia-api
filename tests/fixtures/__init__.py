@@ -1,5 +1,4 @@
 import os
-import pyexpat
 from unittest.mock import AsyncMock
 
 import fakeredis
@@ -12,9 +11,10 @@ from pony.orm import commit, db_session
 from sanic_testing import TestManager
 
 from infoenergia_api.api.registration.models import User
-from infoenergia_api.beedata_api import BeedataApiClient
-from infoenergia_api.contrib.reports import Beedata
+from infoenergia_api.contrib.beedata_api import BeedataApiManager
+from infoenergia_api.contrib.reports import BeedataReports
 
+# For nesting asyncio loops
 nest_asyncio.apply()
 
 
@@ -30,23 +30,15 @@ def app():
 
 
 @pytest.fixture
-async def bapi(app):
-    bapi = await BeedataApiClient.create(
-        url=app.config.BASE_URL,
-        username=app.config.USERNAME,
-        password=app.config.PASSWORD,
-        company_id=app.config.COMPANY_ID,
-        cert_file=app.config.CERT_FILE,
-        cert_key=app.config.KEY_FILE,
-    )
-    bapi.login()
+async def bapi():
+    bapi = await BeedataApiManager.get_instance()
     yield bapi
-    bapi.logout()
+    bapi.__del__()
 
 
 @pytest.fixture
 async def beedata(bapi, app):
-    beedata = Beedata(bapi, app.ctx.mongo_client, app.ctx.redis)
+    beedata = BeedataReports(bapi, app.ctx.mongo_client, app.ctx.redis)
     yield beedata
 
 

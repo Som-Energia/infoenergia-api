@@ -23,7 +23,10 @@ SANIC_JWT_SECRET = SECRET_KEY
 
 INVITATION_EXP_DAYS = 1
 
-USE_UVLOOP = False
+RECORD_MODE = "new_episodes"
+
+
+USE_UVLOOP = True
 
 LOGGING = {
     "version": 1,

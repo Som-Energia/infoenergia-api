@@ -5,7 +5,7 @@ from sanic.views import HTTPMethodView
 from sanic_jwt.decorators import protected, inject_user
 
 from infoenergia_api.contrib import BeedataReports, PaginationLinksMixin, ResponseMixin
-from infoenergia_api.beedata_api import BeedataApiMixin
+from infoenergia_api.contrib.beedata_api import BeedataApiMixin
 
 bp_reports = Blueprint("reports")
 
