@@ -3,7 +3,7 @@ from erppeek import Client
 from motor.motor_asyncio import AsyncIOMotorClient
 from pony.orm import db_session
 
-from infoenergia_api.contrib.cch import Cch
+from infoenergia_api.contrib.cch import TgCchF5d
 from infoenergia_api.utils import get_contract_id
 from config import config
 from tests.base import BaseTestCase
@@ -27,7 +27,7 @@ class TestUtils(BaseTestCase):
             is_superuser=True,
             category="partner",
         )
-        f5d = self.loop.run_until_complete(Cch.create(self.f5d_id, "tg_cchfact"))
+        f5d = self.loop.run_until_complete(TgCchF5d.create(self.f5d_id, "tg_cchfact"))
         valid = get_contract_id(self.erp, f5d.name, user)
         self.assertTrue(valid)
         self.delete_user(user)
@@ -42,7 +42,7 @@ class TestUtils(BaseTestCase):
             is_superuser=False,
             category="Energética",
         )
-        f5d = self.loop.run_until_complete(Cch.create(self.f5d_id, "tg_cchfact"))
+        f5d = self.loop.run_until_complete(TgCchF5d.create(self.f5d_id, "tg_cchfact"))
         invalid = get_contract_id(self.erp, f5d.name, user)
         self.assertFalse(invalid)
         self.delete_user(user)

@@ -1,6 +1,6 @@
 from unittest import mock
 
-from infoenergia_api.contrib import Beedata
+from infoenergia_api.contrib import BeedataReports
 
 
 class TestReport:
@@ -42,28 +42,8 @@ class TestReport:
         assert response.status == 200
         assert response.json == {"reports": 3}
 
-    async def test__login_to_beedata(self, bapi, app):
-        bapi = Beedata(bapi, app.ctx.mongo_client, app.ctx.redis)
-        status = await bapi.api_client.login(app.config.USERNAME, app.config.PASSWORD)
-
-        assert status.token != None
-
 
 class TestBeedataReports:
-    async def test__download_one_report(self, bapi):
-        status, report = await bapi.download_report(
-            contract_id="0090438", month="202011", report_type="CCH"
-        )
-        assert status == 200
-        assert report is not None
-
-    async def test__download_one_report__wrongid(self, bapi):
-        status, report = await bapi.download_report(
-            contract_id="1090438", month="202011", report_type="CCH"
-        )
-        assert status == 200
-        assert report is None
-
     async def test__process_one_valid_report(self, beedata):
         beedata.save_report = mock.AsyncMock(return_value="1234")
 

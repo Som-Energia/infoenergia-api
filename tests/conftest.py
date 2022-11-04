@@ -13,4 +13,6 @@ from .fixtures import (
     p2_id,
     scenarios,
     user,
+    beedata_api_bad_credentials,
+    beedata_api_correct_credentials,
 )

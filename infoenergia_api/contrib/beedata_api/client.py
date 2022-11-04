@@ -112,7 +112,7 @@ class BeedataApiClient(object):
 
     async def _request(self, **kwargs) -> ApiResponse:
         """
-        Clojure that make a request to beedata api endpoints
+        Closure that make a request to beedata api endpoints
         """
 
         api_session = kwargs.get("api_session")
@@ -130,7 +130,7 @@ class BeedataApiClient(object):
                 content = await response.json()
                 if response.status >= 400:
                     raise ApiError(
-                        content.get("error", "Unexpected request"), response.status
+                        content.get("message", "Unexpected request"), response.status
                     )
                 return ApiResponse(
                     content=content,
@@ -206,5 +206,5 @@ class BeedataApiClient(object):
             loop = asyncio.get_event_loop()
             loop.run_until_complete(self.logout())
             loop.run_until_complete(self.http_session.close())
-        finally:
+        except:
             pass
