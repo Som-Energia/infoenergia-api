@@ -7,6 +7,8 @@ from sanic_jwt.decorators import protected, inject_user
 from infoenergia_api.contrib import BeedataReports, PaginationLinksMixin, ResponseMixin
 from infoenergia_api.contrib.beedata_api import BeedataApiMixin
 
+from .models import create_report_request
+
 bp_reports = Blueprint("reports")
 
 
@@ -24,18 +26,22 @@ class ReportsView(ResponseMixin, PaginationLinksMixin, BeedataApiMixin, HTTPMeth
             if not body:
                 return self.empty_body_response()
 
-            request.app.loop.create_task(
-                BeedataReports(
-                    await self.bapi, request.app.ctx.mongo_client, request.app.ctx.redis
-                ).process_reports(body["contract_ids"], body["month"], body["type"])
+            report_request = await create_report_request(request.id, request.body)
+
+            beedata_reports = BeedataReports(
+                await self.bapi,
+                request.app.ctx.mongo_client,
+                request.app.ctx.redis,
+                report_request,
             )
+            request.app.loop.create_task(beedata_reports.process_reports())
         except Exception as e:
             return self.unexpected_error_response(e)
         else:
             response = {
-                "reports": len(body["contract_ids"]),
+                "reports": len(beedata_reports.reports),
             }
-            return json(response)
+            return self.succesfull_response(response)
 
 
 bp_reports.add_route(

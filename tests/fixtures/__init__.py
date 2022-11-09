@@ -121,7 +121,7 @@ def mock_process_reports(monkeypatch):
     """
     async_mock = AsyncMock()
     monkeypatch.setattr(
-        "infoenergia_api.contrib.reports.Beedata.process_reports", async_mock
+        "infoenergia_api.contrib.reports.BeedataReports.process_reports", async_mock
     )
     return async_mock
 

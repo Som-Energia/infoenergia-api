@@ -51,19 +51,6 @@ class BeedataReports(object):
 
         self.N_WORKERS = kwargs.get("n_workers", config.MAX_TASKS)
 
-    async def process_one_report(self, month, report_type, contract_id, sem):
-        with sem:
-            logger.info("start download of {}".format(contract_id))
-            status, report = await self.api_client.download_report(
-                contract_id, month, report_type
-            )
-            if report is None:
-                return bool(report)
-
-            logger.info("start inserting doc for {}".format(contract_id))
-            result = await self.save_report(report, report_type)
-            return bool(result)
-
     async def process_reports(self, contract_ids, month, report_type):
         sem = asyncio.Semaphore(self.N_WORKERS)
         results = {}
@@ -105,6 +92,19 @@ class BeedataReports(object):
         logger.warning(msg.format(len(unprocessed_reports), unprocessed_reports))
 
         return [report.decode() for report in unprocessed_reports]
+
+    async def process_one_report(self, month, report_type, contract_id, sem):
+        with sem:
+            logger.info("start download of {}".format(contract_id))
+            _, report = await self.api_client.download_report(
+                contract_id, month, report_type
+            )
+            if report is None:
+                return bool(report)
+
+            logger.info("start inserting doc for {}".format(contract_id))
+            result = await self.save_report(report, report_type)
+            return bool(result)
 
     async def save_report(self, reports, report_type):
         result = await self.somenergia_db[report_type].insert_many(

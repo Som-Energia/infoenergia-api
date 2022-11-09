@@ -1,7 +1,9 @@
 import enum
-from pony.orm import Database, Optional, PrimaryKey, Required, db_session
+from pony.orm import Optional, PrimaryKey, Required, db_session
 
-db = Database()
+from ..utils import get_db_instance
+
+db = get_db_instance()
 
 
 class InvitationToken(db.Entity):

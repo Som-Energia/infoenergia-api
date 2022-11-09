@@ -8,6 +8,16 @@ from infoenergia_api.utils import get_contract_id
 from config import config
 from tests.base import BaseTestCase
 
+from infoenergia_api.api.utils import get_db_instance
+
+
+def test__get_db_instance():
+    db = get_db_instance()
+
+    db2 = get_db_instance()
+
+    assert db is db2
+
 
 class TestUtils(BaseTestCase):
     def setUp(self):

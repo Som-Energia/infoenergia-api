@@ -1,6 +1,27 @@
 from unittest import mock
 
-from infoenergia_api.contrib import BeedataReports
+from pony.orm import db_session
+
+from infoenergia_api.api.reports import create_report_request, ReportRequest
+
+
+class TestReportRequestModel:
+    async def test__create_report_request(
+        self,
+        db,
+        # given an UUID id,
+        uuid_id,
+        # and a raw report request
+        raw_report_request,
+    ):
+        # when we create a new report request
+        report_request = await create_report_request(uuid_id, raw_report_request)
+
+        # then we have an instance of a ReportRequest model
+        assert isinstance(report_request, ReportRequest)
+        # and is saved in database
+        with db_session:
+            assert ReportRequest.get(id=uuid_id) is not None
 
 
 class TestReport:
