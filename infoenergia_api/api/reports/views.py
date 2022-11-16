@@ -1,6 +1,4 @@
 from sanic import Blueprint
-from sanic.log import logger
-from sanic.response import json
 from sanic.views import HTTPMethodView
 from sanic_jwt.decorators import protected, inject_user
 
@@ -40,6 +38,7 @@ class ReportsView(ResponseMixin, PaginationLinksMixin, BeedataApiMixin, HTTPMeth
         else:
             response = {
                 "reports": len(beedata_reports.reports),
+                "request_id": request.id.hex,
             }
             return self.succesfull_response(response)
 

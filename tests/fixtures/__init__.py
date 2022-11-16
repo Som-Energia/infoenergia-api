@@ -45,12 +45,6 @@ async def bapi():
 
 
 @pytest.fixture
-async def beedata(bapi, app):
-    beedata = BeedataReports(bapi, app.ctx.mongo_client, app.ctx.redis)
-    yield beedata
-
-
-@pytest.fixture
 @db_session
 def user():
     """

@@ -33,6 +33,10 @@ class ResponseMixin(object):
         }
         return response
 
+    def succesfull_response(self, response):
+        response = {"state": True, "data": response}
+        return json(response, status=200)
+
     @staticmethod
     def empty_body_response():
         response = {

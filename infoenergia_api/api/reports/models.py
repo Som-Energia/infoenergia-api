@@ -21,7 +21,21 @@ class ReportStates(enum.Enum):
     FAIL = "fail"
 
 
-class ReportRequest(db.Entity):
+class ReportRequestMixin:
+    @property
+    def month(self):
+        return self.request_body["month"]
+
+    @property
+    def report_type(self):
+        return self.request_body["type"]
+
+    @property
+    def contract_ids(self):
+        return self.request_body["contract_ids"]
+
+
+class ReportRequest(db.Entity, ReportRequestMixin):
     _table_ = "report_request"
 
     id = PrimaryKey(uuid.UUID, auto=False)
@@ -48,5 +62,10 @@ async def create_report_request(id_, raw_report_request):
             md5=md5,
             request_body=request_body,
         )
+    return report_request
 
+
+async def get_report_request(**query):
+    with db_session:
+        report_request = ReportRequest.get(**query)
     return report_request
