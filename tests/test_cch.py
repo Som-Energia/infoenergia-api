@@ -41,15 +41,19 @@ class TestCchRequest:
             headers={"Authorization": "Bearer {}".format(auth_token)},
             timeout=None,
         )
-        assert response.json == {
-            "count": 50,
-            "total_results": 409913,
-            "cursor": mocked_next_cursor,
-            "next_page": "http://{}/cch?type=tg_cchfact&cursor=N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=&limit=50".format(
-                response.url.netloc.decode
-            ),
-            "data": scenarios["f5d_all"]["cch_data"],
-        }
+        assert response.status == 200
+        assert response.json["count"] == 50
+        assert response.json["total_results"] == 16583
+        assert (
+            response.json["cursor"]
+            == "N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0="
+        )
+        assert response.json[
+            "next_page"
+        ] == "http://{}/cch?type=tg_cchfact&cursor=N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=&limit=50".format(
+            response.url.netloc.decode()
+        )
+        assert len(response.json["data"]) == 50
 
     async def test__get_f5d_without_permission(self, app, auth_token, scenarios):
         params = {"from_": "2018-11-16", "to_": "2018-12-16", "type": "tg_cchfact"}

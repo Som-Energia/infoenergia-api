@@ -12,7 +12,6 @@ class DecodeException(Exception):
 
 class PageNotFoundError(Exception):
     code = "page_not_found"
-    pass
 
 
 class Pagination(object):
@@ -77,7 +76,8 @@ class PaginationLinksMixin:
         )
 
     async def _pagination_links(self, request, request_id, pagination_list, **kwargs):
-        url = request.url_for(self.endpoint_name, **kwargs)
+        url_params = {arg: value for arg, value in kwargs.items() if value}
+        url = request.url_for(self.endpoint_name, **url_params)
         url_cursor = await self._next_cursor(request_id, pagination_list.next_cursor)
 
         if "cch" in self.endpoint_name:
