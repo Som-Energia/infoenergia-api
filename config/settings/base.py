@@ -20,7 +20,7 @@ MAX_THREADS = 200
 MAX_TASKS = 1
 
 # I will wait until this timeout seconds
-TASK_TIMEOUT = 0.5
+TASKS_TIMEOUT = 0.5
 
 # Response timeout
 RESPONSE_TIMEOUT = 36000

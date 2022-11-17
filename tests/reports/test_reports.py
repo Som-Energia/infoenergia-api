@@ -60,16 +60,19 @@ class TestBeedataReports:
         _, result = await beedata_reports__multiple_reports.process_reports()
         assert sorted(result) == sorted(beedata_reports__multiple_reports.reports)
 
-    @pytest.mark.skip("to redifine test")
-    async def test__process_one_invalid_report(self, beedata):
-        beedata.save_report = mock.AsyncMock(return_value="")
+    async def test__process_multiple_invalid_report(
+        self,
+        # given a incorrect instance of a beedata report
+        beedata_reports__invalid_multiple_reports,
+    ):
+        # when we process all reports in the request
+        (
+            unprocess_reports,
+            process_reports,
+        ) = await beedata_reports__invalid_multiple_reports.process_reports()
 
-        result = await beedata.process_one_report(
-            contract_id="090438",
-            month="202011",
-            report_type="CCH",
-        )
-        assert result is False
+        assert len(unprocess_reports) == 1
+        assert len(process_reports) == 2
 
     @pytest.mark.skip("to redifine test")
     async def test__insert_or_update_report(self, app, beedata):

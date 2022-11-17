@@ -48,3 +48,13 @@ async def beedata_reports__multiple_reports(
         bapi, app.ctx.mongo_client, report_request__multiple_contracts
     )
     yield beedata_rep
+
+
+@pytest.fixture
+async def beedata_reports__invalid_multiple_reports(
+    bapi, app, report_request__invalid_multiple_contracts
+):
+    beedata_rep = BeedataReports(
+        bapi, app.ctx.mongo_client, report_request__invalid_multiple_contracts
+    )
+    yield beedata_rep
