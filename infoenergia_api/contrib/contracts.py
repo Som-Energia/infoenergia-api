@@ -469,8 +469,9 @@ class Contract(object):
         else:
             return "physicalPerson"
 
-    def __iter__(self):
-        yield from {
+    @property
+    def contracts(self):
+        return {
             "contractId": self.name,
             "ownerId": make_uuid("res.partner", self.titular[0]),
             "payerId": make_uuid("res.partner", self.pagador[0]),
@@ -499,10 +500,13 @@ class Contract(object):
             "version": self.version,
             "experimentalGroupUserTest": False,
             "experimentalGroupUser": self.experimentalGroup,
-        }.items()
+        }
+
+    def __iter__(self):
+        yield from self.contracts.items()
 
 
-def get_contracts(request, contractId=None):
+def get_contracts(request, contract_id=None):
     contract_obj = request.app.ctx.erp_client.model("giscedata.polissa")
     filters = [
         ("active", "=", True),
@@ -520,8 +524,8 @@ def get_contracts(request, contractId=None):
             request,
             filters,
         )
-    if contractId:
-        filters.append(("name", "=", contractId))
+    if contract_id:
+        filters.append(("name", "=", contract_id))
 
     contracts_ids = contract_obj.search(filters)
     return contracts_ids

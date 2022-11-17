@@ -13,7 +13,6 @@ from sanic_testing import TestManager
 from config import config
 from infoenergia_api.api.registration.models import User
 from infoenergia_api.contrib.beedata_api import BeedataApiManager
-from infoenergia_api.contrib.reports import BeedataReports
 
 # For nesting asyncio loops
 nest_asyncio.apply()

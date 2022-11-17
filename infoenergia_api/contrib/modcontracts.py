@@ -4,7 +4,7 @@ from datetime import date
 from ..utils import get_juridic_filter, get_invoice_user_filters
 
 
-def get_modcontracts(request, contractId=None):
+def get_modcontracts(request, contract_id=None):
     modcon_obj = request.app.ctx.erp_client.model("giscedata.polissa.modcontractual")
     contract_obj = request.app.ctx.erp_client.model("giscedata.polissa")
 
@@ -14,19 +14,18 @@ def get_modcontracts(request, contractId=None):
     filters = get_invoice_user_filters(
         request.app.ctx.erp_client, request.ctx.user, filters
     )
-
     if "juridic_type" in request.args:
         filters += get_juridic_filter(
             request.app.ctx.erp_client,
             request.args["juridic_type"][0],
         )
 
-    if request.args["type"][0] == "canceled":
+    if "type" in request.args and request.args["type"][0] == "canceled":
         filters.extend(
             [
                 ("polissa_id.state", "=", "baixa"),
                 ("data_final", ">=", request.args.get("from_", str(date.today()))),
-                ("data_final", "<=", request.args["to_"][0]),
+                ("data_final", "<=", request.args.get("to_", str(date.today()))),
             ]
         )
     else:
@@ -36,7 +35,7 @@ def get_modcontracts(request, contractId=None):
                 ("state", "=", "actiu"),
                 ("tipus", "=", "mod"),
                 ("data_inici", ">=", request.args.get("from_", str(date.today()))),
-                ("data_inici", "<=", request.args["to_"][0]),
+                ("data_inici", "<=", request.args.get("to_", str(date.today()))),
             ]
         )
 
@@ -44,8 +43,8 @@ def get_modcontracts(request, contractId=None):
 
     filter_mods = [("modcontractual_activa", "in", modcontract_ids)]
 
-    if contractId:
-        filter_mods.append(("name", "=", contractId))
+    if contract_id:
+        filter_mods.append(("name", "=", contract_id))
 
     contracts_ids = contract_obj.search(filter_mods, context={"active_test": False})
     return contracts_ids
@@ -54,9 +53,9 @@ def get_modcontracts(request, contractId=None):
 async def async_get_modcontracts(request, id_contract=None):
     try:
         result = await request.app.loop.run_in_executor(
-            request.app.ctx.thread_pool,
+            None,
             functools.partial(get_modcontracts, request, id_contract),
         )
     except Exception as e:
-        raise e
+        raise
     return result

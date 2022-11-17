@@ -22,13 +22,13 @@ class ContractsIdView(ResponseMixin, PaginationLinksMixin, HTTPMethodView):
 
     endpoint_name = "contracts.get_contract_by_id"
 
-    async def get(self, request, contractId, user):
-        logger.info(f"Getting contract information for contract {contractId}")
+    async def get(self, request, contract_id, user):
+        logger.info(f"Getting contract information for contract {contract_id}")
         request.ctx.user = user
 
         try:
             contracts_ids, links, total_results = await self.paginate_results(
-                request, function=async_get_contracts, contractId=contractId
+                request, function=async_get_contracts, contract_id=contract_id
             )
         except PageNotFoundError as e:
             return self.error_response(e)
@@ -79,5 +79,5 @@ bp_contracts.add_route(
 )
 
 bp_contracts.add_route(
-    ContractsIdView.as_view(), "/contracts/<contractId>", name="get_contract_by_id"
+    ContractsIdView.as_view(), "/contracts/<contract_id>", name="get_contract_by_id"
 )

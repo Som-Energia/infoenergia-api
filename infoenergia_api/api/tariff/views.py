@@ -59,10 +59,10 @@ class TariffContractIdView(PaginationLinksMixin, HTTPMethodView):
 
     endpoint_name = "tariff.get_tariff_by_contract_id"
 
-    async def get(self, request, contractId):
+    async def get(self, request, contract_id):
         logger.info("Getting tariffs")
         tariff_price_ids, links, total_results = await self.paginate_results(
-            request, function=async_get_tariff_prices, contractId=contractId
+            request, function=async_get_tariff_prices, contract_id=contract_id
         )
 
         tariff_json = list(
@@ -96,6 +96,6 @@ bp_tariff.add_route(
 
 bp_tariff.add_route(
     TariffContractIdView.as_view(),
-    "/tariff/<contractId>",
+    "/tariff/<contract_id>",
     name="get_tariff_by_contract_id",
 )

@@ -94,13 +94,13 @@ def build_app():
 app = build_app()
 
 
-@app.listener("before_server_start")
+@app.signal(Event.SERVER_INIT_BEFORE)
 async def server_init(app, loop):
     app.ctx.redis = aioredis.from_url(app.config.REDIS_CONF)
     app.ctx.mongo_client = AsyncIOMotorClient(app.config.MONGO_CONF, io_loop=loop)
 
 
-@app.listener("after_server_stop")
+@app.signal(Event.SERVER_SHUTDOWN_AFTER)
 async def shutdown_app(app, loop):
     logger.info("Shuting down api... ")
     app.ctx.mongo_client.close()

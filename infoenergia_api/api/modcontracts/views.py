@@ -20,11 +20,11 @@ class ModContractsIdView(PaginationLinksMixin, HTTPMethodView):
 
     endpoint_name = "modcontracts.get_contract_by_id"
 
-    async def get(self, request, contractId, user):
+    async def get(self, request, contract_id, user):
         logger.info("Getting contractual modifications")
         request.ctx.user = user
         contracts_ids, links, total_results = await self.paginate_results(
-            request, function=async_get_modcontracts, contractId=contractId
+            request, function=async_get_modcontracts, contract_id=contract_id
         )
 
         contract_json = [
@@ -57,7 +57,6 @@ class ModContractsView(PaginationLinksMixin, HTTPMethodView):
         contracts_ids, links, total_results = await self.paginate_results(
             request, function=async_get_modcontracts
         )
-
         contracts_json = [
             await request.app.loop.run_in_executor(
                 request.app.ctx.thread_pool, lambda: Contract(contract_id).contracts
@@ -82,6 +81,6 @@ bp_modcontracts.add_route(
 
 bp_modcontracts.add_route(
     ModContractsIdView.as_view(),
-    "/modcontracts/<contractId>",
+    "/modcontracts/<contract_id>",
     name="modcontracts.get_contract_by_id",
 )

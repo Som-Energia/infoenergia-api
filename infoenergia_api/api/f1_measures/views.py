@@ -23,13 +23,13 @@ class F1MeasuresContractIdView(ResponseMixin, PaginationLinksMixin, HTTPMethodVi
 
     endpoint_name = "f1.get_f1_measures_by_contract_id"
 
-    async def get(self, request, contractId, user):
-        logger.info("Getting f1 measures for contract: %s", contractId)
+    async def get(self, request, contract_id, user):
+        logger.info("Getting f1 measures for contract: %s", contract_id)
         request.ctx.user = user
 
         try:
             invoices_ids, links, total_results = await self.paginate_results(
-                request, function=async_get_invoices, contractId=contractId
+                request, function=async_get_invoices, contract_id=contract_id
             )
         except PageNotFoundError as e:
             return self.error_response(e)
@@ -79,6 +79,6 @@ bp_f1_measures.add_route(
 
 bp_f1_measures.add_route(
     F1MeasuresContractIdView.as_view(),
-    "/f1/<contractId>",
+    "/f1/<contract_id>",
     name="get_f1_measures_by_contract_id",
 )

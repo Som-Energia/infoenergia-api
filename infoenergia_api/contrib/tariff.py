@@ -178,6 +178,7 @@ def get_tariff_prices(request, contractId=None):
             [("name", "=", contractId)], ["llista_preu"]
         )[0]["llista_preu"][0]
         return [tariff_price_id]
+
     tariff_id = tariff_obj.search(filters)
     tariff_price_ids = [
         price["llistes_preus_comptatibles"] for price in tariff_obj.read(tariff_id)
@@ -185,11 +186,11 @@ def get_tariff_prices(request, contractId=None):
     return list(set(functools.reduce(operator.concat, tariff_price_ids)))
 
 
-async def async_get_tariff_prices(request, contractId=None):
+async def async_get_tariff_prices(request, contract_id=None):
     try:
         tariff = await request.app.loop.run_in_executor(
-            request.app.ctx.thread_pool,
-            functools.partial(get_tariff_prices, request, contractId),
+            None,
+            functools.partial(get_tariff_prices, request, contract_id),
         )
     except Exception as e:
         raise e

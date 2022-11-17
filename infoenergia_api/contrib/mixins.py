@@ -21,7 +21,7 @@ class ResponseMixin(object):
         while todo:
             logger.debug(f"Dumping to dict {len(todo)} instances")
             done, todo = await asyncio.wait(
-                todo, timeout=request.app.config.TASK_TIMEOUT
+                todo, timeout=request.app.config.TASKS_TIMEOUT
             )
             for task in done:
                 serialized_instances.append(task.result())

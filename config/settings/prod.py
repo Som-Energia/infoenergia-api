@@ -22,7 +22,7 @@ PROXIES_COUNT = 1
 MAX_THREADS = env.int("MAX_THREADS")
 
 # I will wait until this timeout seconds
-TASK_TIMEOUT = env.float("TASK_TIMEOUT")
+TASKS_TIMEOUT = env.float("TASKS_TIMEOUT")
 
 INVITATION_EXP_DAYS = env.int("EXP_DAYS")
 
