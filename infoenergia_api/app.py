@@ -18,7 +18,7 @@ from .api.cch import bp_cch_measures
 from .api.contracts import bp_contracts
 from .api.f1_measures import bp_f1_measures
 from .api.modcontracts import bp_modcontracts
-from .api.registration.login import InvitationUrlToken, authenticate, extra_views
+from .api.registration.views import InvitationUrlToken, authenticate, extra_views
 from .api.registration.models import retrieve_user
 from .api.registration.utils import ApiAuthResponses
 from .api.reports import bp_reports

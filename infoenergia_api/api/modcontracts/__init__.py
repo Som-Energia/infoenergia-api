@@ -1,1 +1,1 @@
-from .modcontracts import bp_modcontracts
+from .views import bp_modcontracts

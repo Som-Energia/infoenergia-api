@@ -1,1 +1,1 @@
-from .tariff import bp_tariff
+from .views import bp_tariff
