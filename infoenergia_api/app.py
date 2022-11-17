@@ -10,24 +10,23 @@ from sanic import Sanic
 from sanic.log import logger
 from sanic.signals import Event
 from sanic_jwt import Initialize as InitializeJWT
-from sentry_sdk.integrations.sanic import SanicIntegration
 from sanic_jwt.exceptions import AuthenticationFailed, Unauthorized
+from sentry_sdk.integrations.sanic import SanicIntegration
 
-from infoenergia_api.api.contracts import bp_contracts
-from infoenergia_api.api.f1_measures import bp_f1_measures
-from infoenergia_api.api.cch import bp_cch_measures
-from infoenergia_api.api.modcontracts import bp_modcontracts
-from infoenergia_api.api.reports import bp_reports
-from infoenergia_api.api.registration.login import (
-    InvitationUrlToken,
-    authenticate,
-    extra_views,
-)
-from infoenergia_api.api.registration.utils import ApiAuthResponses
-from infoenergia_api.api.tariff import bp_tariff
-from infoenergia_api.api.registration.models import db, retrieve_user
-from infoenergia_api.contrib.mixins import ResponseMixin
 from . import VERSION
+from .api.cch import bp_cch_measures
+from .api.contracts import bp_contracts
+from .api.f1_measures import bp_f1_measures
+from .api.modcontracts import bp_modcontracts
+from .api.registration.login import InvitationUrlToken, authenticate, extra_views
+from .api.registration.models import retrieve_user
+from .api.registration.utils import ApiAuthResponses
+from .api.reports import bp_reports
+from .api.tariff import bp_tariff
+from .api.utils import get_db_instance
+from .contrib.mixins import ResponseMixin
+
+db = get_db_instance()
 
 
 def build_app():
@@ -45,7 +44,7 @@ def build_app():
             environment=environment,
         )
 
-    app = Sanic("infoenergia-api")
+    app = Sanic(name="infoenergia-api")
     try:
         app.update_config(config)
 
