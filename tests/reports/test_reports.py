@@ -12,12 +12,15 @@ class TestReportRequestModel:
         self,
         db,
         # given an UUID id,
-        uuid_id,
+        uuid_id__one_contract,
         # and a raw report request
-        raw_report_request,
+        raw_report_request__one_contract,
     ):
+        uuid_id = uuid_id__one_contract
         # when we create a new report request
-        report_request = await create_report_request(uuid_id, raw_report_request)
+        report_request = await create_report_request(
+            uuid_id, raw_report_request__one_contract
+        )
 
         # then we have an instance of a ReportRequest model
         assert isinstance(report_request, ReportRequest)
@@ -74,49 +77,10 @@ class TestBeedataReports:
         assert len(unprocess_reports) == 1
         assert len(process_reports) == 2
 
-    @pytest.mark.skip("to redifine test")
-    async def test__insert_or_update_report(self, app, beedata):
-        report_type = "infoenergia_reports"
-        report = [
-            {
-                "contractId": "1234567",
-                "_updated": "2020-08-18T12:06:23Z",
-                "_created": "2020-08-18T12:06:23Z",
-                "month": "202009",
-                "type": "CCH",
-                "results": {},
-            }
-        ]
-        report_id = await beedata.save_report(report, report_type)
-        expected_report = (
-            await app.ctx.mongo_client.somenergia.infoenergia_reports.find_one(
-                report_id[0]
-            )
-        )
-        assert report_id[0] == expected_report["_id"]
-
-    @pytest.mark.skip("to redifine test")
-    async def test__download_one_report__expected_infoenergia_fields(self, bapi):
-        status, report = await bapi.download_report(
-            contract_id="0068759", month="202011", report_type="infoenergia_reports"
-        )
-        assert status == 200
-        assert report is not None
-        assert "seasonalProfile" in report[0]["results"]
-
-    @pytest.mark.skip("to redifine test")
-    async def test__download_one_report__expected_photovoltaic_fields(self, bapi):
-        status, report = await bapi.download_report(
-            contract_id="0068759", month=None, report_type="photovoltaic_reports"
-        )
-        assert status == 200
-        assert report is not None
-        assert "pvAutoSize" in report[0]["results"]
-
 
 class TestReport:
     async def test__post_contracts(self, app, auth_token, mock_process_reports):
-        mock_process_reports.return_value = []
+        mock_process_reports.return_value = [], []
         _, response = await app.asgi_client.post(
             "/reports/",
             headers={"Authorization": "Bearer {}".format(auth_token)},
@@ -128,10 +92,11 @@ class TestReport:
                 "month": "202011",
             },
         )
-
         assert response.status == 200
-        assert response.json == {"reports": 3}
+        assert response.json["state"]
+        assert response.json["data"]["reports"] == 3
 
+    @pytest.mark.skip("Not yet implemented")
     async def test__post_photovoltaic_contracts(
         self, app, auth_token, mock_process_reports
     ):

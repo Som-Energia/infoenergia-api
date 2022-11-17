@@ -9,6 +9,22 @@ from infoenergia_api.contrib.beedata_api.exceptions import ApiError
 
 
 class TestBeedataApiClient:
+
+    REPORT_KEYS = [
+        "seasonalProfile",
+        "last3MonthsProfile",
+        "weeklyAvgConsumeLast3Months",
+        "dailyTypicalProfileSummer",
+        "dailyTypicalProfileWinter",
+        "dailyTypicalProfileLast12Months",
+        "dailyTypicalProfileLast3Months",
+        "weeklyAvgConsumeWinter",
+        "distributionByPeriods",
+        "weeklyAvgConsumeLast12Months",
+        "distributionByTypeOfUse",
+        "weeklyAvgConsumeSummer",
+    ]
+
     @vcr.use_cassette(
         "tests/fixtures/vcr_cassetes/login_ok.yaml", record_mode=config.RECORD_MODE
     )
@@ -52,6 +68,7 @@ class TestBeedataApiClient:
         )
         assert status == 200
         assert report is not None
+        assert sorted(self.REPORT_KEYS) == sorted(report["results"].keys())
 
     @vcr.use_cassette(
         "tests/fixtures/vcr_cassetes/report__wrongid.yaml",
