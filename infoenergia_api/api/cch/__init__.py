@@ -1,1 +1,1 @@
-from .cch import bp_cch_measures
+from .views import bp_cch_measures
