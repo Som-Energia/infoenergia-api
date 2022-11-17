@@ -1,3 +1,4 @@
+import os
 from .base import *
 
 test_env = Env()
@@ -23,7 +24,7 @@ SANIC_JWT_SECRET = SECRET_KEY
 
 INVITATION_EXP_DAYS = 1
 
-RECORD_MODE = "new_episodes"
+RECORD_MODE = os.environ.get("RECORD_MODE", "new_episodes")
 
 
 USE_UVLOOP = True
