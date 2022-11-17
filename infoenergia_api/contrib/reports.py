@@ -1,6 +1,5 @@
 import asyncio
 from datetime import datetime
-from pymongo.errors import WriteError
 from sanic.log import logger
 
 from config import config

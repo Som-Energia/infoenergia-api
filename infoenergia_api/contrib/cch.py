@@ -71,24 +71,20 @@ class TgCchF5d(BaseCch):
         if not self.raw_curve:
             return {}
 
-        return (
-            {
-                "season": self.season,
-                "ai": self.ai,
-                "ao": self.ao,
-                "r1": self.r1,
-                "r2": self.r2,
-                "r3": self.r3,
-                "r4": self.r4,
-                "source": self.source,
-                "validated": self.validated,
-                "date": self.date_cch,
-                "dateDownload": (self.create_at).strftime(self.iso_format),
-                "dateUpdate": (self.update_at).strftime(self.iso_format),
-            }
-            if self.raw_curve
-            else {}
-        )
+        return {
+            "season": self.season,
+            "ai": self.ai,
+            "ao": self.ao,
+            "r1": self.r1,
+            "r2": self.r2,
+            "r3": self.r3,
+            "r4": self.r4,
+            "source": self.source,
+            "validated": self.validated,
+            "date": self.date_cch,
+            "dateDownload": (self.create_at).strftime(self.iso_format),
+            "dateUpdate": (self.update_at).strftime(self.iso_format),
+        }
 
 
 class TgCchVal(BaseCch):

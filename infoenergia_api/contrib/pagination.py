@@ -77,7 +77,6 @@ class PaginationLinksMixin:
         )
 
     async def _pagination_links(self, request, request_id, pagination_list, **kwargs):
-
         url = request.url_for(self.endpoint_name, **kwargs)
         url_cursor = await self._next_cursor(request_id, pagination_list.next_cursor)
 
@@ -131,7 +130,7 @@ class PaginationLinksMixin:
                 request, request_id, results_pagination, **kwargs
             )
         else:
-            contract_id = kwargs.get("contractId")
+            contract_id = kwargs.get("contract_id")
             results_ids = await function(request, contract_id)
             total_results = len(results_ids)
 

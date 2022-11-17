@@ -26,7 +26,7 @@ class ModelNotFoundError(Exception):
 
 
 class BaseCchMeasuresContractView(ResponseMixin, PaginationLinksMixin, HTTPMethodView):
-    cch_model = {
+    CCH_MODEL = {
         "tg_cchfact": TgCchF5d,
         "tg_cchval": TgCchVal,
         "tg_f1": TgCchF1,
@@ -38,13 +38,12 @@ class BaseCchMeasuresContractView(ResponseMixin, PaginationLinksMixin, HTTPMetho
         cch_ids, links, total_results = await self.paginate_results(
             request, function=async_get_cch, contract_id=contract_id
         )
-
         return cch_ids, links, total_results
 
     async def get_cch_measures(self, model, cch_ids, user, contract_id=None):
         measures = []
         loop = asyncio.get_running_loop()
-        to_do = [loop.create_task(model.create(cch_id)) for cch_id in cch_ids]
+        to_do = [loop.create_task(model.create(cch_id)) for cch_id in sorted(cch_ids)]
 
         while to_do:
             done, to_do = await asyncio.wait(to_do, timeout=config.TASKS_TIMEOUT)
@@ -68,7 +67,7 @@ class CchMeasuresContractIdView(BaseCchMeasuresContractView):
         request.ctx.user = user
 
         try:
-            model = self.cch_model.get(request.args.get("type", ""))
+            model = self.CCH_MODEL.get(request.args.get("type", ""))
             if not model:
                 raise ModelNotFoundError()
 
@@ -101,7 +100,7 @@ class CchMeasuresView(BaseCchMeasuresContractView):
         request.ctx.user = user
         logger.info("Getting cch measures")
         try:
-            model = self.cch_model.get(request.args.get("type", ""))
+            model = self.CCH_MODEL.get(request.args.get("type", ""))
             if not model:
                 raise ModelNotFoundError()
 

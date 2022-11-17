@@ -17,15 +17,18 @@ class TestCchRequest:
             params=params,
         )
         assert response.status == 200
-        assert response.json == {
-            "count": 10,
-            "total_results": 721,
-            "cursor": mocked_next_cursor,
-            "next_page": "http://{}/cch/0067411?type=tg_cchfact&cursor=N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=&limit=10".format(
-                response.url.netloc.decode()
-            ),
-            "data": scenarios["f5d"]["cch_data"],
-        }
+        assert response.json["count"] == 10
+        assert response.json["total_results"] == 721
+        assert (
+            response.json["cursor"]
+            == "N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0="
+        )
+        assert response.json[
+            "next_page"
+        ] == "http://{}/cch/0067411?type=tg_cchfact&cursor=N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=&limit=10".format(
+            response.url.netloc.decode()
+        )
+        assert len(response.json["data"]) == 10
 
     async def test__get_f5d__all_contracts(
         self, app, auth_token, scenarios, mocked_next_cursor
