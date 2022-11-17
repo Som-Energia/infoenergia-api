@@ -29,7 +29,6 @@ class ReportsView(ResponseMixin, PaginationLinksMixin, BeedataApiMixin, HTTPMeth
             beedata_reports = BeedataReports(
                 await self.bapi,
                 request.app.ctx.mongo_client,
-                request.app.ctx.redis,
                 report_request,
             )
             request.app.loop.create_task(beedata_reports.process_reports())
