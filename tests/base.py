@@ -1,5 +1,7 @@
 import asyncio
 import os
+import string
+import secrets
 
 os.environ.setdefault("INFOENERGIA_MODULE_SETTINGS", "config.settings.testing")
 
@@ -62,3 +64,5 @@ class BaseTestCase(TestCase):
         )
         token = response.json.get("access_token", None)
         return token
+
+    dummy_passwd = "".join(secrets.choice(string.ascii_letters) for i in range(8))

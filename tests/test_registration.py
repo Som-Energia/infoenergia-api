@@ -10,7 +10,7 @@ class TestLogin(BaseTestCase):
     def test__authenticate_user(self):
         user = User(
             username="someone",
-            password=pbkdf2_sha256.hash("12341234"),
+            password=pbkdf2_sha256.hash(self.dummy_passwd),
             email="someone@somenergia.coop",
             id_partner=1,
             is_superuser=True,
@@ -18,7 +18,7 @@ class TestLogin(BaseTestCase):
         )
         auth_body = {
             "username": user.username,
-            "password": "12341234",
+            "password": self.dummy_passwd,
         }
 
         _, response = self.client.post("/auth", json=auth_body)
@@ -31,7 +31,7 @@ class TestLogin(BaseTestCase):
     def test__authenticate_failed(self):
         auth_body = {
             "username": "no_one",
-            "password": "12341234",
+            "password": self.dummy_passwd,
         }
 
         _, response = self.client.post("/auth", json=auth_body)
@@ -41,7 +41,7 @@ class TestLogin(BaseTestCase):
     def test__authenticate_missing_username(self):
         auth_body = {
             "username": "",
-            "password": "12341234",
+            "password": self.dummy_passwd,
         }
 
         _, response = self.client.post("/auth", json=auth_body)

@@ -31,7 +31,7 @@ class TestUtils(BaseTestCase):
     def test__valid_contract(self):
         user = self.get_or_create_user(
             username="someone",
-            password="123412345",
+            password=self.dummy_passwd,
             email="someone@somenergia.coop",
             partner_id=1,
             is_superuser=True,
@@ -46,7 +46,7 @@ class TestUtils(BaseTestCase):
     def test__valid_contract_without_permission(self):
         user = self.get_or_create_user(
             username="someone",
-            password="123412345",
+            password=self.dummy_passwd,
             email="someone@somenergia.coop",
             partner_id=1,
             is_superuser=False,

@@ -15,13 +15,13 @@ class TestBaseContracts(BaseTestCase):
     def test__get_contracts_by_id__2A(self):
         user = self.get_or_create_user(
             username="someone",
-            password="123412345",
+            password=self.dummy_passwd,
             email="someone@somenergia.coop",
             partner_id=1,
             is_superuser=True,
             category="partner",
         )
-        token = self.get_auth_token(user.username, "123412345")
+        token = self.get_auth_token(user.username, self.dummy_passwd)
         _, response = self.loop.run_until_complete(
             self.client.get(
                 "/contracts/" + self.json4test["contract_id_2A"]["contractId"],
@@ -49,13 +49,13 @@ class TestBaseContracts(BaseTestCase):
         )
         user = self.get_or_create_user(
             username="someone",
-            password="123412345",
+            password=self.dummy_passwd,
             email="someone@somenergia.coop",
             partner_id=1,
             is_superuser=True,
             category="partner",
         )
-        token = self.get_auth_token(user.username, "123412345")
+        token = self.get_auth_token(user.username, self.dummy_passwd)
         params = {
             "from_": "2015-10-03",
             "to_": "2015-10-03",
@@ -91,13 +91,13 @@ class TestBaseContracts(BaseTestCase):
     def test__get_contracts__30TD(self):
         user = self.get_or_create_user(
             username="someone",
-            password="123412345",
+            password=self.dummy_passwd,
             email="someone@somenergia.coop",
             partner_id=1,
             is_superuser=True,
             category="partner",
         )
-        token = self.get_auth_token(user.username, "123412345")
+        token = self.get_auth_token(user.username, self.dummy_passwd)
         params = {
             "from_": "2012-07-12",
             "to_": "2012-07-14",
@@ -128,13 +128,13 @@ class TestBaseContracts(BaseTestCase):
     def test__get_contracts__3X(self):
         user = self.get_or_create_user(
             username="someone",
-            password="123412345",
+            password=self.dummy_passwd,
             email="someone@somenergia.coop",
             partner_id=1,
             is_superuser=True,
             category="partner",
         )
-        token = self.get_auth_token(user.username, "123412345")
+        token = self.get_auth_token(user.username, self.dummy_passwd)
 
         _, response = self.loop.run_until_complete(
             self.client.get(
@@ -159,13 +159,13 @@ class TestBaseContracts(BaseTestCase):
     def test__get_contracts_without_permission(self):
         user = self.get_or_create_user(
             username="someone",
-            password="123412345",
+            password=self.dummy_passwd,
             email="someone@somenergia.coop",
             partner_id=1,
             is_superuser=False,
             category="Energética",
         )
-        token = self.get_auth_token(user.username, "123412345")
+        token = self.get_auth_token(user.username, self.dummy_passwd)
         _, response = self.loop.run_until_complete(
             self.client.get(
                 "/contracts/" + self.json4test["contract_id_2A"]["contractId"],
@@ -184,13 +184,13 @@ class TestBaseContracts(BaseTestCase):
     def test__get_contract_energetica(self):
         user = self.get_or_create_user(
             username="someone",
-            password="123412345",
+            password=self.dummy_passwd,
             email="someone@somenergia.coop",
             partner_id=1,
             is_superuser=False,
             category="Energética",
         )
-        token = self.get_auth_token(user.username, "123412345")
+        token = self.get_auth_token(user.username, self.dummy_passwd)
         _, response = self.loop.run_until_complete(
             self.client.get(
                 "/contracts/" + self.json4test["contract_energetica"]["contractId"],

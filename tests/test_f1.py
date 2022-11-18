@@ -14,13 +14,13 @@ class TestF1(BaseTestCase):
         get_invoices_mock.return_value = [8174595]
         user = self.get_or_create_user(
             username="someone",
-            password="123412345",
+            password=self.dummy_passwd,
             email="someone@somenergia.coop",
             partner_id=1,
             is_superuser=True,
             category="partner",
         )
-        token = self.get_auth_token(user.username, "123412345")
+        token = self.get_auth_token(user.username, self.dummy_passwd)
 
         request, response = self.client.get(
             "/f1/{}".format(self.json4test["invoices_f1_by_contract_id"]["contractId"]),
@@ -47,13 +47,13 @@ class TestF1(BaseTestCase):
         async_get_invoices_mock.return_value = [7568406]
         user = self.get_or_create_user(
             username="someone",
-            password="123412345",
+            password=self.dummy_passwd,
             email="someone@somenergia.coop",
             partner_id=1,
             is_superuser=True,
             category="partner",
         )
-        token = self.get_auth_token(user.username, "123412345")
+        token = self.get_auth_token(user.username, self.dummy_passwd)
         params = {
             "from_": "2019-09-01",
             "to_": "2019-09-01",
@@ -89,13 +89,13 @@ class TestF1(BaseTestCase):
         )
         user = self.get_or_create_user(
             username="someone",
-            password="123412345",
+            password=self.dummy_passwd,
             email="someone@somenergia.coop",
             partner_id=1,
             is_superuser=True,
             category="partner",
         )
-        token = self.get_auth_token(user.username, "123412345")
+        token = self.get_auth_token(user.username, self.dummy_passwd)
         params = {
             "from_": "2019-09-01",
             "to_": "2019-09-01",
@@ -133,13 +133,13 @@ class TestF1(BaseTestCase):
         )
         user = self.get_or_create_user(
             username="someone",
-            password="123412345",
+            password=self.dummy_passwd,
             email="someone@somenergia.coop",
             partner_id=1,
             is_superuser=True,
             category="partner",
         )
-        token = self.get_auth_token(user.username, "123412345")
+        token = self.get_auth_token(user.username, self.dummy_passwd)
         params = {"tariff": "2.0TD", "limit": 1}
 
         request, response = self.client.get(
@@ -172,13 +172,13 @@ class TestF1(BaseTestCase):
         )
         user = self.get_or_create_user(
             username="someone",
-            password="123412345",
+            password=self.dummy_passwd,
             email="someone@somenergia.coop",
             partner_id=1,
             is_superuser=True,
             category="partner",
         )
-        token = self.get_auth_token(user.username, "123412345")
+        token = self.get_auth_token(user.username, self.dummy_passwd)
         params = {"tariff": "3.0TD", "limit": 1}
 
         request, response = self.client.get(
@@ -212,13 +212,13 @@ class TestF1(BaseTestCase):
     ):
         user = self.get_or_create_user(
             username="someone",
-            password="123412345",
+            password=self.dummy_passwd,
             email="someone@somenergia.coop",
             partner_id=1,
             is_superuser=True,
             category="partner",
         )
-        token = self.get_auth_token(user.username, "123412345")
+        token = self.get_auth_token(user.username, self.dummy_passwd)
         request, response = self.client.get(
             "http://127.0.0.1:54167/f1?cursor=N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=&limit=1",
             headers={"Authorization": "Bearer {}".format(token)},
@@ -244,13 +244,13 @@ class TestF1(BaseTestCase):
     def test__get_f1_measures_without_permission(self):
         user = self.get_or_create_user(
             username="someone",
-            password="123412345",
+            password=self.dummy_passwd,
             email="someone@somenergia.coop",
             partner_id=1,
             is_superuser=False,
             category="Energética",
         )
-        token = self.get_auth_token(user.username, "123412345")
+        token = self.get_auth_token(user.username, self.dummy_passwd)
 
         request, response = self.client.get(
             "/f1/{}?limit=1".format(

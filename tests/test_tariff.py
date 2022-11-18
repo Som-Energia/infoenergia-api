@@ -10,13 +10,13 @@ class TestBaseTariff(BaseTestCase):
     def test__get_tariff_2A(self):
         user = self.get_or_create_user(
             username="someone",
-            password="123412345",
+            password=self.dummy_passwd,
             email="someone@somenergia.coop",
             partner_id=1,
             is_superuser=True,
             category="partner",
         )
-        token = self.get_auth_token(user.username, "123412345")
+        token = self.get_auth_token(user.username, self.dummy_passwd)
         params = {
             "tariff": "2.0A",
         }
@@ -38,13 +38,13 @@ class TestBaseTariff(BaseTestCase):
     def test__get_tariff__2A_with_priceId(self):
         user = self.get_or_create_user(
             username="someone",
-            password="123412345",
+            password=self.dummy_passwd,
             email="someone@somenergia.coop",
             partner_id=1,
             is_superuser=True,
             category="partner",
         )
-        token = self.get_auth_token(user.username, "123412345")
+        token = self.get_auth_token(user.username, self.dummy_passwd)
         params = {"tariff": "2.0A", "tariffPriceId": 4}
         _, response = self.client.get(
             "/tariff",
@@ -64,13 +64,13 @@ class TestBaseTariff(BaseTestCase):
     def test__get_tariff__20TD(self):
         user = self.get_or_create_user(
             username="someone",
-            password="123412345",
+            password=self.dummy_passwd,
             email="someone@somenergia.coop",
             partner_id=1,
             is_superuser=True,
             category="partner",
         )
-        token = self.get_auth_token(user.username, "123412345")
+        token = self.get_auth_token(user.username, self.dummy_passwd)
         params = {
             "tariff": "2.0TD",
         }
@@ -95,13 +95,13 @@ class TestBaseTariff(BaseTestCase):
     def test__get_tariff__3A(self):
         user = self.get_or_create_user(
             username="someone",
-            password="123412345",
+            password=self.dummy_passwd,
             email="someone@somenergia.coop",
             partner_id=1,
             is_superuser=True,
             category="partner",
         )
-        token = self.get_auth_token(user.username, "123412345")
+        token = self.get_auth_token(user.username, self.dummy_passwd)
         params = {
             "tariff": "3.0A",
         }
@@ -122,13 +122,13 @@ class TestBaseTariff(BaseTestCase):
     def test__get_tariff__by_contract_id(self):
         user = self.get_or_create_user(
             username="someone",
-            password="123412345",
+            password=self.dummy_passwd,
             email="someone@somenergia.coop",
             partner_id=1,
             is_superuser=True,
             category="partner",
         )
-        token = self.get_auth_token(user.username, "123412345")
+        token = self.get_auth_token(user.username, self.dummy_passwd)
         _, response = self.client.get(
             "/tariff/0000004",
             headers={"Authorization": "Bearer {}".format(token)},

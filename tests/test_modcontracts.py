@@ -18,13 +18,13 @@ class TestModContracts(BaseTestCase):
         )
         user = self.get_or_create_user(
             username="someone",
-            password="123412345",
+            password=self.dummy_passwd,
             email="someone@somenergia.coop",
             partner_id=1,
             is_superuser=True,
             category="partner",
         )
-        token = self.get_auth_token(user.username, "123412345")
+        token = self.get_auth_token(user.username, self.dummy_passwd)
         params = {
             "from_": "2019-09-17",
             "to_": "2019-09-17",
@@ -61,13 +61,13 @@ class TestModContracts(BaseTestCase):
         )
         user = self.get_or_create_user(
             username="someone",
-            password="123412345",
+            password=self.dummy_passwd,
             email="someone@somenergia.coop",
             partner_id=1,
             is_superuser=True,
             category="partner",
         )
-        token = self.get_auth_token(user.username, "123412345")
+        token = self.get_auth_token(user.username, self.dummy_passwd)
         params = {
             "from_": "2021-06-02",
             "to_": "2021-06-02",
@@ -100,13 +100,13 @@ class TestModContracts(BaseTestCase):
     def test__get_modcontracts__without_permission(self):
         user = self.get_or_create_user(
             username="someone",
-            password="123412345",
+            password=self.dummy_passwd,
             email="someone@somenergia.coop",
             partner_id=1,
             is_superuser=False,
             category="Energética",
         )
-        token = self.get_auth_token(user.username, "123412345")
+        token = self.get_auth_token(user.username, self.dummy_passwd)
         params = {
             "from_": "2019-10-19",
             "to_": "2019-10-19",
@@ -129,13 +129,13 @@ class TestModContracts(BaseTestCase):
     def test__get_modcontracts__by_contract(self):
         user = self.get_or_create_user(
             username="someone",
-            password="123412345",
+            password=self.dummy_passwd,
             email="someone@somenergia.coop",
             partner_id=1,
             is_superuser=True,
             category="partner",
         )
-        token = self.get_auth_token(user.username, "123412345")
+        token = self.get_auth_token(user.username, self.dummy_passwd)
         params = {
             "from_": "2000-10-01",
             "to_": "2021-10-19",
