@@ -40,6 +40,13 @@ Now our api is ready to run. You can simply execute `pipenv run python run.py` a
 
 #### Changes
 
+### 2.0.0-rc1
+- updated dependencies versions
+- adapted code to that dependencies
+- reimplemented report processing
+- a lot of bugs fixed
+- improved perfomance
+
 ### 1.5.0
 - Adapted endpoints to new tolls
 
@@ -73,7 +80,7 @@ Now our api is ready to run. You can simply execute `pipenv run python run.py` a
 
 ### 1.3.0
 - Added f5d endpoint
-- Support for parallel requests to one ERP 
+- Support for parallel requests to one ERP
 
 ### 1.2.1
 - Fixed minor bugs

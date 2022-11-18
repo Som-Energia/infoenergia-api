@@ -1,1 +1,1 @@
-from .contracts import bp_contracts
+from .views import bp_contracts

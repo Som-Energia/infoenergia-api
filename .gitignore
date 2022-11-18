@@ -116,4 +116,4 @@ json4test.yaml
 .vscode
 cert.crt
 cert.key
-fixtures
+vcr_cassetes

@@ -1,48 +1,41 @@
+import asyncio
 import os
-os.environ.setdefault('INFOENERGIA_MODULE_SETTINGS', 'config.settings.testing')
+import string
+import secrets
+
+os.environ.setdefault("INFOENERGIA_MODULE_SETTINGS", "config.settings.testing")
 
 from concurrent import futures
 from unittest import TestCase
-from aiohttp.test_utils import AioHTTPTestCase, unittest_run_loop
-from aiohttp import web
-
-import fakeredis
 
 import yaml
 from passlib.hash import pbkdf2_sha256
 from pony.orm import commit, db_session
-
-from infoenergia_api import app
+from sanic_testing import TestManager
 from infoenergia_api.api.registration.models import User
-
-class BaseTestCaseAsync(AioHTTPTestCase):
-
-    async def setUpAsync(self):
-        await super().setUpAsync()
-        self.app = app
-        self.app.redis = fakeredis.FakeStrictRedis()
-
-    async def get_application(self):
-        self.app =  web.Application()
-        return self.app
 
 
 class BaseTestCase(TestCase):
-
     def setUp(self):
-        self.app = app
-        self.app.test_mode = True
- 
-        self.client = app.test_client 
-        self.maxDiff = None
-        if app.thread_pool._shutdown:
-            app.thread_pool = futures.ThreadPoolExecutor(app.config.MAX_THREADS)
+        from infoenergia_api import build_app
 
-        with open(os.path.join(app.config.BASE_DIR, 'tests/json4test.yaml')) as f:
+        self.app = build_app("infoenergia-api-test")
+        self.client = TestManager(self.app).asgi_client
+        self.maxDiff = None
+        if self.app.ctx.thread_pool._shutdown:
+            self.app.ctx.thread_pool = futures.ThreadPoolExecutor(
+                self.app.config.MAX_THREADS
+            )
+
+        self.loop = asyncio.get_event_loop()
+
+        with open(os.path.join(self.app.config.BASE_DIR, "tests/json4test.yaml")) as f:
             self.json4test = yaml.safe_load(f.read())
 
     @db_session
-    def get_or_create_user(self, username, password, email, partner_id, is_superuser, category):
+    def get_or_create_user(
+        self, username, password, email, partner_id, is_superuser, category
+    ):
         user = User.get(username=username)
         if not user:
             user = User(
@@ -51,7 +44,7 @@ class BaseTestCase(TestCase):
                 email=email,
                 id_partner=partner_id,
                 is_superuser=is_superuser,
-                category=category
+                category=category,
             )
             commit()
         return user
@@ -63,9 +56,13 @@ class BaseTestCase(TestCase):
     @db_session
     def get_auth_token(self, username, password):
         auth_body = {
-            'username': username,
-            'password': password,
+            "username": username,
+            "password": password,
         }
-        _, response = self.client.post('/auth', json=auth_body)
-        token = response.json.get('access_token', None)
+        _, response = self.loop.run_until_complete(
+            self.client.post("/auth", json=auth_body)
+        )
+        token = response.json.get("access_token", None)
         return token
+
+    dummy_passwd = "".join(secrets.choice(string.ascii_letters) for i in range(8))

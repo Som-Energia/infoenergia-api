@@ -1,81 +1,92 @@
 import asyncio
-
+from datetime import datetime
 from sanic.log import logger
 
-
-async def get_report_ids(request):
-    await request.app.redis.delete(b"key:reports")
-    key, value = b"key:reports", "{}"
-
-    ids = ["{}".format(id).encode() for id in request.json['contract_ids']]
-    reports = await request.app.redis.rpush(
-        key,
-        *ids
-    )
-    logger.info("There are {} contractIds in redis to process".format(reports))
-    report_ids = await request.app.redis.lrange(key, 0, -1)
-    return report_ids, request.json['month'], request.json['type']
+from config import config
 
 
-class Beedata(object):
-
-    def __init__(self, api_client, mongo_con, redis, **kwargs):
+class BeedataReports(object):
+    def __init__(self, api_client, mongo_con, report_request):
         self.api_client = api_client
         self.somenergia_db = mongo_con.somenergia
-        self._redis = redis
+        self.report_request = report_request
 
-        self.N_WORKERS = kwargs.get('n_workers', 10)
+    @property
+    def reports(self):
+        return self.report_request.request_body["contract_ids"]
 
-    async def process_one_report(self, month, report_type, contract_id):
-        logger.info("start download of {}".format(contract_id.decode()))
-        status, report = await self.api_client.download_report(contract_id.decode(), month, report_type)
-        if report is None:
-            return bool(report)
+    async def process_reports(self):
+        sem = asyncio.Semaphore(config.MAX_THREADS)
+        results = dict()
 
-        logger.info("start inserting doc for {}".format(contract_id))
-        result = await self.save_report(report, report_type)
-        return bool(result)
+        tasks = {
+            asyncio.create_task(
+                self.process_one_report(
+                    self.report_request.month,
+                    self.report_request.report_type,
+                    contract_id,
+                    sem,
+                )
+            ): contract_id
+            for contract_id in self.report_request.request_body["contract_ids"]
+        }
+        to_do = tasks
+        while to_do:
+            done, to_do = await asyncio.wait(to_do, timeout=config.TASKS_TIMEOUT)
+            for task in done:
+                try:
+                    result = task.result()
+                    results[result] = results.get(result, []) + [(tasks[task])]
+                except Exception as e:
+                    msg = (
+                        "An unexpected error ocurred procesing task {} for "
+                        "contract_id {}, reason: {}"
+                    )
+                    logger.error(msg.format(task, tasks[task], e))
+                    results[False] = results.get(False, []) + [tasks[task]]
+        processed_reports = results.get(True, [])
+        unprocessed_reports = results.get(False, [])
+        if unprocessed_reports:
+            msg = "The following {} reports were NOT processed: {}"
+            logger.warning(msg.format(len(unprocessed_reports), unprocessed_reports))
 
-    async def worker(self, queue, month, report_type, results):
-        while True:
-            contract_id = await queue.get()
-            result = await self.process_one_report(month, report_type, contract_id)
-            results.append(result)
-            if result:
-                await self._redis.lrem(b"key:reports", 0, contract_id)
-            # To do: Mark the item as processed, allowing queue.join() to keep
-            # track of remaining work and know when everything is done.
-            queue.task_done()
+        return unprocessed_reports, processed_reports
 
-    async def process_reports(self, contractIdsList, month, report_type):
-        queue = asyncio.Queue(self.N_WORKERS)
-        results = []
-        workers = [asyncio.create_task(self.worker(queue, month, report_type, results)) for _ in range(self.N_WORKERS)]
-        for contractId in contractIdsList:
-            await queue.put(contractId) # Feed the contractIds to the workers.
-        await queue.join() # Wait for all enqueued items to be processed.
+    async def process_one_report(self, month, report_type, contract_id, sem):
+        async with sem:
+            msg = f"Download report ({report_type} - {month}) for <{contract_id}>"
+            logger.info(msg)
+            _, report = await self.api_client.download_report(
+                contract_id, month, report_type
+            )
+            if report is None:
+                return bool(report)
 
-        for worker in workers:
-            worker.cancel()
+            result = await self.save_report(report, report_type)
+            return bool(result)
 
-        unprocessed_reports = await self._redis.lrange(b"key:reports", 0, -1)
-        msg = 'The following {} reports were NOT processed: {}'
-        logger.warning(msg.format(len(unprocessed_reports), unprocessed_reports))
-        await self.api_client.logout()
-
-        return [report.decode() for report in unprocessed_reports]
-
-    async def save_report(self, reports, report_type):
-        result = await self.somenergia_db[report_type].insert_many([
+    async def save_report(self, report, report_type):
+        result = await self.somenergia_db[report_type].find_one_and_replace(
             {
-                'contractName': item['contractId'],
-                'beedataUpdateDate': item['_updated'],
-                'beedataCreateDate': item['_created'],
-                'month': item['month'],
-                'type': item['type'],
-                'results': item['results'],
-            }  for item in reports
-        ])
-        msg = "Inserted {} of the initial {} docs"
-        logger.info(msg.format(len(result.inserted_ids), len(reports)))
-        return result.inserted_ids
+                "contractName": report["contractId"],
+                "month": report["month"],
+                "type": report["type"],
+            },
+            {
+                "contractName": report["contractId"],
+                "beedataUpdateDate": report["_updated"],
+                "beedataCreateDate": report["_created"],
+                "month": report["month"],
+                "type": report["type"],
+                "results": report["results"],
+                "meta": {
+                    "_inserted_date": datetime.now(),
+                    "_id": report["_id"],
+                    "_etag": report["_etag"],
+                },
+            },
+            upsert=True,
+        )
+        msg = "Inserted report (%s - %s) for <%s>"
+        logger.info(msg, report["type"], report["month"], report["contractId"])
+        return result

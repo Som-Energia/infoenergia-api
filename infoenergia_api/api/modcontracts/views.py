@@ -9,7 +9,8 @@ from infoenergia_api.contrib.modcontracts import async_get_modcontracts
 from infoenergia_api.contrib import PaginationLinksMixin
 
 
-bp_modcontracts = Blueprint('modcontracts')
+bp_modcontracts = Blueprint("modcontracts")
+
 
 class ModContractsIdView(PaginationLinksMixin, HTTPMethodView):
     decorators = [
@@ -17,24 +18,26 @@ class ModContractsIdView(PaginationLinksMixin, HTTPMethodView):
         protected(),
     ]
 
-    endpoint_name = 'modcontracts.get_contract_by_id'
+    endpoint_name = "modcontracts.get_contract_by_id"
 
-    async def get(self, request, contractId, user):
+    async def get(self, request, contract_id, user):
         logger.info("Getting contractual modifications")
         request.ctx.user = user
         contracts_ids, links, total_results = await self.paginate_results(
-            request, function=async_get_modcontracts, contractId=contractId
+            request, function=async_get_modcontracts, contract_id=contract_id
         )
 
-        contract_json = [await request.app.loop.run_in_executor(
-                request.app.thread_pool, lambda: Contract(contract_id).contracts
-            ) for contract_id in contracts_ids
+        contract_json = [
+            await request.app.loop.run_in_executor(
+                request.app.ctx.thread_pool, lambda: Contract(contract_id).contracts
+            )
+            for contract_id in contracts_ids
         ]
 
         response = {
-            'total_results': total_results,
-            'count': len(contract_json),
-            'data': contract_json
+            "total_results": total_results,
+            "count": len(contract_json),
+            "data": contract_json,
         }
         response.update(links)
         return json(response)
@@ -46,26 +49,25 @@ class ModContractsView(PaginationLinksMixin, HTTPMethodView):
         protected(),
     ]
 
-    endpoint_name = 'modcontracts.get_modcontracts'
+    endpoint_name = "modcontracts.get_modcontracts"
 
     async def get(self, request, user):
         logger.info("Getting contractual modifications")
         request.ctx.user = user
         contracts_ids, links, total_results = await self.paginate_results(
-            request,
-            function=async_get_modcontracts
+            request, function=async_get_modcontracts
         )
-
         contracts_json = [
             await request.app.loop.run_in_executor(
-                request.app.thread_pool, lambda: Contract(contract_id).contracts
-            ) for contract_id in contracts_ids
+                request.app.ctx.thread_pool, lambda: Contract(contract_id).contracts
+            )
+            for contract_id in contracts_ids
         ]
 
         response = {
-            'total_results': total_results,
-            'count': len(contracts_json),
-            'data': contracts_json
+            "total_results": total_results,
+            "count": len(contracts_json),
+            "data": contracts_json,
         }
         response.update(links)
         return json(response)
@@ -73,12 +75,12 @@ class ModContractsView(PaginationLinksMixin, HTTPMethodView):
 
 bp_modcontracts.add_route(
     ModContractsView.as_view(),
-    '/modcontracts/',
-    name='get_modcontracts',
+    "/modcontracts/",
+    name="get_modcontracts",
 )
 
 bp_modcontracts.add_route(
     ModContractsIdView.as_view(),
-    '/modcontracts/<contractId>',
-    name='modcontracts.get_contract_by_id'
+    "/modcontracts/<contract_id>",
+    name="modcontracts.get_contract_by_id",
 )

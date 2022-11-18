@@ -1,156 +1,198 @@
+import asyncio
 from bson.objectid import ObjectId
 from datetime import timedelta
 import pytz
 
-from ..utils import (
-    get_cch_filters, make_uuid, get_contract_id
-)
+from ..utils import get_cch_filters, make_uuid, get_contract_id
 from ..tasks import get_cups
 
 
-class Cch(object):
+class BaseCch(object):
+
+    iso_format = "%Y-%m-%d %H:%M:%S"
 
     @classmethod
     async def create(cls, cch_id, collection):
         from infoenergia_api.app import app
 
         self = cls()
-        self._erp = app.erp_client
-        self._executor = app.thread_pool
-        self._mongo = app.mongo_client.somenergia
+        self._erp = app.ctx.erp_client
+        self._executor = app.ctx.thread_pool
+        self._mongo = app.ctx.mongo_client.somenergia
         self._collection = collection
         self._Cch = self._mongo[self._collection]
-        curve = await self._Cch.find_one({"_id": ObjectId(str(cch_id))})
-        for name, value in curve.items():
+        self.raw_curve = await self._Cch.find_one({"_id": ObjectId(str(cch_id))}) or {}
+        for name, value in self.raw_curve.items():
             setattr(self, name, value)
         return self
 
     @property
-    def dateCch(self):
-        tz = pytz.timezone('Europe/Madrid')
+    def date_cch(self):
+        if not self.raw_curve:
+            return
 
-        date_cch = tz.localize(
-            self.datetime,
-            is_dst=self.season).astimezone(pytz.utc)
+        tz = pytz.timezone("Europe/Madrid")
+
+        date_cch = tz.localize(self.datetime, is_dst=self.season).astimezone(pytz.utc)
         date_cch -= timedelta(hours=1)
         return date_cch.strftime("%Y-%m-%d %H:%M:%S%z")
 
-    @property
-    def measurements(self):
-        if self._collection == 'tg_cchfact':
-            return {
-                'season': self.season,
-                'ai': self.ai,
-                'ao': self.ao,
-                'r1': self.r1,
-                'r2': self.r2,
-                'r3': self.r3,
-                'r4': self.r4,
-                'source': self.source,
-                'validated': self.validated,
-                'date': self.dateCch,
-                'dateDownload': (self.create_at).strftime("%Y-%m-%d %H:%M:%S"),
-                'dateUpdate': (self.update_at).strftime("%Y-%m-%d %H:%M:%S")
-            }
-        if self._collection == 'tg_cchval':
-            return {
-                'season': self.season,
-                'ai': self.ai,
-                'ao': self.ao,
-                'date': self.dateCch,
-                'dateDownload': (self.create_at).strftime("%Y-%m-%d %H:%M:%S"),
-                'dateUpdate': (self.update_at).strftime("%Y-%m-%d %H:%M:%S")
-            }
-        if self._collection == 'tg_f1':
-            return {
-                'season': self.season,
-                'ai': self.ai,
-                'ao': self.ao,
-                'r1': self.r1,
-                'r2': self.r2,
-                'r3': self.r3,
-                'r4': self.r4,
-                'source': self.source,
-                'validated': self.validated,
-                'date': self.dateCch,
-                'dateDownload': (self.create_at).strftime("%Y-%m-%d %H:%M:%S"),
-                'dateUpdate': (self.update_at).strftime("%Y-%m-%d %H:%M:%S"),
-                'reserve1': self.reserve1,
-                'reserve2': self.reserve2,
-                'measureType': self.measure_type,
-            }
-        if self._collection == 'tg_p1':
-            return {
-                'date': self.dateCch,
-                'season': self.season,
-                'ai': self.ai,
-                'aiquality': self.aiquality,
-                'ao': self.ao,
-                'aoQuality': self.aoquality,
-                'source': self.source,
-                'validated': self.validated,
-                'type': self.type,
-                'reserve1': self.reserve1,
-                'reserve1Quality': self.reserve1quality,
-                'reserve2': self.reserve2,
-                'reserve2Quality': self.reserve2quality,
-                'r4': self.r4,
-                'r4Quality': self.r4quality,
-                'r2': self.r2,
-                'r2Quality': self.r2quality,
-                'r3': self.r3,
-                'r3Quality': self.r3quality,
-                'r1': self.r1,
-                'r1Quality': self.r1quality,
-                'measureType': self.measure_type,
-                'dateDownload': (self.create_at).strftime("%Y-%m-%d %H:%M:%S"),
-                'dateUpdate': (self.update_at).strftime("%Y-%m-%d %H:%M:%S"),
-            }
+    async def cch_measures(self, user, contract_id=None):
+        loop = asyncio.get_running_loop()
+        if not self.raw_curve:
+            return {}
 
-    async def cch_measures(self, user, request, contractId=None):
-        if contractId:
-            return {
-                'contractId': contractId,
-                'meteringPointId': make_uuid('giscedata.cups.ps', self.name),
-                'measurements': self.measurements
-            }
-        else:
-            contractId = await request.app.loop.run_in_executor(
-                self._executor,
+        if not contract_id:
+            contract_id = await loop.run_in_executor(
+                None,
                 get_contract_id,
                 self._erp,
                 self.name,
                 user,
             )
-            if contractId:
-                return {
-                    'contractId': contractId,
-                    'meteringPointId': make_uuid('giscedata.cups.ps', self.name),
-                    'measurements': self.measurements
-                }
+        if contract_id:
+            return {
+                "contractId": contract_id,
+                "meteringPointId": make_uuid("giscedata.cups.ps", self.name),
+                "measurements": self.measurements,
+            }
+
+        return {}
+
+
+class TgCchF5d(BaseCch):
+    @classmethod
+    async def create(cls, cch_id):
+        cch_fact_curve = await super().create(cch_id, "tg_cchfact")
+        return cch_fact_curve
+
+    @property
+    def measurements(self):
+        if not self.raw_curve:
             return {}
 
+        return {
+            "season": self.season,
+            "ai": self.ai,
+            "ao": self.ao,
+            "r1": self.r1,
+            "r2": self.r2,
+            "r3": self.r3,
+            "r4": self.r4,
+            "source": self.source,
+            "validated": self.validated,
+            "date": self.date_cch,
+            "dateDownload": (self.create_at).strftime(self.iso_format),
+            "dateUpdate": (self.update_at).strftime(self.iso_format),
+        }
 
-async def async_get_cch(request, contractId=None):
-    collection = str(request.args['type'][0])
-    if collection in ('P1', 'P2'):
-        collection = 'tg_p1'
-    cch_collection = request.app.mongo_client.somenergia[collection]
+
+class TgCchVal(BaseCch):
+    @classmethod
+    async def create(cls, cch_id):
+        cch_fact_curve = await super().create(cch_id, "tg_cchval")
+        return cch_fact_curve
+
+    @property
+    def measurements(self):
+        if not self.raw_curve:
+            return {}
+
+        return {
+            "season": self.season,
+            "ai": self.ai,
+            "ao": self.ao,
+            "date": self.date_cch,
+            "dateDownload": (self.create_at).strftime(self.iso_format),
+            "dateUpdate": (self.update_at).strftime(self.iso_format),
+        }
+
+
+class TgCchF1(BaseCch):
+    @classmethod
+    async def create(cls, cch_id):
+        cch_fact_curve = await super().create(cch_id, "tg_f1")
+        return cch_fact_curve
+
+    @property
+    def measurements(self):
+        if not self.raw_curve:
+            return {}
+
+        return {
+            "season": self.season,
+            "ai": self.ai,
+            "ao": self.ao,
+            "r1": self.r1,
+            "r2": self.r2,
+            "r3": self.r3,
+            "r4": self.r4,
+            "source": self.source,
+            "validated": self.validated,
+            "date": self.dateCch,
+            "dateDownload": (self.create_at).strftime(self.iso_format),
+            "dateUpdate": (self.update_at).strftime(self.iso_format),
+            "reserve1": self.reserve1,
+            "reserve2": self.reserve2,
+            "measureType": self.measure_type,
+        }
+
+
+class TgCchP1(BaseCch):
+    @classmethod
+    async def create(cls, cch_id):
+        cch_fact_curve = await super().create(cch_id, "tg_cchval")
+        return cch_fact_curve
+
+    @property
+    def measurements(self):
+        if not self.raw_curve:
+            return {}
+
+        return {
+            "date": self.date_cch,
+            "season": self.season,
+            "ai": self.ai,
+            "aiquality": self.aiquality,
+            "ao": self.ao,
+            "aoQuality": self.aoquality,
+            "source": self.source,
+            "validated": self.validated,
+            "type": self.type,
+            "reserve1": self.reserve1,
+            "reserve1Quality": self.reserve1quality,
+            "reserve2": self.reserve2,
+            "reserve2Quality": self.reserve2quality,
+            "r4": self.r4,
+            "r4Quality": self.r4quality,
+            "r2": self.r2,
+            "r2Quality": self.r2quality,
+            "r3": self.r3,
+            "r3Quality": self.r3quality,
+            "r1": self.r1,
+            "r1Quality": self.r1quality,
+            "measureType": self.measure_type,
+            "dateDownload": (self.create_at).strftime(self.iso_format),
+            "dateUpdate": (self.update_at).strftime(self.iso_format),
+        }
+
+
+async def async_get_cch(request, contract_id=None):
     filters = {}
+    loop = asyncio.get_running_loop()
 
-    if contractId:
-        cups = await request.app.loop.run_in_executor(
-            request.app.thread_pool, get_cups, request, contractId
-        )
+    collection = request.args.get("type")
+    if collection in ("P1", "P2"):
+        collection = "tg_p1"
+    cch_collection = request.app.ctx.mongo_client.somenergia[collection]
+
+    if contract_id:
+        cups = await loop.run_in_executor(None, get_cups, request, contract_id)
         if not cups:
             return []
-        filters.update({"name": {'$regex': '^{}'.format(cups[0][:20])}})
+        filters.update({"name": {"$regex": "^{}".format(cups[0][:20])}})
 
     if request.args:
         filters = await get_cch_filters(request, filters)
-   
-    return [
-        cch['_id']
-        async for cch in cch_collection.find(filters)
-        if cch.get('_id')
-    ]
+
+    return [cch["_id"] async for cch in cch_collection.find(filters) if cch.get("_id")]

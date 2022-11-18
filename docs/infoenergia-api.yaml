@@ -1220,7 +1220,7 @@ components:
             {
               "P1": 20000,
               "P2": 20000,
-              "P3": 30000  
+              "P3": 30000
             }
         power_:
           type: object

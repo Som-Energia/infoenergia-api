@@ -2,31 +2,42 @@ import functools
 import re
 from sanic.request import RequestParameters
 
-from infoenergia_api.utils import (get_request_filters, make_timestamp,
-                                   make_uuid, get_invoice_user_filters)
+from infoenergia_api.utils import (
+    get_request_filters,
+    make_timestamp,
+    make_uuid,
+    get_invoice_user_filters,
+)
 
 
 class Invoice(object):
 
     FIELDS = [
-        'polissa_id',
-        'data_inici',
-        'data_final',
-        'cups_id',
-        'comptadors',
-        'lectures_potencia_ids',
-        'lectures_energia_ids',
-        'tarifa_acces_id',
-        'maximetre_consumidor_ids'
+        "polissa_id",
+        "data_inici",
+        "data_final",
+        "cups_id",
+        "comptadors",
+        "lectures_potencia_ids",
+        "lectures_energia_ids",
+        "tarifa_acces_id",
+        "maximetre_consumidor_ids",
     ]
 
     def __init__(self, invoice_id):
         from infoenergia_api.app import app
 
-        self._erp = app.erp_client
-        self._FacturacioFactura = self._erp.model('giscedata.facturacio.factura')
-        for name, value in self._FacturacioFactura.read(invoice_id, self.FIELDS).items():
+        self._erp = app.ctx.erp_client
+        self._FacturacioFactura = self._erp.model("giscedata.facturacio.factura")
+        for name, value in self._FacturacioFactura.read(
+            invoice_id, self.FIELDS
+        ).items():
             setattr(self, name, value)
+
+    @classmethod
+    async def create(cls, invoice_id):
+        self = cls(invoice_id)
+        return self
 
     @property
     def devices(self):
@@ -43,19 +54,18 @@ class Invoice(object):
         if not self.comptadors:
             return []
 
-        compt_obj = self._erp.model('giscedata.lectures.comptador')
-        fields = ['data_alta', 'data_baixa']
+        compt_obj = self._erp.model("giscedata.lectures.comptador")
+        fields = ["data_alta", "data_baixa"]
 
         devices = []
         for comptador in compt_obj.read(self.comptadors, fields) or []:
             devices.append(
                 {
-                    'dateStart': make_timestamp(comptador['data_alta']),
-                    'dateEnd': make_timestamp(comptador['data_baixa']),
-                    'deviceId': make_uuid(
-                        'giscedata.lectures.comptador',
-                        comptador['id']
-                    )
+                    "dateStart": make_timestamp(comptador["data_alta"]),
+                    "dateEnd": make_timestamp(comptador["data_baixa"]),
+                    "deviceId": make_uuid(
+                        "giscedata.lectures.comptador", comptador["id"]
+                    ),
                 }
             )
         return devices
@@ -72,14 +82,16 @@ class Invoice(object):
         }
         """
 
-        power_obj = self._erp.model('giscedata.facturacio.lectures.potencia')
-        f1_power = power_obj.read([('id', 'in', self.lectures_potencia_ids)])
-        return [{
-            'period': power['name'],
-            'excess': power['exces'],
-            'maximeter': power['pot_maximetre'],
-            'units': 'kW'
-            } for power in f1_power
+        power_obj = self._erp.model("giscedata.facturacio.lectures.potencia")
+        f1_power = power_obj.read([("id", "in", self.lectures_potencia_ids)])
+        return [
+            {
+                "period": power["name"],
+                "excess": power["exces"],
+                "maximeter": power["pot_maximetre"],
+                "units": "kW",
+            }
+            for power in f1_power
         ]
 
     @property
@@ -94,14 +106,20 @@ class Invoice(object):
           "units": "kVArh"
         }
         """
-        measures_obj = self._erp.model('giscedata.facturacio.lectures.energia')
-        measures = measures_obj.read([('id', 'in', self.lectures_energia_ids)])
-        return [{
-            'source': measure.get('origen_id') and measure['origen_id'][1] or 'Not informed',
-            'period': re.split('[()]', measure['name'])[1],
-            'consum': int(measure['consum']),
-            'units': 'kVArh'
-        } for measure in measures if measure['tipus'] == 'reactiva']
+        measures_obj = self._erp.model("giscedata.facturacio.lectures.energia")
+        measures = measures_obj.read([("id", "in", self.lectures_energia_ids)])
+        return [
+            {
+                "source": measure.get("origen_id")
+                and measure["origen_id"][1]
+                or "Not informed",
+                "period": re.split("[()]", measure["name"])[1],
+                "consum": int(measure["consum"]),
+                "units": "kVArh",
+            }
+            for measure in measures
+            if measure["tipus"] == "reactiva"
+        ]
 
     @property
     def f1_active_energy_kWh(self):
@@ -115,16 +133,22 @@ class Invoice(object):
           "units": "kWh"
         }
         """
-        measures_obj = self._erp.model('giscedata.facturacio.lectures.energia')
+        measures_obj = self._erp.model("giscedata.facturacio.lectures.energia")
         measures = measures_obj.read(
-            [('id', 'in', sorted(self.lectures_energia_ids))],
+            [("id", "in", sorted(self.lectures_energia_ids))],
         )
-        return [{
-            'source': measure.get('origen_id') and measure['origen_id'][1] or 'Not informed',
-            'period': re.split('[()]', measure['name'])[1],
-            'consum': int(measure['consum']),
-            'units': 'kWh'
-        } for measure in measures if measure['tipus'] == 'activa']
+        return [
+            {
+                "source": measure.get("origen_id")
+                and measure["origen_id"][1]
+                or "Not informed",
+                "period": re.split("[()]", measure["name"])[1],
+                "consum": int(measure["consum"]),
+                "units": "kWh",
+            }
+            for measure in measures
+            if measure["tipus"] == "activa"
+        ]
 
     @property
     def f1_maximeter(self):
@@ -136,58 +160,66 @@ class Invoice(object):
             'period': '2.0TD (P2)'
         """
 
-        maximeter_obj=self._erp.model('giscedata.f1.maximetre.consumidor')
-        maximeters = maximeter_obj.read([
-            ('polissa_id', '=', self.polissa_id[0]),
-            ('data_final', '<=', self.data_final),
-            ('data_final', '>=', self.data_inici)
-        ]) or []
+        maximeter_obj = self._erp.model("giscedata.f1.maximetre.consumidor")
+        maximeters = (
+            maximeter_obj.read(
+                [
+                    ("polissa_id", "=", self.polissa_id[0]),
+                    ("data_final", "<=", self.data_final),
+                    ("data_final", ">=", self.data_inici),
+                ]
+            )
+            or []
+        )
 
-        return[{
-            'dateStart':maximeter['data_inici'],
-            'dateEnd':maximeter['data_final'],
-            'maxPower':maximeter['maximetre'],
-            'period':maximeter['periode_id'][1]
-        } for maximeter in maximeters]
-
+        return [
+            {
+                "dateStart": maximeter["data_inici"],
+                "dateEnd": maximeter["data_final"],
+                "maxPower": maximeter["maximetre"],
+                "period": maximeter["periode_id"][1],
+            }
+            for maximeter in maximeters
+        ]
 
     @property
     def f1_measures(self):
         return {
-            'contractId': self.polissa_id[1],
-            'invoiceId': make_uuid('giscedata.facturacio.factura', self.id),
-            'dateStart': make_timestamp(self.data_inici),
-            'dateEnd': make_timestamp(self.data_final),
-            'tariffId': self.tarifa_acces_id[1],
-            'meteringPointId': make_uuid('giscedata.cups.ps',self.cups_id[1]),
-            'devices': self.devices,
-            'power_measurements': self.f1_power_kW,
-            'reactive_energy_measurements': self.f1_reactive_energy_kVArh,
-            'active_energy_measurements': self.f1_active_energy_kWh,
-            'maximeter': self.f1_maximeter
+            "contractId": self.polissa_id[1],
+            "invoiceId": make_uuid("giscedata.facturacio.factura", self.id),
+            "dateStart": make_timestamp(self.data_inici),
+            "dateEnd": make_timestamp(self.data_final),
+            "tariffId": self.tarifa_acces_id[1],
+            "meteringPointId": make_uuid("giscedata.cups.ps", self.cups_id[1]),
+            "devices": self.devices,
+            "power_measurements": self.f1_power_kW,
+            "reactive_energy_measurements": self.f1_reactive_energy_kVArh,
+            "active_energy_measurements": self.f1_active_energy_kWh,
+            "maximeter": self.f1_maximeter,
         }
+
+    def __iter__(self):
+        yield from self.f1_measures.items()
 
 
 def get_invoices(request, contractId=None):
     args = RequestParameters(request.args)
-    factura_obj = request.app.erp_client.model('giscedata.facturacio.factura')
+    factura_obj = request.app.ctx.erp_client.model("giscedata.facturacio.factura")
     filters = [
-        ('polissa_state', '=', 'activa'),
-        ('type', '=', 'in_invoice'),
-        ('polissa_id.emp_allow_send_data', '=', True),
+        ("polissa_state", "=", "activa"),
+        ("type", "=", "in_invoice"),
+        ("polissa_id.emp_allow_send_data", "=", True),
     ]
     filters = get_invoice_user_filters(
-        request.app.erp_client, request.ctx.user, filters
+        request.app.ctx.erp_client, request.ctx.user, filters
     )
 
     if contractId:
-        filters.append(
-            ('polissa_id.name', '=', contractId)
-        )
+        filters.append(("polissa_id.name", "=", contractId))
 
     if args:
         filters = get_request_filters(
-            request.app.erp_client,
+            request.app.ctx.erp_client,
             request,
             filters,
         )
@@ -199,8 +231,7 @@ def get_invoices(request, contractId=None):
 async def async_get_invoices(request, id_contract=None):
     try:
         invoices = await request.app.loop.run_in_executor(
-            request.app.thread_pool,
-            functools.partial(get_invoices, request, id_contract)
+            None, get_invoices, request, id_contract
         )
     except Exception as e:
         raise e

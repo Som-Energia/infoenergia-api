@@ -1,35 +1,40 @@
 import argparse
 import sys
 
+from infoenergia_api import build_app
 
-def main(host, port):
-    from infoenergia_api import app
-
-    try:
-        app.run(host=host, port=port, debug=True)
-    except (KeyboardInterrupt, SystemExit):
-        print("You kill me!!")
-    finally:
-        sys.exit(0)
-
+app = build_app("infoenergia-api-run")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Infoenergia api service")
 
     parser.add_argument(
-        "-H", "--host",
+        "-H",
+        "--host",
         help="host address to serve (default: %(default)r",
         type=str,
-        default="0.0.0.0"
+        default="0.0.0.0",
     )
 
     parser.add_argument(
-        "-p", "--port",
+        "-p",
+        "--port",
         help="TCP/IP port to serve (default: %(default)r",
-        type=str,
-        default="9000"
+        type=int,
+        default=9000,
     )
 
     args = parser.parse_args()
-
-    main(args.host, args.port)
+    try:
+        app.run(
+            host=args.host,
+            port=args.port,
+            debug=True,
+            auto_reload=True,
+        )
+    except (KeyboardInterrupt, SystemExit):
+        print("You kill me!!")
+    except Exception as e:
+        print(f"What the fuck @!#!:{e}")
+    finally:
+        sys.exit(0)
