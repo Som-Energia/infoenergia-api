@@ -22,10 +22,12 @@ class TestBaseContracts(BaseTestCase):
             category="partner",
         )
         token = self.get_auth_token(user.username, "123412345")
-        _, response = self.client.get(
-            "/contracts/" + self.json4test["contract_id_2A"]["contractId"],
-            headers={"Authorization": "Bearer {}".format(token)},
-            timeout=None,
+        _, response = self.loop.run_until_complete(
+            self.client.get(
+                "/contracts/" + self.json4test["contract_id_2A"]["contractId"],
+                headers={"Authorization": "Bearer {}".format(token)},
+                timeout=None,
+            )
         )
 
         self.assertEqual(response.status, 200)
@@ -61,11 +63,13 @@ class TestBaseContracts(BaseTestCase):
             "juridic_type": "physical_person",
             "limit": 1,
         }
-        _, response = self.client.get(
-            "/contracts",
-            params=params,
-            headers={"Authorization": "Bearer {}".format(token)},
-            timeout=None,
+        _, response = self.loop.run_until_complete(
+            self.client.get(
+                "/contracts",
+                params=params,
+                headers={"Authorization": "Bearer {}".format(token)},
+                timeout=None,
+            )
         )
 
         self.assertEqual(response.status, 200)
@@ -100,11 +104,13 @@ class TestBaseContracts(BaseTestCase):
             "tariff": "3.0TD",
             "limit": 1,
         }
-        _, response = self.client.get(
-            "/contracts",
-            params=params,
-            headers={"Authorization": "Bearer {}".format(token)},
-            timeout=None,
+        _, response = self.loop.run_until_complete(
+            self.client.get(
+                "/contracts",
+                params=params,
+                headers={"Authorization": "Bearer {}".format(token)},
+                timeout=None,
+            )
         )
 
         self.assertEqual(response.status, 200)
@@ -130,10 +136,12 @@ class TestBaseContracts(BaseTestCase):
         )
         token = self.get_auth_token(user.username, "123412345")
 
-        _, response = self.client.get(
-            "/contracts/" + self.json4test["contract_id_3X"]["contractId"],
-            headers={"Authorization": "Bearer {}".format(token)},
-            timeout=None,
+        _, response = self.loop.run_until_complete(
+            self.client.get(
+                "/contracts/" + self.json4test["contract_id_3X"]["contractId"],
+                headers={"Authorization": "Bearer {}".format(token)},
+                timeout=None,
+            )
         )
 
         self.assertEqual(response.status, 200)
@@ -158,10 +166,12 @@ class TestBaseContracts(BaseTestCase):
             category="Energética",
         )
         token = self.get_auth_token(user.username, "123412345")
-        _, response = self.client.get(
-            "/contracts/" + self.json4test["contract_id_2A"]["contractId"],
-            headers={"Authorization": "Bearer {}".format(token)},
-            timeout=None,
+        _, response = self.loop.run_until_complete(
+            self.client.get(
+                "/contracts/" + self.json4test["contract_id_2A"]["contractId"],
+                headers={"Authorization": "Bearer {}".format(token)},
+                timeout=None,
+            )
         )
 
         self.assertEqual(response.status, 200)
@@ -181,12 +191,13 @@ class TestBaseContracts(BaseTestCase):
             category="Energética",
         )
         token = self.get_auth_token(user.username, "123412345")
-        _, response = self.client.get(
-            "/contracts/" + self.json4test["contract_energetica"]["contractId"],
-            headers={"Authorization": "Bearer {}".format(token)},
-            timeout=None,
+        _, response = self.loop.run_until_complete(
+            self.client.get(
+                "/contracts/" + self.json4test["contract_energetica"]["contractId"],
+                headers={"Authorization": "Bearer {}".format(token)},
+                timeout=None,
+            )
         )
-
         self.assertEqual(response.status, 200)
         self.assertDictEqual(
             response.json,

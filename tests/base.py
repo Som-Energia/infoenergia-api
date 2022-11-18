@@ -1,46 +1,33 @@
+import asyncio
 import os
 
 os.environ.setdefault("INFOENERGIA_MODULE_SETTINGS", "config.settings.testing")
 
 from concurrent import futures
 from unittest import TestCase
-from aiohttp.test_utils import AioHTTPTestCase
-from aiohttp import web
 
-import fakeredis
 import yaml
 from passlib.hash import pbkdf2_sha256
 from pony.orm import commit, db_session
 from sanic_testing import TestManager
-
 from infoenergia_api.api.registration.models import User
-
-
-class BaseTestCaseAsync(AioHTTPTestCase):
-    async def setUpAsync(self):
-        from infoenergia_api import app
-
-        await super().setUpAsync()
-        self.app = app
-        self.app.ctx.redis = fakeredis.FakeStrictRedis()
-
-    async def get_application(self):
-        self.app = web.Application()
-        return self.app
 
 
 class BaseTestCase(TestCase):
     def setUp(self):
-        from infoenergia_api import app
+        from infoenergia_api import build_app
 
-        self.app = app
-
-        self.client = app.test_client
+        self.app = build_app("infoenergia-api-test")
+        self.client = TestManager(self.app).asgi_client
         self.maxDiff = None
-        if app.ctx.thread_pool._shutdown:
-            app.ctx.thread_pool = futures.ThreadPoolExecutor(app.config.MAX_THREADS)
+        if self.app.ctx.thread_pool._shutdown:
+            self.app.ctx.thread_pool = futures.ThreadPoolExecutor(
+                self.app.config.MAX_THREADS
+            )
 
-        with open(os.path.join(app.config.BASE_DIR, "tests/json4test.yaml")) as f:
+        self.loop = asyncio.get_event_loop()
+
+        with open(os.path.join(self.app.config.BASE_DIR, "tests/json4test.yaml")) as f:
             self.json4test = yaml.safe_load(f.read())
 
     @db_session
@@ -65,11 +52,13 @@ class BaseTestCase(TestCase):
         user.delete()
 
     @db_session
-    async def get_auth_token(self, username, password):
+    def get_auth_token(self, username, password):
         auth_body = {
             "username": username,
             "password": password,
         }
-        _, response = await self.app.asgi_client.post("/auth", json=auth_body)
+        _, response = self.loop.run_until_complete(
+            self.client.post("/auth", json=auth_body)
+        )
         token = response.json.get("access_token", None)
         return token
