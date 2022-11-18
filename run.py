@@ -1,12 +1,9 @@
 import argparse
 import sys
-from functools import partial
 
-from sanic import Sanic
-from sanic.worker.loader import AppLoader
+from infoenergia_api import build_app
 
-from infoenergia_api.app import app
-
+app = build_app("infoenergia-api-run")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Infoenergia api service")
