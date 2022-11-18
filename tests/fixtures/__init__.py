@@ -23,7 +23,9 @@ def app():
     """
     Returns an instance of Inforenergia api app
     """
-    from infoenergia_api.app import app
+    from infoenergia_api import build_app
+
+    app = build_app("infoenergia-api-test")
 
     app.ctx.redis = fakeredis.FakeStrictRedis()
     app.ctx.mongo_client = AsyncIOMotorClient(app.config.MONGO_CONF)

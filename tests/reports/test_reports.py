@@ -1,4 +1,3 @@
-from unittest import mock
 import pytest
 
 from pony.orm import db_session

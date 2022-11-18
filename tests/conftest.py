@@ -1,8 +1,10 @@
 import os
+
 import pytest
 
 from config import config
 from infoenergia_api.api.utils import get_db_instance
+from infoenergia_api.contrib.reports import BeedataReports
 
 from .fixtures import *
 from .reports.fixtures import *
@@ -21,10 +23,8 @@ def db():
         )
         _db.generate_mapping(create_tables=True)
     except:
-        _db.create_tables()
+        pass
     yield _db
-    _db.drop_all_tables(with_all_data=True)
-    _db.disconnect()
 
 
 @pytest.fixture

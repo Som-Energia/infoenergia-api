@@ -1,3 +1,3 @@
-from .app import build_app
+from . import build_app
 
 app = build_app("infoenergia-api")

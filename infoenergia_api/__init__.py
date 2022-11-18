@@ -7,6 +7,7 @@ import aioredis
 import sentry_sdk
 from erppeek import Client
 from motor.motor_asyncio import AsyncIOMotorClient
+from pony.orm.core import BindingError
 from pool_transport import PoolTransport
 from sanic import Sanic
 from sanic.log import logger
@@ -92,14 +93,17 @@ def attach_context(app: Sanic):
     )
 
     db = get_db_instance()
-    db.bind(
-        provider="sqlite",
-        filename=os.path.join(
-            app.config.DATA_DIR, "{}.sqlite3".format(app.config.DB_CONF["database"])
-        ),
-        create_db=True,
-    )
-    db.generate_mapping(create_tables=True)
+    try:
+        db.bind(
+            provider="sqlite",
+            filename=os.path.join(
+                app.config.DATA_DIR, "{}.sqlite3".format(app.config.DB_CONF["database"])
+            ),
+            create_db=True,
+        )
+        db.generate_mapping(create_tables=True)
+    except BindingError:
+        pass
     app.ctx.db = db
 
 
