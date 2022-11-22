@@ -344,19 +344,19 @@ class TestInvoice(BaseTestCase):
     def test__get_f1_active_energy_2X(self):
         invoice = Invoice(self.invoice_id_2x)
 
-        f1_reactive_energy = invoice.f1_active_energy_kWh
+        f1_active_energy = invoice.f1_active_energy_kWh
         self.assertListEqual(
-            f1_reactive_energy,
+            f1_active_energy,
             [{"consum": 280, "period": "P1", "source": "Telegestió", "magnitud": "AE", "units": "kWh"}],
         )
 
     def test__get_f1_active_energy_3X(self):
         invoice = Invoice(self.invoice_id_3x)
 
-        f1_reactive_energy = invoice.f1_active_energy_kWh
+        f1_active_energy = invoice.f1_active_energy_kWh
 
         self.assertListEqual(
-            f1_reactive_energy,
+            f1_active_energy,
             [
                 {"consum": 307, "period": "P1", "source": "TPL", "magnitud": "AE", "units": "kWh"},
                 {"consum": 324, "period": "P2", "source": "TPL", "magnitud": "AE", "units": "kWh"},
