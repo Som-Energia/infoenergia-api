@@ -1,4 +1,4 @@
-__version__ = VERSION = "2.0.0-rc1"
+__version__ = VERSION = "2.0.1"
 
 import os
 from concurrent import futures

@@ -40,6 +40,9 @@ Now our api is ready to run. You can simply execute `pipenv run python run.py` a
 
 #### Changes
 
+### 2.0.1
+- Add the magnitud of active energy (if its AE or AS)
+
 ### 2.0.0-rc1
 - updated dependencies versions
 - adapted code to that dependencies
