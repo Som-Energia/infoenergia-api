@@ -36,6 +36,26 @@ user@host:> vim .env
 
 Now our api is ready to run. You can simply execute `pipenv run python run.py` and the api will be ready to accept requests
 
+#### Development setup
+
+```bash
+$ git clone git@github.com:Som-Energia/infoenergia-api.git . 
+$ cd infoenergia-api
+$ pip install --user pipenv
+$ pipenv install
+$ cp .env.example .env
+```
+
+Edit the .env file:
+
+- Configure the ERP_CONF, REDIS_CONF, MONGO_CONF and BeeData API access configuration according to the dbconfig found in gitlab.
+- Point the DATA_DIR to a local directory that exists. 
+- If the ERP_CONF "server" starts with https, set:
+	```
+	TRANSPORT_POOL_CONF={"secure": true}
+	```
+	Otherwise, set it {"secure": false}. 
+
 #### Usage
 
 #### Changes
