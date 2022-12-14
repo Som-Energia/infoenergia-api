@@ -42,7 +42,7 @@ Now our api is ready to run. You can simply execute `pipenv run python run.py` a
 $ git clone git@github.com:Som-Energia/infoenergia-api.git . 
 $ cd infoenergia-api
 $ pip install --user pipenv
-$ pipenv install
+$ pipenv install --dev
 $ cp .env.example .env
 ```
 
