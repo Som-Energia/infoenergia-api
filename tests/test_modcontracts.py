@@ -12,7 +12,7 @@ class TestModContracts(BaseTestCase):
 
     @mock.patch(patch_next_cursor)
     @db_session
-    def test__get_modcontracts__canceled(self, next_cursor_mock):
+    async def test__get_modcontracts__canceled(self, next_cursor_mock):
         next_cursor_mock.return_value = (
             "N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0="
         )
@@ -31,7 +31,7 @@ class TestModContracts(BaseTestCase):
             "type": "canceled",
             "limit": 1,
         }
-        _, response = self.client.get(
+        _, response = await self.client.get(
             "/modcontracts",
             params=params,
             headers={"Authorization": "Bearer {}".format(token)},
@@ -55,7 +55,7 @@ class TestModContracts(BaseTestCase):
 
     @mock.patch(patch_next_cursor)
     @db_session
-    def test__get_modcontracts__tariffOrPower(self, next_cursor_mock):
+    async def test__get_modcontracts__tariffOrPower(self, next_cursor_mock):
         next_cursor_mock.return_value = (
             "N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0="
         )
@@ -74,7 +74,7 @@ class TestModContracts(BaseTestCase):
             "type": "tariff_power",
             "limit": 1,
         }
-        _, response = self.client.get(
+        _, response = await self.client.get(
             "/modcontracts",
             params=params,
             headers={"Authorization": "Bearer {}".format(token)},
@@ -97,7 +97,7 @@ class TestModContracts(BaseTestCase):
         self.delete_user(user)
 
     @db_session
-    def test__get_modcontracts__without_permission(self):
+    async def test__get_modcontracts__without_permission(self):
         user = self.get_or_create_user(
             username="someone",
             password=self.dummy_passwd,
@@ -112,7 +112,7 @@ class TestModContracts(BaseTestCase):
             "to_": "2019-10-19",
             "type": "tariff_power",
         }
-        _, response = self.client.get(
+        _, response = await self.client.get(
             "/modcontracts",
             params=params,
             headers={"Authorization": "Bearer {}".format(token)},
@@ -126,7 +126,7 @@ class TestModContracts(BaseTestCase):
         self.delete_user(user)
 
     @db_session
-    def test__get_modcontracts__by_contract(self):
+    async def test__get_modcontracts__by_contract(self):
         user = self.get_or_create_user(
             username="someone",
             password=self.dummy_passwd,
@@ -141,7 +141,7 @@ class TestModContracts(BaseTestCase):
             "to_": "2021-10-19",
             "type": "tariff_power",
         }
-        _, response = self.client.get(
+        _, response = await self.client.get(
             "/modcontracts/" + self.json4test["modcontract_by_id"]["contractId"],
             params=params,
             headers={"Authorization": "Bearer {}".format(token)},

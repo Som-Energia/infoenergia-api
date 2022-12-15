@@ -10,7 +10,7 @@ from tests.base import BaseTestCase
 class TestF1(BaseTestCase):
     @mock.patch("infoenergia_api.contrib.f1.get_invoices")
     @db_session
-    def test__get_f1_measures_by_contract_id(self, get_invoices_mock):
+    async def test__get_f1_measures_by_contract_id(self, get_invoices_mock):
         get_invoices_mock.return_value = [8174595]
         user = self.get_or_create_user(
             username="someone",
@@ -22,7 +22,7 @@ class TestF1(BaseTestCase):
         )
         token = self.get_auth_token(user.username, self.dummy_passwd)
 
-        request, response = self.client.get(
+        request, response = await self.client.get(
             "/f1/{}".format(self.json4test["invoices_f1_by_contract_id"]["contractId"]),
             headers={"Authorization": "Bearer {}".format(token)},
             timeout=None,
@@ -43,7 +43,7 @@ class TestF1(BaseTestCase):
 
     @mock.patch("infoenergia_api.contrib.f1.get_invoices")
     @db_session
-    def test__get_f1_measures(self, async_get_invoices_mock):
+    async def test__get_f1_measures(self, async_get_invoices_mock):
         async_get_invoices_mock.return_value = [7568406]
         user = self.get_or_create_user(
             username="someone",
@@ -61,7 +61,7 @@ class TestF1(BaseTestCase):
             "limit": 1,
         }
 
-        request, response = self.client.get(
+        request, response = await self.client.get(
             "/f1",
             params=params,
             headers={"Authorization": "Bearer {}".format(token)},
@@ -82,7 +82,7 @@ class TestF1(BaseTestCase):
     @mock.patch("infoenergia_api.contrib.f1.get_invoices")
     @mock.patch("infoenergia_api.contrib.pagination.PaginationLinksMixin._next_cursor")
     @db_session
-    def test__get_f1_measure_pagination(self, next_cursor_mock, get_invoices_mock):
+    async def test__get_f1_measure_pagination(self, next_cursor_mock, get_invoices_mock):
         get_invoices_mock.return_value = [7590942, 7730323, 8174595]
         next_cursor_mock.return_value = (
             "N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0="
@@ -103,7 +103,7 @@ class TestF1(BaseTestCase):
             "limit": 1,
         }
 
-        request, response = self.client.get(
+        request, response = await self.client.get(
             "/f1",
             params=params,
             headers={"Authorization": "Bearer {}".format(token)},
@@ -127,7 +127,7 @@ class TestF1(BaseTestCase):
 
     @mock.patch("infoenergia_api.contrib.pagination.PaginationLinksMixin._next_cursor")
     @db_session
-    def test__get_f1_measure_pagination__20TD(self, next_cursor_mock):
+    async def test__get_f1_measure_pagination__20TD(self, next_cursor_mock):
         next_cursor_mock.return_value = (
             "N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0="
         )
@@ -142,7 +142,7 @@ class TestF1(BaseTestCase):
         token = self.get_auth_token(user.username, self.dummy_passwd)
         params = {"tariff": "2.0TD", "limit": 1}
 
-        request, response = self.client.get(
+        request, response = await self.client.get(
             "/f1",
             params=params,
             headers={"Authorization": "Bearer {}".format(token)},
@@ -166,7 +166,7 @@ class TestF1(BaseTestCase):
 
     @mock.patch("infoenergia_api.contrib.pagination.PaginationLinksMixin._next_cursor")
     @db_session
-    def test__get_f1_measure_pagination__30TD(self, next_cursor_mock):
+    async def test__get_f1_measure_pagination__30TD(self, next_cursor_mock):
         next_cursor_mock.return_value = (
             "N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0="
         )
@@ -181,7 +181,7 @@ class TestF1(BaseTestCase):
         token = self.get_auth_token(user.username, self.dummy_passwd)
         params = {"tariff": "3.0TD", "limit": 1}
 
-        request, response = self.client.get(
+        request, response = await self.client.get(
             "/f1",
             params=params,
             headers={"Authorization": "Bearer {}".format(token)},
@@ -207,7 +207,7 @@ class TestF1(BaseTestCase):
     @mock.patch("infoenergia_api.contrib.f1.get_invoices")
     @mock.patch("infoenergia_api.contrib.pagination.PaginationLinksMixin._next_cursor")
     @db_session
-    def test__get_f1_measure_pagination_with_cursor(
+    async def test__get_f1_measure_pagination_with_cursor(
         self, next_cursor_mock, get_invoices_mock
     ):
         user = self.get_or_create_user(
@@ -219,7 +219,7 @@ class TestF1(BaseTestCase):
             category="partner",
         )
         token = self.get_auth_token(user.username, self.dummy_passwd)
-        request, response = self.client.get(
+        request, response = await self.client.get(
             "http://127.0.0.1:54167/f1?cursor=N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=&limit=1",
             headers={"Authorization": "Bearer {}".format(token)},
             timeout=None,
@@ -241,7 +241,7 @@ class TestF1(BaseTestCase):
         self.delete_user(user)
 
     @db_session
-    def test__get_f1_measures_without_permission(self):
+    async def test__get_f1_measures_without_permission(self):
         user = self.get_or_create_user(
             username="someone",
             password=self.dummy_passwd,
@@ -252,7 +252,7 @@ class TestF1(BaseTestCase):
         )
         token = self.get_auth_token(user.username, self.dummy_passwd)
 
-        request, response = self.client.get(
+        request, response = await self.client.get(
             "/f1/{}?limit=1".format(
                 self.json4test["invoices_f1_by_contract_id"]["contractId"]
             ),

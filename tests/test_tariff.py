@@ -7,7 +7,7 @@ from tests.base import BaseTestCase
 
 class TestBaseTariff(BaseTestCase):
     @db_session
-    def test__get_tariff_2A(self):
+    async def test__get_tariff_2A(self):
         user = self.get_or_create_user(
             username="someone",
             password=self.dummy_passwd,
@@ -20,7 +20,7 @@ class TestBaseTariff(BaseTestCase):
         params = {
             "tariff": "2.0A",
         }
-        _, response = self.client.get(
+        _, response = await self.client.get(
             "/tariff",
             params=params,
             headers={"Authorization": "Bearer {}".format(token)},
@@ -35,7 +35,7 @@ class TestBaseTariff(BaseTestCase):
         self.delete_user(user)
 
     @db_session
-    def test__get_tariff__2A_with_priceId(self):
+    async def test__get_tariff__2A_with_priceId(self):
         user = self.get_or_create_user(
             username="someone",
             password=self.dummy_passwd,
@@ -46,7 +46,7 @@ class TestBaseTariff(BaseTestCase):
         )
         token = self.get_auth_token(user.username, self.dummy_passwd)
         params = {"tariff": "2.0A", "tariffPriceId": 4}
-        _, response = self.client.get(
+        _, response = await self.client.get(
             "/tariff",
             headers={"Authorization": "Bearer {}".format(token)},
             params=params,
@@ -61,7 +61,7 @@ class TestBaseTariff(BaseTestCase):
         self.delete_user(user)
 
     @db_session
-    def test__get_tariff__20TD(self):
+    async def test__get_tariff__20TD(self):
         user = self.get_or_create_user(
             username="someone",
             password=self.dummy_passwd,
@@ -74,7 +74,7 @@ class TestBaseTariff(BaseTestCase):
         params = {
             "tariff": "2.0TD",
         }
-        _, response = self.client.get(
+        _, response = await self.client.get(
             "/tariff",
             headers={"Authorization": "Bearer {}".format(token)},
             params=params,
@@ -92,7 +92,7 @@ class TestBaseTariff(BaseTestCase):
         self.delete_user(user)
 
     @db_session
-    def test__get_tariff__3A(self):
+    async def test__get_tariff__3A(self):
         user = self.get_or_create_user(
             username="someone",
             password=self.dummy_passwd,
@@ -105,7 +105,7 @@ class TestBaseTariff(BaseTestCase):
         params = {
             "tariff": "3.0A",
         }
-        _, response = self.client.get(
+        _, response = await self.client.get(
             "/tariff",
             headers={"Authorization": "Bearer {}".format(token)},
             params=params,
@@ -119,7 +119,7 @@ class TestBaseTariff(BaseTestCase):
         self.delete_user(user)
 
     @db_session
-    def test__get_tariff__by_contract_id(self):
+    async def test__get_tariff__by_contract_id(self):
         user = self.get_or_create_user(
             username="someone",
             password=self.dummy_passwd,
@@ -129,7 +129,7 @@ class TestBaseTariff(BaseTestCase):
             category="partner",
         )
         token = self.get_auth_token(user.username, self.dummy_passwd)
-        _, response = self.client.get(
+        _, response = await self.client.get(
             "/tariff/0000004",
             headers={"Authorization": "Bearer {}".format(token)},
             timeout=None,
