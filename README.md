@@ -1,7 +1,7 @@
 # infoenergia-api
 Api to exchange measurements and curves information
 
-#### Prerequisites
+## Prerequisites
 
 Before you begin, ensure you have met the following requirements:
 * You must have at least `python 3.8`. You can get this python version through `pyenv`. See more here -> https://github.com/pyenv/pyenv#installation
@@ -10,7 +10,7 @@ Before you begin, ensure you have met the following requirements:
 * An `nginx` installation
 * Optionally, an user with sudo permissions
 
-#### Installation
+## Installation
 
 First choose a directory where you want to install the api. We recommend install under `/opt` directory. This guide will use it as base directory installation
 
@@ -36,29 +36,56 @@ user@host:> vim .env
 
 Now our api is ready to run. You can simply execute `pipenv run python run.py` and the api will be ready to accept requests
 
-#### Development setup
+## Development setup
 
 ```bash
-$ git clone git@github.com:Som-Energia/infoenergia-api.git . 
-$ cd infoenergia-api
-$ pip install --user pipenv
-$ pipenv install --dev
-$ cp .env.example .env
+sudo apt install redis-server
+git clone git@github.com:Som-Energia/infoenergia-api.git . 
+cd infoenergia-api
+pip install --user pipenv
+pipenv install --dev
+cp .env.example .env
 ```
 
 Edit the .env file:
 
-- Configure the ERP_CONF, REDIS_CONF, MONGO_CONF and BeeData API access configuration according to the dbconfig found in gitlab.
-- Point the DATA_DIR to a local directory that exists. 
-- If the ERP_CONF "server" starts with https, set:
+- Configure `ERP_CONF` pointing to your ERP instance
+- Configure `MONGO_CONF` pointing to your Mongo instance
+- If the `ERP_CONF` "server" starts with https, set:
 	```
 	TRANSPORT_POOL_CONF={"secure": true}
 	```
-	Otherwise, set it {"secure": false}. 
+	Otherwise, set it `{"secure": false}`
+- Configure `REDIS_CONF` as `redis://localhost:6379` (if you are using local redis)
+- Point the `DATA_DIR` to an existing local directory to store the database file
+- Given  Beedata API credentials:
+	- Move certificate files locally and update `CERT_FILE` and `KEY_FILE` accordingly
+	- Edit `USERNAME`, `PASSWORD`, `COMPANY_ID` and `BASE_URL` to the provided access parameters.
+- Somenergia's credentials for ERP, Mongo and Beedata API can be found in private documentation dbconfig and infoenergia documentation.
 
-#### Usage
 
-#### Changes
+## Testing
+
+Setup test data (Requires VPN access):
+
+```bash
+# From the directory containing infoenergia-api
+git clone git@gitlab.somenergia.coop:IT/it-docs.git -o testdata
+cd infoenergia-api/test
+ln -s ../../testdata/b2bs/json4test.yaml
+cd ..
+```
+
+Then just:
+
+```bash
+$ pipenv run pytest
+```
+
+
+## Usage
+
+## Changes
 
 ### 2.0.1
 - Add the magnitud of active energy (if its AE or AS)
