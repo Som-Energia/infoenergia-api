@@ -23,7 +23,7 @@ class TestUtils(BaseTestCase):
     def setUp(self):
         super().setUp()
         self.erp = Client(**config.ERP_CONF)
-        self.app.mongo_client = AsyncIOMotorClient(config.MONGO_CONF)
+        self.app.ctx.mongo_client = AsyncIOMotorClient(config.MONGO_CONF)
         self.loop = asyncio.get_event_loop()
         self.f5d_id = "5c2dd783cb2f477212c77abb"
 
