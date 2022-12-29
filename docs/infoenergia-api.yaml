@@ -12,6 +12,8 @@ info:
 servers:
 - url: https://apinergia.somenergia.coop
 tags:
+- name: authentication
+  description: User authentication endpoint
 - name: contracts
   description: All information about a contract
 - name: modcontracts
@@ -27,6 +29,48 @@ tags:
 - name: tariff
   description: Tariff pricelist
 paths:
+  /auth:
+    post:
+      tags:
+      - authentication
+      summary: Logs user into the system
+      operationId: server.basic_auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuthBodyRequest"
+            examples:
+              auth-body-example:
+                $ref: "#/components/examples/auth-body-example"
+      responses:
+        200:
+          description: Returns a valid access token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+              examples:
+                auth-response-example:
+                  $ref: "#/components/examples/auth-response-example"
+        400:
+          description: Incorrect request construnction. Missing username, password or empty body
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                unauthorized-response-example:
+                  $ref: "#/components/examples/badauthrequest-response-example"
+        401:
+          description: Invalid username/password supplied
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                unauthorized-response-example:
+                  $ref: "#/components/examples/unauthorized-response-example"
   /contracts:
     get:
       tags:
@@ -917,164 +961,101 @@ paths:
         tags:
         - tariff
         summary: Obtain tariff prices
-        description: 'Get detailed prices for each tariff depending on date'
+        description: Get all detailed prices for each tariff
         operationId: server.get_tariff
         parameters:
-        - name: type
-          in: query
-          description: Choose a tariff to filter
-          required: false
-          style: form
-          explode: false
-          schema:
-            type: string
-            enum:
-              - 2.0TD
-              - 2.0A
-              - 2.1A
-              - 2.0DHA
-              - 2.0DHS
-              - 2.1DHA
-              - 2.1DHS
-              - 3.0TD
-              - 3.0A
-              - 3.1A
-              - 3.1A-LB
-              - 6.1
-              - 6.1A
-              - 6.1B
-        - name: from_
-          in: query
-          description: Filter contract amendments from this date on. Format YYYY-MM-DD.
-          required: false
-          style: form
-          schema:
-            type: string
-            format: date
-            example: '2019-08-01'
-        - name: to_
-          in: query
-          description: Filter contract amendments until this date. Format YYYY-MM-DD
-          required: false
-          style: form
-          schema:
-            type: string
-            format: date
-            example: '2019-08-10'
-        - name: limit
-          in: query
-          description: How many tariff prices to return at one time
-          required: false
-          schema:
-            type: integer
-            minimum: 0
-            default: 50
-            maximum: 500
-        - name: cursor
-          in: query
-          description: Actual cursor for this search
-          required: false
-          schema:
-            type: string
-            format: byte
-            default: None
-            example: 'dXNlcjpXMDdRQ1JQQTQ='
+          - name: type
+            in: query
+            description: Choose a tariff to filter
+            required: false
+            style: form
+            explode: false
+            schema:
+              type: string
+              enum:
+                - 2.0TD
+                - 2.0A
+                - 2.1A
+                - 2.0DHA
+                - 2.0DHS
+                - 2.1DHA
+                - 2.1DHS
+                - 3.0TD
+                - 3.0A
+                - 3.1A
+                - 3.1A-LB
+                - 6.1
+                - 6.1A
+                - 6.1B
+          - $ref: "#/components/parameters/from_Param"
+          - $ref: "#/components/parameters/to_Param"
+          - $ref: "#/components/parameters/limitParam"
+          - $ref: "#/components/parameters/cursorParam"
         responses:
           200:
-            description: successful operation
+            description: Tariff prices
             content:
               application/json:
                 schema:
-                  $ref: '#components/schemas/TariffResponse'
-                  type: object
-                  properties:
-                    data:
-                      type: array
-                      items:
-                        $ref: '#/components/schemas/tariff'
+                  $ref: '#/components/schemas/TariffResponse'
+                examples:
+                  tariff-response:
+                    $ref: "#/components/examples/tariff-response-example"
           400:
             description: Bad request
             content:
               application/json:
                 schema:
-                  $ref: '#/components/schemas/Error'
+                  $ref: '#/components/schemas/ErrorResponse'
                 examples:
                   badrequest-response:
                     $ref: "#/components/examples/badrequest-response-example"
 
-  /tariff/{contractId}:
-    get:
-      tags:
-      - tariff
-      summary: Get tariff prices by contractID
-      description: Returns tariff price contract
-      operationId: server.get_tariff_contractid
-      parameters:
-      - name: contractId
-        in: path
-        description: ID of contract to get tariff
-        required: true
-        schema:
-          type: string
-      responses:
-        200:
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  count:
-                    type: integer
-                    description: number of results
-                    example: 234
-                  data:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/tariff'
-                  links:
-                    type: object
-                    properties:
-                      next:
-                        type: string
-                        description: url of next results. If null, you are in the last page
-                        example: "https://apinergia.somenergia.coop/tariff/123456?limit=5&cursor=dXNlcjpVMEc5V0ZYTlo"
-        400:
-          description: Invalid status value
-          content: {}
-      security:
-        - jwt: []
-
-  /auth:
-    post:
-      tags:
-      - user
-      summary: Logs user into the system
-      operationId: server.basic_auth
-      parameters:
-      - name: username
-        in: query
-        description: The user name for login
-        required: true
-        schema:
-          type: string
-      - name: password
-        in: query
-        description: The password for login in clear text
-        required: true
-        schema:
-          type: string
-      responses:
-        200:
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                type: string
-        400:
-          description: Invalid username/password supplied
-          content: {}
 components:
+  parameters:
+    from_Param:
+      name: from_
+      in: query
+      description: >
+        Filter results from the date specifiend.
+        Must be in **YYYY-MM-DD** format.
+      required: false
+      style: form
+      schema:
+        type: string
+        format: date
+        example: '2019-08-01'
+    to_Param:
+      name: to_
+      in: query
+      description: >
+        Filter results until this date. Must be in **YYYY-MM-DD** format and **greater than from_** param.
+      required: false
+      style: form
+      schema:
+        type: string
+        format: date
+        example: '2019-08-10'
+    limitParam:
+      name: limit
+      in: query
+      description: How many tariff prices to return at one time
+      required: false
+      schema:
+        type: integer
+        minimum: 0
+        default: 100
+    cursorParam:
+      name: cursor
+      in: query
+      description: Actual cursor for this search
+      required: false
+      schema:
+        type: string
+        format: byte
+        default: None
+        example: 'dXNlcjpXMDdRQ1JQQTQ='
+
   schemas:
     reports:
       type: object
@@ -1771,137 +1752,56 @@ components:
           format: date
           description: file updated at this date
           example: "2020-09-01T16:37:05Z"
-    tariff:
-      type: object
-      properties:
-        page_results:
-          type: integer
-          description: number of tariffs per page
-          example: 100
-        data:
-          type: array
-          description: list of prices by tariff
-          items:
-            $ref: "#/components/schemas/Tariff"
     Tariff:
       type: object
       properties:
-        tariffPriceId:
+        id:
           type: integer
           description: Tariff ID
           example: 123
+        current:
+            $ref: "#/components/schemas/TariffPrice"
+        historical:
+            type: array
+            items:
+              $ref: "#/components/schemas/TariffPrice"
+    TariffPrice:
+      type: object
+      description: A collection of prices for serveral items to apply within a date period
+      properties:
+        dateStart:
+          type: string
+          format: date
+          description: Tariff price starting date
+        dateEnd:
+          type: string
+          format: date
+          description: Tariff price ending date
+        activeEnergy:
+          type: array
+          description: energy price by period
+          items:
+            $ref: "#/components/schemas/PeriodPrice"
+        power:
+          type: array
+          description: power price by period
+          items:
+            $ref: "#/components/schemas/PeriodPrice"
+        gkwh:
+          type: array
+          description: power price by period
+          items:
+            $ref: "#/components/schemas/PeriodPrice"
+    PeriodPrice:
+      type: object
+      properties:
+        period:
+          type: string
         price:
-          type: object
-          description: All prices for all tariff terms
-          properties:
-            current:
-                type: array
-                description: current price
-                items:
-                  type: object
-                  properties:
-                    dateStart:
-                      type: string
-                      format: date
-                      description: Tariff price starting date
-                    dateEnd:
-                      type: string
-                      format: date
-                      description: Tariff price ending date
-                    activeEnergy:
-                      type: array
-                      description: energy price by period
-                      items:
-                        type: object
-                        properties:
-                          period:
-                            type: string
-                          price:
-                            type: number
-                            format: float
-                          units:
-                            type: string
-                        example:
-                    power:
-                      type: array
-                      description: power price by period
-                      items:
-                        type: object
-                        properties:
-                          period:
-                            type: string
-                          price:
-                            type: number
-                            format: float
-                          units:
-                            type: string
-                    GkWh:
-                      type: array
-                      description: power price by period
-                      items:
-                        type: object
-                        properties:
-                          period:
-                            type: string
-                          price:
-                            type: number
-                            format: float
-                          units:
-                            type: string
-            history:
-              type: array
-              description: get history prices for a tariff
-              items:
-                type: object
-                properties:
-                  dateStart:
-                    type: string
-                    format: date
-                    description: Tariff price starting date
-                  dateEnd:
-                    type: string
-                    format: date
-                    description: Tariff price ending date
-                  activeEnergy:
-                    type: array
-                    description: energy price by period
-                    items:
-                      type: object
-                      properties:
-                        period:
-                          type: string
-                        price:
-                          type: number
-                          format: float
-                        units:
-                          type: string
-                      example:
-                  power:
-                    type: array
-                    description: power price by period
-                    items:
-                      type: object
-                      properties:
-                        period:
-                          type: string
-                        price:
-                          type: number
-                          format: float
-                        units:
-                          type: string
-                  GkWh:
-                    type: array
-                    description: power price by period
-                    items:
-                      type: object
-                      properties:
-                        period:
-                          type: string
-                        price:
-                          type: number
-                          format: float
-                        units:
-                          type: string
+          type: number
+          format: float
+        units:
+          type: string
     PriceReactiveEnergy:
       type: object
       description: All prices for reactive energy
@@ -1944,13 +1844,32 @@ components:
                 description: price applied
               units:
                 type: string
+    # ============================
+    # Request and Response schemas
+    # ============================
+    AuthBodyRequest:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+    AuthResponse:
+      type: object
+      description: Authentication response definition
+      properties:
+        access_token:
+          type: string
     BaseListResponse:
       type: object
       description: "Base parameters that will be appear in each list response"
       properties:
         count:
           type: integer
-          description: number of results
+          description: number of results of this page
+        total_results:
+          type: integer
+          description: total results of this request
         links:
           type: object
           properties:
@@ -1958,11 +1877,13 @@ components:
               type: string
               description: url of next results. If null, you are in the last page
     TariffResponse:
-      type: object
-      description: Tariff response
-      properties:
-        $ref: "#/components/schemas/BaseListResponse"
-    Error:
+      allOf:
+        - $ref: "#/components/schemas/BaseListResponse"
+        - type: object
+          properties:
+            data:
+              $ref: "#/components/schemas/Tariff"
+    ErrorResponse:
       type: object
       properties:
         code:
@@ -1971,70 +1892,91 @@ components:
         description:
           type: string
           description: Error description
+
   examples:
+    auth-body-example:
+      value:
+        username: foo
+        password: oyoyoyoy
+    auth-response-example:
+      value:
+        access_token: ouJhbGciOiKUOzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZXhwIjoxNjgwNjE3MzQ5fE.1McmVkc1wLGHhDzTLTH2a4rb-72Gt6AHs3ER2FDlV_0
     badrequest-response-example:
       value:
         error:
-          code: "bad_request"
+          code: bad_request
           message: "Sorry, I couldn't process this request  ¯\_(ツ)_/¯"
+    badauthrequest-response-example:
+      value:
+        error:
+          code: bad_request
+          message: Missing username or password.
     unauthorized-response-example:
       value:
         error:
-          code: "unauthorized"
-          message: "¯"
-    tariff_example:
+          code: unauthorized
+          message: Wrong user name or password
+    tariff-response-example:
       value: {
-        "current": {
-            "dateStart": "2020-07-01",
-            "dateEnd": "2021-03-31",
-            "activeEnergy": [
+        "total_results": 20,
+        "count": 20,
+        "links": {},
+        "data": [
+          {
+            id: 4,
+            "current": {
+              "dateStart": "2020-07-01",
+              "dateEnd": "2021-03-31",
+              "activeEnergy": [
                 {
-                    "period": "P1",
-                    "price": 0.127,
-                    "units": "€/kWh"
-                }
-            ],
-            "power": [
-                {
-                    "period": "P1",
-                    "price": 38.043426,
-                    "units": "€/kW year"
-                }
-            ],
-            "GKWh": [
-                {
-                    "period": "P1",
-                    "price": 0.11,
-                    "units": "€/kWh"
-                }
-            ]
-        },
-        "history": [
-            {
-                "dateStart": "2020-06-01",
-                "dateEnd": "2020-06-30",
-                "activeEnergy": [
-                    {
-                        "period": "P1",
-                        "price": 0.139,
-                        "units": "€/kWh"
-                    }
-                ],
-                "power": [
-                    {
-                        "period": "P1",
-                        "price": 38.043426,
-                        "units": "€/kW year"
-                    }
-                ],
-                "GKWh": [
-                    {
-                        "period": "P1",
-                        "price": 0.116,
-                        "units": "€/kWh"
-                    }
-                ]
+                      "period": "P1",
+                      "price": 0.127,
+                      "units": "€/kWh"
+                  }
+              ],
+              "power": [
+                  {
+                      "period": "P1",
+                      "price": 38.043426,
+                      "units": "€/kW year"
+                  }
+              ],
+              "GKWh": [
+                  {
+                      "period": "P1",
+                      "price": 0.11,
+                      "units": "€/kWh"
+                  }
+              ]
             },
+            "historical": [
+              {
+                  "dateStart": "2020-06-01",
+                  "dateEnd": "2020-06-30",
+                  "activeEnergy": [
+                      {
+                          "period": "P1",
+                          "price": 0.139,
+                          "units": "€/kWh"
+                      }
+                  ],
+                  "power": [
+                      {
+                          "period": "P1",
+                          "price": 38.043426,
+                          "units": "€/kW year"
+                      }
+                  ],
+                  "GKWh": [
+                      {
+                          "period": "P1",
+                          "price": 0.116,
+                          "units": "€/kWh"
+                      }
+                  ]
+              },
+            ]
+          }
         ]
       }
     price-reactve-energy-example:
