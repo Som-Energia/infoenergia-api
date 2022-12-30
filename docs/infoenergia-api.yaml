@@ -87,23 +87,21 @@ paths:
         explode: false
         schema:
           type: string
-          default: None
           enum:
-            - None
-            - 2.0TD
-            - 2.0A
-            - 2.1A
-            - 2.0DHA
-            - 2.0DHS
-            - 2.1DHA
-            - 2.1DHS
-            - 3.0TD
-            - 3.0A
-            - 3.1A
-            - 3.1A-LB
-            - 6.1
-            - 6.1A
-            - 6.1B
+            - "2.0TD"
+            - "2.0A"
+            - "2.1A"
+            - "2.0DHA"
+            - "2.0DHS"
+            - "2.1DHA"
+            - "2.1DHS"
+            - "3.0TD"
+            - "3.0A"
+            - "3.1A"
+            - "3.1A-LB"
+            - "6.1"
+            - "6.1A"
+            - "6.1B"
       - name: from_
         in: query
         description: Filter contracts with activation date from this date on. In format YYYY-MM-DD
@@ -964,29 +962,7 @@ paths:
         description: Get all detailed prices for each tariff
         operationId: server.get_tariff
         parameters:
-          - name: type
-            in: query
-            description: Choose a tariff to filter
-            required: false
-            style: form
-            explode: false
-            schema:
-              type: string
-              enum:
-                - 2.0TD
-                - 2.0A
-                - 2.1A
-                - 2.0DHA
-                - 2.0DHS
-                - 2.1DHA
-                - 2.1DHS
-                - 3.0TD
-                - 3.0A
-                - 3.1A
-                - 3.1A-LB
-                - 6.1
-                - 6.1A
-                - 6.1B
+          - $ref: "#/components/parameters/tariffsParam"
           - $ref: "#/components/parameters/from_Param"
           - $ref: "#/components/parameters/to_Param"
           - $ref: "#/components/parameters/limitParam"
@@ -1010,7 +986,6 @@ paths:
                 examples:
                   badrequest-response:
                     $ref: "#/components/examples/badrequest-response-example"
-
 components:
   parameters:
     from_Param:
@@ -1055,7 +1030,30 @@ components:
         format: byte
         default: None
         example: 'dXNlcjpXMDdRQ1JQQTQ='
-
+    tariffsParam:
+      name: type
+      in: query
+      description: Choose a tariff to filter
+      required: false
+      style: form
+      explode: false
+      schema:
+        type: string
+        enum:
+          - "2.0TD"
+          - "2.0A"
+          - "2.1A"
+          - "2.0DHA"
+          - "2.0DHS"
+          - "2.1DHA"
+          - "2.1DHS"
+          - "3.0TD"
+          - "3.0A"
+          - "3.1A"
+          - "3.1A-LB"
+          - "6.1"
+          - "6.1A"
+          - "6.1B"
   schemas:
     reports:
       type: object
@@ -1892,7 +1890,6 @@ components:
         description:
           type: string
           description: Error description
-
   examples:
     auth-body-example:
       value:

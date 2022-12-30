@@ -8,10 +8,14 @@ from infoenergia_api.contrib.reports import BeedataReports
 
 from .fixtures import *
 from .reports.fixtures import *
+from .erp.tariff.fixtures import _20TD_tariff_id
 
 
-@pytest.fixture()
+@pytest.fixture
 def db():
+    """
+    Returns db instance
+    """
     _db = get_db_instance()
     try:
         _db.bind(

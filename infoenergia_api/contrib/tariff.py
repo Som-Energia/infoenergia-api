@@ -157,7 +157,7 @@ class TariffPrice(object):
             }
 
 
-def get_tariff_prices(request, contractId=None):
+def get_tariff_prices(request, contract_id=None):
     tariff_obj = request.app.ctx.erp_client.model("giscedata.polissa.tarifa")
     contract_obj = request.app.ctx.erp_client.model("giscedata.polissa")
     filters = [
@@ -173,9 +173,9 @@ def get_tariff_prices(request, contractId=None):
                 filters,
             )
 
-    if contractId:
+    if contract_id:
         tariff_price_id = contract_obj.read(
-            [("name", "=", contractId)], ["llista_preu"]
+            [("name", "=", contract_id)], ["llista_preu"]
         )[0]["llista_preu"][0]
         return [tariff_price_id]
 
