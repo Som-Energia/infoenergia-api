@@ -92,100 +92,19 @@ paths:
       description: Get all contracts with one or more contract amendments by date and type.
       operationId: server.get_modcontracts
       parameters:
-      - name: type
-        in: query
-        description: Filter by different types of contract modification
-        required: true
-        style: form
-        explode: false
-        schema:
-          type: array
-          items:
-            type: string
-            enum:
-              - canceled
-              - tariff_power
-      - name: from_
-        in: query
-        description: Filter contract amendments from this date on. Format YYYY-MM-DD.
-        required: true
-        style: form
-        explode: true
-        schema:
-          type: string
-          format: date
-          example: '2019-08-01'
-      - name: to_
-        in: query
-        description: Filter contract amendments until this date. Format YYYY-MM-DD
-        required: true
-        style: form
-        explode: true
-        schema:
-          type: string
-          format: date
-          example: '2019-08-10'
-      - name: juridic_type
-        in: query
-        description: Filter contract amendments by juridic type (physical_person or juridic_person).
-        required: false
-        style: form
-        explode: true
-        schema:
-          type: string
-          default: None
-          enum:
-            - None
-            - physical_person
-            - juridic_person
-      - name: limit
-        in: query
-        description: How many contracts to return at one time
-        required: false
-        schema:
-          type: integer
-          minimum: 0
-          default: 50
-          maximum: 500
-      - name: cursor
-        in: query
-        description: Actual cursor for this search
-        required: false
-        schema:
-          type: string
-          format: byte
-          default: None
-          example: 'dXNlcjpXMDdRQ1JQQTQ='
+        - $ref: "#/components/parameters/modconTypeParam"
+        - $ref: "#/components/parameters/fromParam"
+        - $ref: "#/components/parameters/toParam"
+        - $ref: "#/components/parameters/juridicalParam"
+        - $ref: "#/components/parameters/limitParam"
+        - $ref: "#/components/parameters/cursorParam"
       responses:
         200:
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  total_results:
-                    type: integer
-                    description: total number of registers
-                    example: 234
-                  count:
-                    type: integer
-                    description: number of registers in current page
-                    example: 234
-                  data:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Contract'
-                  links:
-                    type: object
-                    properties:
-                      next:
-                        type: string
-                        description: url of next results. If null, you are in the last page
-                        example: "https://apinergia.somenergia.coop/modcontracts?limit=5&cursor=dXNlcjpVMEc5V0ZYTlo"
+          $ref: "#/components/responses/ModconsResponse"
         400:
-          description: Invalid status value
-          content: {}
+           $ref: "#/components/responses/BadRequestResponse"
+        401:
+           $ref: "#/components/responses/UnauthorizedResponse"
       security:
         - infoenergiaAuth: []
   /modcontracts/{contractId}:
@@ -196,106 +115,20 @@ paths:
       description: Get one or more contract amendments by date and type for a specific contract.
       operationId: server.get_modcontracts_by_id
       parameters:
-      - name: contractId
-        in: path
-        description: ID of contract to return
-        required: true
-        schema:
-          type: string
-      - name: type
-        in: query
-        description: Filter by different types of contract modification
-        required: true
-        style: form
-        explode: true
-        schema:
-          type: array
-          items:
-            type: string
-            enum:
-              - canceled
-              - tariff_power
-      - name: from_
-        in: query
-        description: Filter contract amendments from this date on. Format YYYY-MM-DD.
-        required: true
-        style: form
-        explode: true
-        schema:
-          type: string
-          format: date
-          example: '2019-08-01'
-      - name: to_
-        in: query
-        description: Filter contract amendments until this date. Format YYYY-MM-DD
-        required: true
-        style: form
-        explode: true
-        schema:
-          type: string
-          format: date
-          example: '2019-08-10'
-      - name: juridic_type
-        in: query
-        description: Filter contract amendments by juridic type (physical_person or juridic_person).
-        required: false
-        style: form
-        explode: true
-        schema:
-          type: string
-          default: None
-          enum:
-            - None
-            - physical_person
-            - juridic_person
-      - name: limit
-        in: query
-        description: How many contracts to return at one time
-        required: false
-        schema:
-          type: integer
-          minimum: 0
-          default: 50
-          maximum: 500
-      - name: cursor
-        in: query
-        description: Actual cursor for this search
-        required: false
-        schema:
-          type: string
-          format: byte
-          default: None
-          example: 'dXNlcjpXMDdRQ1JQQTQ='
+        - $ref: "#components/parameters/contractIDParam"
+        - $ref: "#/components/parameters/modconTypeParam"
+        - $ref: "#/components/parameters/fromParam"
+        - $ref: "#/components/parameters/toParam"
+        - $ref: "#/components/parameters/juridicalParam"
+        - $ref: "#/components/parameters/limitParam"
+        - $ref: "#/components/parameters/cursorParam"
       responses:
         200:
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  total_results:
-                    type: integer
-                    description: total number of registers
-                    example: 234
-                  count:
-                    type: integer
-                    description: number of registers in current page
-                    example: 234
-                  data:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Contract'
-                  links:
-                    type: object
-                    properties:
-                      next:
-                        type: string
-                        description: url of next results. If null, you are in the last page
-                        example: "https://apinergia.somenergia.coop/modcontracts?limit=5&cursor=dXNlcjpVMEc5V0ZYTlo"
+          $ref: "#/components/responses/ModconResponse"
         400:
-          description: Invalid status value
-          content: {}
+           $ref: "#/components/responses/BadRequestResponse"
+        401:
+           $ref: "#/components/responses/UnauthorizedResponse"
       security:
         - infoenergiaAuth: []
   /f1:
@@ -937,12 +770,26 @@ components:
           - physical_person
           - juridic_person
     contractIDParam:
-        name: contractId
-        in: path
-        description: ID of contract to return
-        required: true
-        schema:
+      name: contractId
+      in: path
+      description: ID of contract to return
+      required: true
+      schema:
+        type: string
+    modconTypeParam:
+      name: type
+      in: query
+      description: Filter by different types of contract modification
+      required: true
+      style: form
+      explode: false
+      schema:
+        type: array
+        items:
           type: string
+          enum:
+            - canceled
+            - tariff_power
   requestBodies:
     AuthBodyRequest:
       description: Required body to authenticate a user into the infoenergia api
@@ -1008,6 +855,24 @@ components:
           examples:
             single-contract-response-example:
               $ref: "#/components/examples/single-contract-response-example"
+    ModconsResponse:
+      description: Returns a set of contracts that have been modified with the number of results and the corresponding data. If the request is paginated, return the next page cursor and the next page url
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ContractsList"
+          examples:
+            modcontracts-response-example:
+              $ref: "#/components/examples/modcontracts-response-example"
+    ModconResponse:
+      description: Returns the last modification of the contract with the id `contractID`
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/SingleContract"
+          examples:
+            single-modcontract-response-example:
+              $ref: "#/components/examples/single-modcontract-response-example"
   schemas:
     reports:
       type: object
@@ -1827,7 +1692,7 @@ components:
                   description: url of next results. If null, you are in the last page
                 cursor:
                   type: string
-                  description: url of next results. If null, you are in the last page
+                  description: Cursor of the next page.
                   format: byte
     ContractsList:
       allOf:
@@ -2241,4 +2106,249 @@ components:
             }
         ],
         "total_results": 1
+      }
+    modcontracts-response-example:
+      value: {
+        "count": 1,
+        "total_results": 314,
+        "cursor": "MDY1NjlkOWQtY2FmMi01MzQ2LWJiMzEtNjZhMTYyZjVjZjg1Ok1RPT0=",
+        "next_page": "https://apinergia.somenergia.coop/modcontracts?cursor=MDY1NjlkOWQtY2FmMi01MzQ2LWJiMzEtNjZhMTYyZjVjZjg1Ok1RPT0=&limit=1",
+        "data": [
+            {
+                "activityCode": "9820 - Actividades de los hogares como productores de servicios para uso propio",
+                "autoconsumo": "[41] - Con excedentes y compensación Individual - Consumo",
+                "climaticZone": "C2",
+                "contractId": "0001910",
+                "customer": {
+                    "address": {
+                        "city": "Sabadell",
+                        "cityCode": "08187",
+                        "countryCode": "ES",
+                        "postalCode": "08206",
+                        "province": "Barcelona",
+                        "provinceCode": "08"
+                    },
+                    "buildingData": null,
+                    "customerId": "b9e8bc8c-ade9-54f9-bb01-3873b49d9769",
+                    "customisedServiceParameters": {},
+                    "meteringPointId": "dce89f67-1722-55b9-b2e8-868c77740c40",
+                    "profile": null
+                },
+                "dateEnd": null,
+                "dateStart": "2012-11-20T00:00:00+01:00",
+                "devices": [
+                    {
+                        "dateEnd": null,
+                        "dateStart": "2012-11-20T00:00:00+01:00",
+                        "deviceId": "4a15e280-d9e7-571d-b6cd-1a16eabefda9"
+                    }
+                ],
+                "experimentalGroupUser": true,
+                "experimentalGroupUserTest": false,
+                "juridicType": "physicalPerson",
+                "ownerId": "b9e8bc8c-ade9-54f9-bb01-3873b49d9769",
+                "payerId": "b9e8bc8c-ade9-54f9-bb01-3873b49d9769",
+                "power": {
+                    "P1-2": 4500,
+                    "P3": 4500
+                },
+                "powerHistory": [
+                    {
+                        "dateEnd": "2021-05-31T00:00:00+02:00",
+                        "dateStart": "2012-11-20T00:00:00+01:00",
+                        "measurement_point": "05",
+                        "power": {
+                            "P1": 5500.0
+                        }
+                    },
+                    {
+                        "dateEnd": "2023-01-08T00:00:00+01:00",
+                        "dateStart": "2021-06-01T00:00:00+02:00",
+                        "measurement_point": "05",
+                        "power": {
+                            "P1-2": 5500.0,
+                            "P3": 5500.0
+                        }
+                    },
+                    {
+                        "dateEnd": "2023-11-19T00:00:00+01:00",
+                        "dateStart": "2023-01-09T00:00:00+01:00",
+                        "measurement_point": "05",
+                        "power": {
+                            "P1-2": 4500.0,
+                            "P3": 4500.0
+                        }
+                    }
+                ],
+                "power_": {
+                    "dateEnd": "2023-11-19T00:00:00+01:00",
+                    "dateStart": "2023-01-09T00:00:00+01:00",
+                    "measurement_point": "05",
+                    "power": {
+                        "P1-2": 4500,
+                        "P3": 4500
+                    }
+                },
+                "report": {
+                    "initialMonth": 201211,
+                    "language": "ca_ES"
+                },
+                "tariffHistory": [
+                    {
+                        "dateEnd": "2021-05-31T00:00:00+02:00",
+                        "dateStart": "2012-11-20T00:00:00+01:00",
+                        "tariffId": "2.0A",
+                        "tariffPriceId": 4
+                    },
+                    {
+                        "dateEnd": "2023-11-19T00:00:00+01:00",
+                        "dateStart": "2021-06-01T00:00:00+02:00",
+                        "tariffId": "2.0TD",
+                        "tariffPriceId": 101
+                    }
+                ],
+                "tariffId": "2.0TD",
+                "tariff_": {
+                    "dateEnd": "2023-11-19T00:00:00+01:00",
+                    "dateStart": "2023-01-09T00:00:00+01:00",
+                    "tariffId": "2.0TD",
+                    "tariffPriceId": 101
+                },
+                "version": 5
+            }
+        ]
+      }
+    single-modcontract-response-example:
+      value: {
+        "count": 1,
+        "total_results": 1,
+        "data": [
+            {
+                "activityCode": "9820 - Actividades de los hogares como productores de servicios para uso propio",
+                "autoconsumo": "[00] - Sin Autoconsumo",
+                "climaticZone": "C2",
+                "contractId": "0000004",
+                "customer": {
+                    "address": {
+                        "city": "Barcelona",
+                        "cityCode": "08019",
+                        "countryCode": "ES",
+                        "postalCode": "08036",
+                        "province": "Barcelona",
+                        "provinceCode": "08"
+                    },
+                    "buildingData": {
+                        "buildingConstructionYear": 1999,
+                        "buildingCoolingSource": false,
+                        "buildingHeatingSource": "other",
+                        "buildingHeatingSourceDhw": false,
+                        "buildingSolarSystem": false,
+                        "buildingType": "Apartment",
+                        "buildingWindowsFrame": "",
+                        "buildingWindowsType": false,
+                        "dwellingArea": 89,
+                        "dwellingOrientation": false,
+                        "dwellingPositionInBuilding": false,
+                        "propertyType": false
+                    },
+                    "customerId": "8b1d6e83-882d-59e8-8fc5-fa2348b55f5e",
+                    "customisedServiceParameters": {},
+                    "meteringPointId": "9d27c82d-73d3-5ce0-b7a5-fcee142acd63",
+                    "profile": {
+                        "educationLevel": {
+                            "edu_noStudies": false,
+                            "edu_prim": false,
+                            "edu_sec": false,
+                            "edu_uni": false
+                        },
+                        "femalePersonsNumber": false,
+                        "malePersonsNumber": false,
+                        "minorsPersonsNumber": 0,
+                        "retiredAgePersonsNumber": false,
+                        "totalPersonsNumber": 3,
+                        "workingAgePersonsNumber": false
+                    }
+                },
+                "dateEnd": null,
+                "dateStart": "2011-11-22T00:00:00+01:00",
+                "devices": [
+                    {
+                        "dateEnd": null,
+                        "dateStart": "2011-12-23T00:00:00+01:00",
+                        "deviceId": "ab201f66-4da7-517b-be40-13b7e0de7429"
+                    }
+                ],
+                "experimentalGroupUser": true,
+                "experimentalGroupUserTest": false,
+                "juridicType": "physicalPerson",
+                "ownerId": "8b1d6e83-882d-59e8-8fc5-fa2348b55f5e",
+                "payerId": "8b1d6e83-882d-59e8-8fc5-fa2348b55f5e",
+                "power": {
+                    "P1-2": 3400,
+                    "P3": 3400
+                },
+                "powerHistory": [
+                    {
+                        "dateEnd": "2019-09-01T00:00:00+02:00",
+                        "dateStart": "2011-11-22T00:00:00+01:00",
+                        "measurement_point": "05",
+                        "power": {
+                            "P1": 6600.0
+                        }
+                    },
+                    {
+                        "dateEnd": "2021-05-31T00:00:00+02:00",
+                        "dateStart": "2019-09-02T00:00:00+02:00",
+                        "measurement_point": "05",
+                        "power": {
+                            "P1": 3400.0
+                        }
+                    },
+                    {
+                        "dateEnd": "2023-11-21T00:00:00+01:00",
+                        "dateStart": "2021-06-01T00:00:00+02:00",
+                        "measurement_point": "05",
+                        "power": {
+                            "P1-2": 3400.0,
+                            "P3": 3400.0
+                        }
+                    }
+                ],
+                "power_": {
+                    "dateEnd": "2023-11-21T00:00:00+01:00",
+                    "dateStart": "2021-06-01T00:00:00+02:00",
+                    "measurement_point": "05",
+                    "power": {
+                        "P1-2": 3400,
+                        "P3": 3400
+                    }
+                },
+                "report": {
+                    "initialMonth": 201111,
+                    "language": "ca_ES"
+                },
+                "tariffHistory": [
+                    {
+                        "dateEnd": "2021-05-31T00:00:00+02:00",
+                        "dateStart": "2011-11-22T00:00:00+01:00",
+                        "tariffId": "2.0A",
+                        "tariffPriceId": 4
+                    },
+                    {
+                        "dateEnd": "2023-11-21T00:00:00+01:00",
+                        "dateStart": "2021-06-01T00:00:00+02:00",
+                        "tariffId": "2.0TD",
+                        "tariffPriceId": 101
+                    }
+                ],
+                "tariffId": "2.0TD",
+                "tariff_": {
+                    "dateEnd": "2023-11-21T00:00:00+01:00",
+                    "dateStart": "2021-06-01T00:00:00+02:00",
+                    "tariffId": "2.0TD",
+                    "tariffPriceId": 101
+                },
+                "version": 5
+            }
+        ]
       }
