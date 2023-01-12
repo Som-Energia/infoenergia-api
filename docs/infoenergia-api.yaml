@@ -36,41 +36,14 @@ paths:
       summary: Logs user into the system
       operationId: server.basic_auth
       requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/AuthBodyRequest"
-            examples:
-              auth-body-example:
-                $ref: "#/components/examples/auth-body-example"
+        $ref: "#/components/requestBodies/AuthBodyRequest"
       responses:
         200:
-          description: Returns a valid access token
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/AuthResponse"
-              examples:
-                auth-response-example:
-                  $ref: "#/components/examples/auth-response-example"
+          $ref: "#/components/responses/AuthResponse"
         400:
-          description: Incorrect request construnction. Missing username, password or empty body
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-              examples:
-                unauthorized-response-example:
-                  $ref: "#/components/examples/badauthrequest-response-example"
+          $ref: "#/components/responses/BadAuthRequestResponse"
         401:
-          description: Invalid username/password supplied
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-              examples:
-                unauthorized-response-example:
-                  $ref: "#/components/examples/unauthorized-response-example"
+          $ref: "#/components/responses/UnauthorizedResponse"
   /contracts:
     get:
       tags:
@@ -79,151 +52,38 @@ paths:
       description: Get contracts information depending on date and tariff parameters
       operationId: server.get_contracts
       parameters:
-      - name: tariff
-        in: query
-        description: Tariff of the contract to filter
-        required: false
-        style: form
-        explode: false
-        schema:
-          type: string
-          enum:
-            - "2.0TD"
-            - "2.0A"
-            - "2.1A"
-            - "2.0DHA"
-            - "2.0DHS"
-            - "2.1DHA"
-            - "2.1DHS"
-            - "3.0TD"
-            - "3.0A"
-            - "3.1A"
-            - "3.1A-LB"
-            - "6.1"
-            - "6.1A"
-            - "6.1B"
-      - name: from_
-        in: query
-        description: Filter contracts with activation date from this date on. In format YYYY-MM-DD
-        required: false
-        style: form
-        explode: true
-        schema:
-          type: string
-          format: date
-          example: '2019-08-01'
-      - name: to_
-        in: query
-        description: Filter contracts with activation date until this date. In format YYYY-MM-DD
-        required: false
-        style: form
-        explode: true
-        schema:
-          type: string
-          format: date
-          example: '2019-08-10'
-      - name: juridic_type
-        in: query
-        description: Filter contracts by juridic type (physical_person or juridic_person).
-        required: false
-        style: form
-        explode: true
-        schema:
-          type: string
-          default: None
-          enum:
-            - None
-            - physical_person
-            - juridic_person
-      - name: limit
-        in: query
-        description: How many contracts to return at one time
-        required: false
-        schema:
-          type: integer
-          minimum: 0
-          default: 50
-          maximum: 500
-      - name: cursor
-        in: query
-        description: Actual cursor for this search
-        required: false
-        schema:
-          type: string
-          format: byte
-          default: None
-          example: 'dXNlcjpXMDdRQ1JQQTQ='
+        - $ref: "#/components/parameters/tariffsParam"
+        - $ref: "#/components/parameters/fromParam"
+        - $ref: "#/components/parameters/toParam"
+        - $ref: "#/components/parameters/juridicalParam"
+        - $ref: "#/components/parameters/cursorParam"
       responses:
         200:
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  total_results:
-                    type: integer
-                    description: total number of registers
-                    example: 234
-                  count:
-                    type: integer
-                    description: number of registers in current page
-                    example: 234
-                  data:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/contracts'
-                  links:
-                    type: object
-                    properties:
-                      next:
-                        type: string
-                        description: url of next results. If null, you are in the last page
-                        example: "https://apinergia.somenergia.coop/contracts?limit=5&cursor=dXNlcjpVMEc5V0ZYTlo"
+          $ref: "#/components/responses/ContractsResponse"
         400:
-          description: Invalid status value
-          content: {}
+          $ref: "#/components/responses/BadRequestResponse"
+        401:
+          $ref: "#/components/responses/UnauthorizedResponse"
       security:
-        - jwt: []
+        - infoenergiaAuth: []
   /contracts/{contractId}:
     get:
       tags:
-      - contracts
+        - contracts
       summary: Find a contract by ID
       description: Returns a single contract
       operationId: server.get_contract_by_id
       parameters:
-      - name: contractId
-        in: path
-        description: ID of contract to return
-        required: true
-        schema:
-          type: string
+        - $ref: "#components/parameters/contractIDParam"
       responses:
         200:
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  total_results:
-                    type: integer
-                    description: total number of registers for this contract
-                    example: 234
-                  count:
-                    type: integer
-                    description: number of registers in current page
-                    example: 234
-                  data:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/contracts'
+          $ref: "#/components/responses/ContractResponse"
         400:
-          description: Invalid status value
-          content: {}
+           $ref: "#/components/responses/BadRequestResponse"
+        401:
+           $ref: "#/components/responses/UnauthorizedResponse"
       security:
-        - jwt: []
+        - infoenergiaAuth: []
   /modcontracts:
     get:
       tags:
@@ -315,7 +175,7 @@ paths:
                   data:
                     type: array
                     items:
-                      $ref: '#/components/schemas/contracts'
+                      $ref: '#/components/schemas/Contract'
                   links:
                     type: object
                     properties:
@@ -327,7 +187,7 @@ paths:
           description: Invalid status value
           content: {}
       security:
-        - jwt: []
+        - infoenergiaAuth: []
   /modcontracts/{contractId}:
     get:
       tags:
@@ -425,7 +285,7 @@ paths:
                   data:
                     type: array
                     items:
-                      $ref: '#/components/schemas/contracts'
+                      $ref: '#/components/schemas/Contract'
                   links:
                     type: object
                     properties:
@@ -437,7 +297,7 @@ paths:
           description: Invalid status value
           content: {}
       security:
-        - jwt: []
+        - infoenergiaAuth: []
   /f1:
     get:
       tags:
@@ -540,7 +400,7 @@ paths:
           description: Invalid status value
           content: {}
       security:
-        - jwt: []
+        - infoenergiaAuth: []
   /f1/{contractId}:
     get:
       tags:
@@ -627,7 +487,7 @@ paths:
           description: Contract not found
           content: {}
       security:
-        - jwt: []
+        - infoenergiaAuth: []
   /cch:
     get:
       tags:
@@ -770,7 +630,7 @@ paths:
           description: Invalid status value
           content: {}
       security:
-        - jwt: []
+        - infoenergiaAuth: []
   /cch/{contractId}:
     get:
       tags:
@@ -919,7 +779,7 @@ paths:
           description: Invalid status value
           content: {}
       security:
-        - jwt: []
+        - infoenergiaAuth: []
   /reports:
     post:
       tags:
@@ -954,6 +814,8 @@ paths:
         400:
           description: Invalid username/password supplied
           content: {}
+      security:
+        - infoenergiaAuth: []
   /tariff:
       get:
         tags:
@@ -963,8 +825,8 @@ paths:
         operationId: server.get_tariff
         parameters:
           - $ref: "#/components/parameters/tariffsParam"
-          - $ref: "#/components/parameters/from_Param"
-          - $ref: "#/components/parameters/to_Param"
+          - $ref: "#/components/parameters/fromParam"
+          - $ref: "#/components/parameters/toParam"
           - $ref: "#/components/parameters/limitParam"
           - $ref: "#/components/parameters/cursorParam"
         responses:
@@ -982,13 +844,20 @@ paths:
             content:
               application/json:
                 schema:
-                  $ref: '#/components/schemas/ErrorResponse'
+                  $ref: '#/components/schemas/Error'
                 examples:
                   badrequest-response:
                     $ref: "#/components/examples/badrequest-response-example"
+        security:
+          - infoenergiaAuth: []
 components:
+  securitySchemes:
+    infoenergiaAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: Bearer
   parameters:
-    from_Param:
+    fromParam:
       name: from_
       in: query
       description: >
@@ -1000,7 +869,7 @@ components:
         type: string
         format: date
         example: '2019-08-01'
-    to_Param:
+    toParam:
       name: to_
       in: query
       description: >
@@ -1014,12 +883,13 @@ components:
     limitParam:
       name: limit
       in: query
-      description: How many tariff prices to return at one time
+      description: How many results could be returned at once
       required: false
       schema:
         type: integer
-        minimum: 0
-        default: 100
+        minimum: 1
+        default: 50
+        maximum: 500
     cursorParam:
       name: cursor
       in: query
@@ -1054,6 +924,90 @@ components:
           - "6.1"
           - "6.1A"
           - "6.1B"
+    juridicalParam:
+      name: judiric_type
+      in: query
+      description: Filter contracts by juridic type (physical_person or juridic_person).
+      required: false
+      style: form
+      explode: true
+      schema:
+        type: string
+        enum:
+          - physical_person
+          - juridic_person
+    contractIDParam:
+        name: contractId
+        in: path
+        description: ID of contract to return
+        required: true
+        schema:
+          type: string
+  requestBodies:
+    AuthBodyRequest:
+      description: Required body to authenticate a user into the infoenergia api
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/AuthBody"
+          examples:
+            auth-body-example:
+              $ref: "#/components/examples/auth-body-example"
+  responses:
+    AuthResponse:
+      description: Returns a valid access token to make authenticated requests
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/AccessToken"
+          examples:
+            auth-response-example:
+              $ref: "#/components/examples/auth-response-example"
+    BadAuthRequestResponse:
+      description: This response is generated if you have not send all auth fields.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          examples:
+            unauthorized-response-example:
+              $ref: "#/components/examples/badauthrequest-response-example"
+    BadRequestResponse:
+      description: This responses is generated if you have built incorrectly your request
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          examples:
+            badrequest-response-example:
+              $ref: "#/components/examples/badrequest-response-example"
+    UnauthorizedResponse:
+      description: If you try to request some endpoint, and you are not authorized, the api will answer you with this response
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          examples:
+            unauthorized-response-example:
+              $ref: "#/components/examples/unauthorized-response-example"
+    ContractsResponse:
+      description: Returns a set of contracts with the number of results and the corresponding data. If the request is paginated, returns the next page cursor and the next page url.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ContractsList"
+          examples:
+            contracts-response-example:
+              $ref: "#/components/examples/contracts-response-example"
+    ContractResponse:
+      description: Returns a contract with the number of results and the corresponding data. If the request is paginated, returns the next page cursor and the next page url.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/SingleContract"
+          examples:
+            single-contract-response-example:
+              $ref: "#/components/examples/single-contract-response-example"
   schemas:
     reports:
       type: object
@@ -1099,13 +1053,9 @@ components:
           type: string
         active:
           type: boolean
-    contracts:
+    Contract:
       type: object
       properties:
-        page_results:
-          type: integer
-          description: number of contracts per page
-          example: 100
         contractId:
           type: string
           description: contract ID
@@ -1845,22 +1795,21 @@ components:
     # ============================
     # Request and Response schemas
     # ============================
-    AuthBodyRequest:
+    AccessToken:
+      type: object
+      description: Authentication token definition
+      properties:
+        access_token:
+          type: string
+    AuthBody:
       type: object
       properties:
         username:
           type: string
         password:
           type: string
-    AuthResponse:
+    BaseResponse:
       type: object
-      description: Authentication response definition
-      properties:
-        access_token:
-          type: string
-    BaseListResponse:
-      type: object
-      description: "Base parameters that will be appear in each list response"
       properties:
         count:
           type: integer
@@ -1868,20 +1817,44 @@ components:
         total_results:
           type: integer
           description: total results of this request
-        links:
-          type: object
+    BaseResponseList:
+        allOf:
+            - $ref: "#/components/schemas/BaseResponse"
+            - type: object
+              properties:
+                next_page:
+                  type: string
+                  description: url of next results. If null, you are in the last page
+                cursor:
+                  type: string
+                  description: url of next results. If null, you are in the last page
+                  format: byte
+    ContractsList:
+      allOf:
+        - $ref: '#/components/schemas/BaseResponseList'
+        - type: object
           properties:
-            next:
-              type: string
-              description: url of next results. If null, you are in the last page
+            data:
+              type: array
+              items:
+                $ref: "#/components/schemas/Contract"
+    SingleContract:
+      allOf:
+        - $ref: "#/components/schemas/BaseResponse"
+        - type: object
+          properties:
+            data:
+              type: array
+              items:
+                $ref: "#/components/schemas/Contract"
     TariffResponse:
       allOf:
-        - $ref: "#/components/schemas/BaseListResponse"
+        - $ref: "#/components/schemas/BaseResponse"
         - type: object
           properties:
             data:
               $ref: "#/components/schemas/Tariff"
-    ErrorResponse:
+    Error:
       type: object
       properties:
         code:
@@ -1912,7 +1885,7 @@ components:
       value:
         error:
           code: unauthorized
-          message: Wrong user name or password
+          message: Auth required.
     tariff-response-example:
       value: {
         "total_results": 20,
@@ -1998,4 +1971,274 @@ components:
             "units": "€/kVArh"
           }
         ]
+      }
+    contracts-response-example:
+      value: {
+        "count": 1,
+        "total_results": 123161,
+        "cursor": "ZjliNmQ5YmMtOGI5ZS01ZThkLWExNmQtMzc4Y2RhYjY4ZDE0Ok1RPT0=",
+        "next_page": "https://apinergia.somenergia.coop/contracts?cursor=ZjliNmQ5YmMtOGI5ZS01ZThkLWExNmQtMzc4Y2RhYjY4ZDE0Ok1RPT0=&limit=1",
+        "data": [
+            {
+                "activityCode": "9820 - Actividades de los hogares como productores de servicios para uso propio",
+                "autoconsumo": "[00] - Sin Autoconsumo",
+                "climaticZone": "C2",
+                "contractId": "0000004",
+                "customer": {
+                    "address": {
+                        "city": "Barcelona",
+                        "cityCode": "08019",
+                        "countryCode": "ES",
+                        "postalCode": "08036",
+                        "province": "Barcelona",
+                        "provinceCode": "08"
+                    },
+                    "buildingData": {
+                        "buildingConstructionYear": 1999,
+                        "buildingCoolingSource": false,
+                        "buildingHeatingSource": "other",
+                        "buildingHeatingSourceDhw": false,
+                        "buildingSolarSystem": false,
+                        "buildingType": "Apartment",
+                        "buildingWindowsFrame": "",
+                        "buildingWindowsType": false,
+                        "dwellingArea": 89,
+                        "dwellingOrientation": false,
+                        "dwellingPositionInBuilding": false,
+                        "propertyType": false
+                    },
+                    "customerId": "8b1d6e83-882d-59e8-8fc5-fa2348b55f5e",
+                    "customisedServiceParameters": {},
+                    "meteringPointId": "9d27c82d-73d3-5ce0-b7a5-fcee142acd63",
+                    "profile": {
+                        "educationLevel": {
+                            "edu_noStudies": false,
+                            "edu_prim": false,
+                            "edu_sec": false,
+                            "edu_uni": false
+                        },
+                        "femalePersonsNumber": false,
+                        "malePersonsNumber": false,
+                        "minorsPersonsNumber": 0,
+                        "retiredAgePersonsNumber": false,
+                        "totalPersonsNumber": 3,
+                        "workingAgePersonsNumber": false
+                    }
+                },
+                "dateEnd": null,
+                "dateStart": "2011-11-22T00:00:00+01:00",
+                "devices": [
+                    {
+                        "dateEnd": null,
+                        "dateStart": "2011-12-23T00:00:00+01:00",
+                        "deviceId": "ab201f66-4da7-517b-be40-13b7e0de7429"
+                    }
+                ],
+                "experimentalGroupUser": true,
+                "experimentalGroupUserTest": false,
+                "juridicType": "physicalPerson",
+                "ownerId": "8b1d6e83-882d-59e8-8fc5-fa2348b55f5e",
+                "payerId": "8b1d6e83-882d-59e8-8fc5-fa2348b55f5e",
+                "power": {
+                    "P1-2": 3400,
+                    "P3": 3400
+                },
+                "powerHistory": [
+                    {
+                        "dateEnd": "2019-09-01T00:00:00+02:00",
+                        "dateStart": "2011-11-22T00:00:00+01:00",
+                        "measurement_point": "05",
+                        "power": {
+                            "P1": 6600.0
+                        }
+                    },
+                    {
+                        "dateEnd": "2021-05-31T00:00:00+02:00",
+                        "dateStart": "2019-09-02T00:00:00+02:00",
+                        "measurement_point": "05",
+                        "power": {
+                            "P1": 3400.0
+                        }
+                    },
+                    {
+                        "dateEnd": "2023-11-21T00:00:00+01:00",
+                        "dateStart": "2021-06-01T00:00:00+02:00",
+                        "measurement_point": "05",
+                        "power": {
+                            "P1-2": 3400.0,
+                            "P3": 3400.0
+                        }
+                    }
+                ],
+                "power_": {
+                    "dateEnd": "2023-11-21T00:00:00+01:00",
+                    "dateStart": "2021-06-01T00:00:00+02:00",
+                    "measurement_point": "05",
+                    "power": {
+                        "P1-2": 3400,
+                        "P3": 3400
+                    }
+                },
+                "report": {
+                    "initialMonth": 201111,
+                    "language": "ca_ES"
+                },
+                "tariffHistory": [
+                    {
+                        "dateEnd": "2021-05-31T00:00:00+02:00",
+                        "dateStart": "2011-11-22T00:00:00+01:00",
+                        "tariffId": "2.0A",
+                        "tariffPriceId": 4
+                    },
+                    {
+                        "dateEnd": "2023-11-21T00:00:00+01:00",
+                        "dateStart": "2021-06-01T00:00:00+02:00",
+                        "tariffId": "2.0TD",
+                        "tariffPriceId": 101
+                    }
+                ],
+                "tariffId": "2.0TD",
+                "tariff_": {
+                    "dateEnd": "2023-11-21T00:00:00+01:00",
+                    "dateStart": "2021-06-01T00:00:00+02:00",
+                    "tariffId": "2.0TD",
+                    "tariffPriceId": 101
+                },
+                "version": 5
+            }
+        ]
+      }
+    single-contract-response-example:
+      value: {
+        "count": 1,
+        "data": [
+            {
+                "activityCode": "9820 - Actividades de los hogares como productores de servicios para uso propio",
+                "autoconsumo": "[00] - Sin Autoconsumo",
+                "climaticZone": "C2",
+                "contractId": "0000004",
+                "customer": {
+                    "address": {
+                        "city": "Barcelona",
+                        "cityCode": "08019",
+                        "countryCode": "ES",
+                        "postalCode": "08036",
+                        "province": "Barcelona",
+                        "provinceCode": "08"
+                    },
+                    "buildingData": {
+                        "buildingConstructionYear": 1999,
+                        "buildingCoolingSource": false,
+                        "buildingHeatingSource": "other",
+                        "buildingHeatingSourceDhw": false,
+                        "buildingSolarSystem": false,
+                        "buildingType": "Apartment",
+                        "buildingWindowsFrame": "",
+                        "buildingWindowsType": false,
+                        "dwellingArea": 89,
+                        "dwellingOrientation": false,
+                        "dwellingPositionInBuilding": false,
+                        "propertyType": false
+                    },
+                    "customerId": "8b1d6e83-882d-59e8-8fc5-fa2348b55f5e",
+                    "customisedServiceParameters": {},
+                    "meteringPointId": "9d27c82d-73d3-5ce0-b7a5-fcee142acd63",
+                    "profile": {
+                        "educationLevel": {
+                            "edu_noStudies": false,
+                            "edu_prim": false,
+                            "edu_sec": false,
+                            "edu_uni": false
+                        },
+                        "femalePersonsNumber": false,
+                        "malePersonsNumber": false,
+                        "minorsPersonsNumber": 0,
+                        "retiredAgePersonsNumber": false,
+                        "totalPersonsNumber": 3,
+                        "workingAgePersonsNumber": false
+                    }
+                },
+                "dateEnd": null,
+                "dateStart": "2011-11-22T00:00:00+01:00",
+                "devices": [
+                    {
+                        "dateEnd": null,
+                        "dateStart": "2011-12-23T00:00:00+01:00",
+                        "deviceId": "ab201f66-4da7-517b-be40-13b7e0de7429"
+                    }
+                ],
+                "experimentalGroupUser": true,
+                "experimentalGroupUserTest": false,
+                "juridicType": "physicalPerson",
+                "ownerId": "8b1d6e83-882d-59e8-8fc5-fa2348b55f5e",
+                "payerId": "8b1d6e83-882d-59e8-8fc5-fa2348b55f5e",
+                "power": {
+                    "P1-2": 3400,
+                    "P3": 3400
+                },
+                "powerHistory": [
+                    {
+                        "dateEnd": "2019-09-01T00:00:00+02:00",
+                        "dateStart": "2011-11-22T00:00:00+01:00",
+                        "measurement_point": "05",
+                        "power": {
+                            "P1": 6600.0
+                        }
+                    },
+                    {
+                        "dateEnd": "2021-05-31T00:00:00+02:00",
+                        "dateStart": "2019-09-02T00:00:00+02:00",
+                        "measurement_point": "05",
+                        "power": {
+                            "P1": 3400.0
+                        }
+                    },
+                    {
+                        "dateEnd": "2023-11-21T00:00:00+01:00",
+                        "dateStart": "2021-06-01T00:00:00+02:00",
+                        "measurement_point": "05",
+                        "power": {
+                            "P1-2": 3400.0,
+                            "P3": 3400.0
+                        }
+                    }
+                ],
+                "power_": {
+                    "dateEnd": "2023-11-21T00:00:00+01:00",
+                    "dateStart": "2021-06-01T00:00:00+02:00",
+                    "measurement_point": "05",
+                    "power": {
+                        "P1-2": 3400,
+                        "P3": 3400
+                    }
+                },
+                "report": {
+                    "initialMonth": 201111,
+                    "language": "ca_ES"
+                },
+                "tariffHistory": [
+                    {
+                        "dateEnd": "2021-05-31T00:00:00+02:00",
+                        "dateStart": "2011-11-22T00:00:00+01:00",
+                        "tariffId": "2.0A",
+                        "tariffPriceId": 4
+                    },
+                    {
+                        "dateEnd": "2023-11-21T00:00:00+01:00",
+                        "dateStart": "2021-06-01T00:00:00+02:00",
+                        "tariffId": "2.0TD",
+                        "tariffPriceId": 101
+                    }
+                ],
+                "tariffId": "2.0TD",
+                "tariff_": {
+                    "dateEnd": "2023-11-21T00:00:00+01:00",
+                    "dateStart": "2021-06-01T00:00:00+02:00",
+                    "tariffId": "2.0TD",
+                    "tariffPriceId": 101
+                },
+                "version": 5
+            }
+        ],
+        "total_results": 1
       }
