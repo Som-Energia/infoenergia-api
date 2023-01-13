@@ -139,99 +139,18 @@ paths:
       description: Get detailed F1 information depending on date and tariff parameters
       operationId: server.get_f1_measures
       parameters:
-      - name: tariff
-        in: query
-        description: Tariff of the contract to filter
-        required: false
-        style: form
-        explode: false
-        schema:
-          type: string
-          default: None
-          enum:
-            - None
-            - 2.0TD
-            - 2.0A
-            - 2.1A
-            - 2.0DHA
-            - 2.0DHS
-            - 2.1DHA
-            - 2.1DHS
-            - 3.0TD
-            - 3.0A
-            - 3.1A
-            - 3.1A-LB
-            - 6.1
-            - 6.1A
-            - 6.1B
-      - name: from_
-        in: query
-        description: Filter all F1 from this date on. Format YYYY-MM-DD
-        required: false
-        style: form
-        explode: true
-        schema:
-          type: string
-          format: date
-          example: '2019-08-01'
-      - name: to_
-        in: query
-        description: Filter all F1 until this date. Format YYYY-MM-DD
-        required: false
-        style: form
-        explode: true
-        schema:
-          type: string
-          format: date
-          example: '2019-08-10'
-      - name: limit
-        in: query
-        description: How many f1 to return at one time
-        required: false
-        schema:
-          type: integer
-          minimum: 0
-          default: 50
-          maximum: 500
-      - name: cursor
-        in: query
-        description: Actual cursor for this search
-        required: false
-        schema:
-          type: string
-          format: byte
-          default: None
-          example: 'dXNlcjpXMDdRQ1JQQTQ='
+        - $ref: "#/components/parameters/tariffsParam"
+        - $ref: "#/components/parameters/fromParam"
+        - $ref: "#/components/parameters/toParam"
+        - $ref: "#/components/parameters/limitParam"
+        - $ref: "#/components/parameters/cursorParam"
       responses:
         200:
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  total_results:
-                    type: integer
-                    description: total number of registers
-                    example: 234
-                  count:
-                    type: integer
-                    description: number of registers in current page
-                    example: 234
-                  data:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/f1'
-                  links:
-                    type: object
-                    properties:
-                      next:
-                        type: string
-                        description: url of next results. If null, you are in the last page
-                        example: "https://apinergia.somenergia.coop/f1?limit=5&cursor=dXNlcjpVMEc5V0ZYTlo"
+          $ref: "#/components/responses/F1sResponse"
         400:
-          description: Invalid status value
-          content: {}
+           $ref: "#/components/responses/BadRequestResponse"
+        401:
+           $ref: "#/components/responses/UnauthorizedResponse"
       security:
         - infoenergiaAuth: []
   /f1/{contractId}:
@@ -242,77 +161,14 @@ paths:
       description: Returns all F1 files for a contract
       operationId: server.get_f1_measures_by_contract_id
       parameters:
-      - name: contractId
-        in: path
-        description: ID of contract to get F1 data
-        required: true
-        schema:
-          type: string
-      - name: from_
-        in: query
-        description: Filter all F1 from this date on. Format YYYY-MM-DD
-        required: false
-        style: form
-        explode: true
-        schema:
-          type: string
-          format: date
-          example: '2019-08-01'
-      - name: to_
-        in: query
-        description: Filter all F1 until this date. Format YYYY-MM-DD
-        required: false
-        style: form
-        explode: true
-        schema:
-          type: string
-          format: date
-          example: '2019-08-10'
-      - name: limit
-        in: query
-        description: How many f1 to return at one time
-        required: false
-        schema:
-          type: integer
-          minimum: 0
-          default: 50
-          maximum: 500
-      - name: cursor
-        in: query
-        description: Actual cursor for this search
-        required: false
-        schema:
-          type: string
-          format: byte
-          default: None
-          example: 'dXNlcjpXMDdRQ1JQQTQ='
+        - $ref: "#/components/parameters/contractIDParam"
+        - $ref: "#/components/parameters/fromParam"
+        - $ref: "#/components/parameters/toParam"
+        - $ref: "#/components/parameters/limitParam"
+        - $ref: "#/components/parameters/cursorParam"
       responses:
         200:
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  total_results:
-                    type: integer
-                    description: total number of f1s for this contract
-                    example: 234
-                  count:
-                    type: integer
-                    description: number of f1s for this contract on current page
-                    example: 234
-                  data:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/f1'
-                  links:
-                    type: object
-                    properties:
-                      next:
-                        type: string
-                        description: url of next contracts. If null, you are in the last page
-                        example: "https://apinergia.somenergia.coop/f1?limit=5&cursor=dXNlcjpVMEc5V0ZYTlo"
+          $ref: "#/components/responses/F1Response"
         400:
           description: Invalid ID supplied
           content: {}
@@ -873,6 +729,24 @@ components:
           examples:
             single-modcontract-response-example:
               $ref: "#/components/examples/single-modcontract-response-example"
+    F1sResponse:
+      description: Returns a set of period consumptions in a time range.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/F1sList"
+          examples:
+            f1s-response-example:
+              $ref: "#/components/examples/f1s-response-example"
+    F1Response:
+      description: Returns a set of period consumptions in a time range for a specific contract
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/F1sList"
+          examples:
+            f1s-single-contract-response-example:
+              $ref: "#/components/examples/f1s-single-contract-response-example"
   schemas:
     reports:
       type: object
@@ -1303,13 +1177,9 @@ components:
           type: boolean
           description: set to true if it is a test
           example: true
-    f1:
+    F1:
       type: object
       properties:
-        page_results:
-          type: integer
-          description: number of F1 per page
-          example: 100
         contractId:
           type: string
           description: contract ID
@@ -1712,6 +1582,25 @@ components:
               type: array
               items:
                 $ref: "#/components/schemas/Contract"
+    F1sList:
+      allOf:
+        - $ref: "#/components/schemas/BaseResponseList"
+        - type: object
+          properties:
+              data:
+                type: array
+                items:
+                  $ref: "#/components/schemas/F1"
+    SingleF1:
+      allOf:
+        - $ref: "#/components/schemas/BaseResponse"
+        - type: object
+          properties:
+            data:
+              type: array
+              items:
+                $ref: "#/components/schemas/F1"
+
     TariffResponse:
       allOf:
         - $ref: "#/components/schemas/BaseResponse"
@@ -2351,4 +2240,254 @@ components:
                 "version": 5
             }
         ]
+      }
+    f1s-response-example:
+      value: {
+        "count": 1,
+        "total_results": 54,
+        "cursor": "NDBlMGQ2MTMtNWVlOC01NmU1LWI4NWItMWExMjczYTQ1MmIzOk1RPT0=",
+        "next_page": "https://apinergia.somenergia.coop/f1?cursor=NDBlMGQ2MTMtNWVlOC01NmU1LWI4NWItMWExMjczYTQ1MmIzOk1RPT0=&limit=1",
+        "data": [
+            {
+                "contractId": "0100790",
+                "invoiceId": "5c2f63ca-3eab-5289-93af-d25db6d3f8b9",
+                "dateStart": "2023-01-01T00:00:00+01:00",
+                "dateEnd": "2023-01-11T00:00:00+01:00",
+                "tariffId": "3.0TD",
+                "meteringPointId": "9b3f0193-f016-5e6b-ae34-11aeeb06599a",
+                "devices": [
+                    {
+                        "dateStart": "2021-09-15T00:00:00+02:00",
+                        "dateEnd": null,
+                        "deviceId": "05b2b59c-6504-5773-ad6a-583e53906890"
+                    }
+                ],
+                "power_measurements": [
+                    {
+                        "period": "P1",
+                        "excess": 0.0,
+                        "maximeter": 11.0,
+                        "units": "kW"
+                    },
+                    {
+                        "period": "P2",
+                        "excess": 0.0,
+                        "maximeter": 8.0,
+                        "units": "kW"
+                    },
+                    {
+                        "period": "P3",
+                        "excess": 0.0,
+                        "maximeter": 0.0,
+                        "units": "kW"
+                    },
+                    {
+                        "period": "P4",
+                        "excess": 0.0,
+                        "maximeter": 0.0,
+                        "units": "kW"
+                    },
+                    {
+                        "period": "P5",
+                        "excess": 0.0,
+                        "maximeter": 0.0,
+                        "units": "kW"
+                    },
+                    {
+                        "period": "P6",
+                        "excess": 0.0,
+                        "maximeter": 11.0,
+                        "units": "kW"
+                    }
+                ],
+                "reactive_energy_measurements": [
+                    {
+                        "source": "TPL",
+                        "period": "P1",
+                        "consum": 0,
+                        "units": "kVArh"
+                    },
+                    {
+                        "source": "TPL",
+                        "period": "P2",
+                        "consum": 2,
+                        "units": "kVArh"
+                    },
+                    {
+                        "source": "TPL",
+                        "period": "P3",
+                        "consum": 0,
+                        "units": "kVArh"
+                    },
+                    {
+                        "source": "TPL",
+                        "period": "P4",
+                        "consum": 0,
+                        "units": "kVArh"
+                    },
+                    {
+                        "source": "TPL",
+                        "period": "P5",
+                        "consum": 0,
+                        "units": "kVArh"
+                    },
+                    {
+                        "source": "TPL",
+                        "period": "P6",
+                        "consum": 5,
+                        "units": "kVArh"
+                    }
+                ],
+                "active_energy_measurements": [
+                    {
+                        "source": "TPL",
+                        "period": "P1",
+                        "consum": 143,
+                        "units": "kWh"
+                    },
+                    {
+                        "source": "TPL",
+                        "period": "P2",
+                        "consum": 171,
+                        "units": "kWh"
+                    },
+                    {
+                        "source": "TPL",
+                        "period": "P3",
+                        "consum": 0,
+                        "units": "kWh"
+                    },
+                    {
+                        "source": "TPL",
+                        "period": "P4",
+                        "consum": 0,
+                        "units": "kWh"
+                    },
+                    {
+                        "source": "TPL",
+                        "period": "P5",
+                        "consum": 0,
+                        "units": "kWh"
+                    },
+                    {
+                        "source": "TPL",
+                        "period": "P6",
+                        "consum": 569,
+                        "units": "kWh"
+                    }
+                ],
+                "maximeter": []
+            }
+        ],
+      }
+    f1s-single-contract-response-example:
+      value: {
+        "count": 2,
+        "total_results": 100,
+        "cursor": "MWMwMjBlMjktNzA5OS01OTIwLWJkY2UtOWJiMWQ2ZGE1ZDJkOk5UQT0=",
+        "next_page": "https://apinergia.somenergia.coop/f1/0000004?cursor=MWMwMjBlMjktNzA5OS01OTIwLWJkY2UtOWJiMWQ2ZGE1ZDJkOk5UQT0=&limit=2",
+        "data": [
+            {
+                "contractId": "0000004",
+                "invoiceId": "f87516b3-b427-5691-83e0-ee5d0d8d590b",
+                "dateStart": "2022-11-14T00:00:00+01:00",
+                "dateEnd": "2022-12-13T00:00:00+01:00",
+                "tariffId": "2.0TD",
+                "meteringPointId": "9d27c82d-73d3-5ce0-b7a5-fcee142acd63",
+                "devices": [
+                    {
+                        "dateStart": "2011-12-23T00:00:00+01:00",
+                        "dateEnd": null,
+                        "deviceId": "ab201f66-4da7-517b-be40-13b7e0de7429"
+                    }
+                ],
+                "power_measurements": [],
+                "reactive_energy_measurements": [],
+                "active_energy_measurements": [
+                    {
+                        "source": "Telegesti\u00f3",
+                        "period": "P1",
+                        "consum": 57,
+                        "units": "kWh"
+                    },
+                    {
+                        "source": "Telegesti\u00f3",
+                        "period": "P2",
+                        "consum": 74,
+                        "units": "kWh"
+                    },
+                    {
+                        "source": "Telegesti\u00f3",
+                        "period": "P3",
+                        "consum": 71,
+                        "units": "kWh"
+                    }
+                ],
+                "maximeter": [
+                    {
+                        "dateStart": "2022-01-01",
+                        "dateEnd": "2022-12-13",
+                        "maxPower": 4.32,
+                        "period": "2.0TD (P1)"
+                    },
+                    {
+                        "dateStart": "2022-01-01",
+                        "dateEnd": "2022-12-13",
+                        "maxPower": 4.772,
+                        "period": "2.0TD (P2)"
+                    }
+                ]
+            },
+            {
+                "contractId": "0000004",
+                "invoiceId": "bc1fad9e-1cfc-5f5c-96b4-6b59ef92c9db",
+                "dateStart": "2022-10-15T00:00:00+02:00",
+                "dateEnd": "2022-11-13T00:00:00+01:00",
+                "tariffId": "2.0TD",
+                "meteringPointId": "9d27c82d-73d3-5ce0-b7a5-fcee142acd63",
+                "devices": [
+                    {
+                        "dateStart": "2011-12-23T00:00:00+01:00",
+                        "dateEnd": null,
+                        "deviceId": "ab201f66-4da7-517b-be40-13b7e0de7429"
+                    }
+                ],
+                "power_measurements": [],
+                "reactive_energy_measurements": [],
+                "active_energy_measurements": [
+                    {
+                        "source": "Telegesti\u00f3",
+                        "period": "P1",
+                        "consum": 31,
+                        "units": "kWh"
+                    },
+                    {
+                        "source": "Telegesti\u00f3",
+                        "period": "P2",
+                        "consum": 41,
+                        "units": "kWh"
+                    },
+                    {
+                        "source": "Telegesti\u00f3",
+                        "period": "P3",
+                        "consum": 68,
+                        "units": "kWh"
+                    }
+                ],
+                "maximeter": [
+                    {
+                        "dateStart": "2021-11-13",
+                        "dateEnd": "2022-11-13",
+                        "maxPower": 4.32,
+                        "period": "2.0TD (P1)"
+                    },
+                    {
+                        "dateStart": "2021-11-13",
+                        "dateEnd": "2022-11-13",
+                        "maxPower": 4.772,
+                        "period": "2.0TD (P2)"
+                    }
+                ]
+            }
+        ],
       }
