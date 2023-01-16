@@ -185,288 +185,46 @@ paths:
       description: Get hourly curves information depending on type of curve, date or tariff parameters
       operationId: server.get_cch
       parameters:
-      - name: tariff
-        in: query
-        description: Tariff of the contract to filter
-        required: false
-        style: form
-        explode: false
-        schema:
-          type: string
-          default: None
-          enum:
-            - None
-            - 2.0TD
-            - 2.0A
-            - 2.1A
-            - 2.0DHA
-            - 2.0DHS
-            - 2.1DHA
-            - 2.1DHS
-            - 3.0TD
-            - 3.0A
-            - 3.1A
-            - 3.1A-LB
-            - 6.1
-            - 6.1A
-            - 6.1B
-      - name: type
-        in: query
-        description: type of hourly curve. You can choose from
-            tg_cchfact (Curve used for billing. It has F5D format and should not have holes);
-            tg_cchval (Validated curve. Includes only the hourly records validated by the meter. It has P5D format);
-            tg_f1 (Curve used for billing. It has F1 format and should not have holes);
-            P1 (Validated curve. Includes only the hourly records validated by the meter. It has P1 format);
-            P2 (Validated curve. Includes curves every fifteen minutes validated by the meter. It has P2 format);
-        required: true
-        style: form
-        explode: false
-        schema:
-          type: string
-          default: tg_cchfact
-          enum:
-            - tg_cchfact
-            - tg_cchval
-            - tg_f1
-            - P1
-            - P2
-      - name: from_
-        in: query
-        description: Get all CCH from this date on. In format YYYY-MM-DD
-        required: false
-        style: form
-        explode: true
-        schema:
-          type: string
-          format: date
-          example: '2019-08-01'
-      - name: to_
-        in: query
-        description: Get all CCH until this date. In format YYYY-MM-DD
-        required: false
-        style: form
-        explode: true
-        schema:
-          type: string
-          format: date
-          example: '2019-08-10'
-      - name: downloaded_from
-        in: query
-        description: Get all CCH downloaded from this date on at 00:00 hours. In format YYYY-MM-DD
-        required: false
-        style: form
-        explode: true
-        schema:
-          type: string
-          format: date
-          example: '2019-08-01'
-      - name: downloaded_to
-        in: query
-        description: Get all CCH downloaded until this date at 00:00 hours. In format YYYY-MM-DD
-        required: false
-        style: form
-        explode: true
-        schema:
-          type: string
-          format: date
-          example: '2019-08-10'
-      - name: limit
-        in: query
-        description: How many contracts to return at one time
-        required: false
-        schema:
-          type: integer
-          minimum: 0
-          default: 50
-          maximum: 500
-      - name: cursor
-        in: query
-        description: Actual cursor for this search
-        required: false
-        schema:
-          type: string
-          format: byte
-          default: None
-          example: 'dXNlcjpXMDdRQ1JQQTQ='
+        - $ref: "#/components/parameters/cchTypeParam"
+        - $ref: "#/components/parameters/tariffsParam"
+        - $ref: "#/components/parameters/fromParam"
+        - $ref: "#/components/parameters/toParam"
+        - $ref: "#/components/parameters/cchDownloadedFromParam"
+        - $ref: "#/components/parameters/cchDownloadedToParam"
+        - $ref: "#/components/parameters/limitParam"
+        - $ref: "#/components/parameters/cursorParam"
       responses:
         200:
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  total_results:
-                    type: integer
-                    description: total number of registers
-                    example: 234
-                  count:
-                    type: integer
-                    description: number of registers in current page
-                    example: 234
-                  data:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/cch'
-                  links:
-                    type: object
-                    properties:
-                      next:
-                        type: string
-                        description: url of next results. If null, you are in the last page
-                        example: "https://apinergia.somenergia.coop/contracts?limit=5&cursor=dXNlcjpVMEc5V0ZYTlo"
+          $ref: "#/components/responses/CCHResponse"
         400:
-          description: Invalid status value
-          content: {}
+           $ref: "#/components/responses/BadRequestResponse"
+        401:
+           $ref: "#/components/responses/UnauthorizedResponse"
       security:
         - infoenergiaAuth: []
   /cch/{contractId}:
     get:
       tags:
       - cch
-      summary: Obtain cch curves
-      description: Get cch curves information depending on some date and tariff parameters
+      summary: Obtain cch curves for a especific contract
+      description: Get cch curves information depending on some date and tariff parameters for a specific contract
       operationId: server.get_cch_by_contract_id
       parameters:
-      - name: contractId
-        in: path
-        description: ID of contract to get cch curve
-        required: true
-        schema:
-          type: string
-      - name: tariff
-        in: query
-        description: Tariff of the contract to filter
-        required: false
-        style: form
-        explode: false
-        schema:
-          type: string
-          default: None
-          enum:
-            - None
-            - 2.0TD
-            - 2.0A
-            - 2.1A
-            - 2.0DHA
-            - 2.0DHS
-            - 2.1DHA
-            - 2.1DHS
-            - 3.0TD
-            - 3.0A
-            - 3.1A
-            - 3.1A-LB
-            - 6.1
-            - 6.1A
-            - 6.1B
-      - name: type
-        in: query
-        description: type of hourly curve. You can choose from
-            tg_cchfact (Curve used for billing. It has F5D format and should not have holes);
-            tg_cchval (Validated curve. Includes only the hourly records validated by the meter. It has P5D format);
-            tg_f1 (Curve used for billing. It has F1 format and should not have holes);
-            P1 (Validated curve. Includes only the hourly records validated by the meter. It has P1 format);
-            P2 (Validated curve. Includes curves every fifteen minutes validated by the meter. It has P2 format);
-        required: true
-        style: form
-        explode: false
-        schema:
-          type: string
-          default: tg_cchfact
-          enum:
-            - tg_cchfact
-            - tg_cchval
-            - tg_f1
-            - P1
-            - P2
-      - name: from_
-        in: query
-        description: Get all curves from this date on. In format YYYY-MM-DD
-        required: false
-        style: form
-        explode: true
-        schema:
-          type: string
-          format: date
-          example: '2019-08-01'
-      - name: to_
-        in: query
-        description: Get all curves until this date. In format YYYY-MM-DD
-        required: false
-        style: form
-        explode: true
-        schema:
-          type: string
-          format: date
-          example: '2019-08-10'
-      - name: downloaded_from
-        in: query
-        description: Get all curves downloaded from this date on at 00:00 hours. In format YYYY-MM-DD
-        required: false
-        style: form
-        explode: true
-        schema:
-          type: string
-          format: date
-          example: '2019-08-01'
-      - name: downloaded_to
-        in: query
-        description: Get all curves downloaded until this date at 00:00 hours. In format YYYY-MM-DD
-        required: false
-        style: form
-        explode: true
-        schema:
-          type: string
-          format: date
-          example: '2019-08-10'
-      - name: limit
-        in: query
-        description: How many contracts to return at one time
-        required: false
-        schema:
-          type: integer
-          minimum: 0
-          default: 50
-          maximum: 500
-      - name: cursor
-        in: query
-        description: Actual cursor for this search
-        required: false
-        schema:
-          type: string
-          format: byte
-          default: None
-          example: 'dXNlcjpXMDdRQ1JQQTQ='
+        - $ref: "#/components/parameters/cchTypeParam"
+        - $ref: "#/components/parameters/tariffsParam"
+        - $ref: "#/components/parameters/fromParam"
+        - $ref: "#/components/parameters/toParam"
+        - $ref: "#/components/parameters/cchDownloadedFromParam"
+        - $ref: "#/components/parameters/cchDownloadedToParam"
+        - $ref: "#/components/parameters/limitParam"
+        - $ref: "#/components/parameters/cursorParam"
       responses:
         200:
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  total_results:
-                    type: integer
-                    description: total number of registers
-                    example: 234
-                  count:
-                    type: integer
-                    description: number of registers in current page
-                    example: 234
-                  data:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/cch'
-                  links:
-                    type: object
-                    properties:
-                      next:
-                        type: string
-                        description: url of next results. If null, you are in the last page
-                        example: "https://apinergia.somenergia.coop/contracts?limit=5&cursor=dXNlcjpVMEc5V0ZYTlo"
+          $ref: "#/components/responses/CCHResponse"
         400:
-          description: Invalid status value
-          content: {}
+           $ref: "#/components/responses/BadRequestResponse"
+        401:
+           $ref: "#/components/responses/UnauthorizedResponse"
       security:
         - infoenergiaAuth: []
   /reports:
@@ -646,6 +404,55 @@ components:
           enum:
             - canceled
             - tariff_power
+    cchTypeParam:
+      name: cch_type
+      in: query
+      description: >
+        type of hourly curve. You can choose from:
+
+        - **tg_cchfact:** Curve used for billing. It has F5D format and should not have holes
+
+        - **tg_cchval:** Validated curve. Includes only the hourly records validated by the meter. It has P5D format
+
+        - **tg_f1**: Curve used for billing. It has F1 format and should not have holes
+
+        - **P1:** Validated curve. Includes only the hourly records validated by the meter. It has P1 format
+
+        - **P2:** Validated curve. Includes curves every fifteen minutes validated by the meter. It has P2 format
+      required: true
+      style: form
+      explode: false
+      schema:
+        type: string
+        default: tg_cchfact
+        enum:
+            - tg_cchfact
+            - tg_cchval
+            - tg_f1
+            - P1
+            - P2
+    cchDownloadedFromParam:
+      name: downloaded_from
+      in: query
+      description: Get all CCH downloaded from this date on at 00:00 hours. In format YYYY-MM-DD
+      required: false
+      style: form
+      explode: true
+      schema:
+        type: string
+        format: date
+        example: '2019-08-01'
+    cchDownloadedToParam:
+      name: downloaded_to
+      in: query
+      description: Get all CCH downloaded until this date at 00:00 hours. In format YYYY-MM-DD
+      required: false
+      style: form
+      explode: true
+      schema:
+        type: string
+        format: date
+        example: '2019-08-10'
   requestBodies:
     AuthBodyRequest:
       description: Required body to authenticate a user into the infoenergia api
@@ -739,7 +546,7 @@ components:
             f1s-response-example:
               $ref: "#/components/examples/f1s-response-example"
     F1Response:
-      description: Returns a set of period consumptions in a time range for a specific contract
+      description: Returns a set of period consumptions in a time range for a specific contract.
       content:
         application/json:
           schema:
@@ -747,6 +554,28 @@ components:
           examples:
             f1s-single-contract-response-example:
               $ref: "#/components/examples/f1s-single-contract-response-example"
+    CCHResponse:
+      description: >
+        Returns a set of points of a specific cchtype in a time range, arranged by date.
+
+
+        **Warning:** The schema of the response is only for cchfact points. In the examples you can access a sample of each type of curve points.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/CCH"
+          examples:
+            tgcchfact-response-example:
+              $ref: "#/components/examples/tgcchfact-response-example"
+            tgcchval-response-example:
+              $ref: "#/components/examples/tgcchval-response-example"
+            tgf1-response-example:
+              $ref: "#/components/examples/tgf1-response-example"
+            p1-response-example:
+              $ref: "#/components/examples/p1-response-example"
+            p2-response-example:
+              $ref: "#/components/examples/p2-response-example"
+
   schemas:
     reports:
       type: object
@@ -1358,8 +1187,9 @@ components:
                   period: "2.0TD (P1)"
                 },
               ]
-    cch:
+    CCH:
       type: object
+      description: A point of a tg_cchfact curve
       properties:
         contractId:
           type: string
@@ -2490,4 +2320,160 @@ components:
                 ]
             }
         ],
+      }
+    tgcchfact-response-example:
+      value: {
+          "count": 1,
+          "cursor": "NWY4NTA2ZGEtM2JlNC01MGE0LThiZjEtZWQyZjhiODA1Zjc0Ok13PT0=",
+          "data": [
+              {
+                  "contractId": "0000004",
+                  "measurements": {
+                      "ai": 68,
+                      "ao": 0,
+                      "date": "2022-11-14 01:00:00+0000",
+                      "dateDownload": "2022-12-18 02:29:49",
+                      "dateUpdate": "2022-12-18 02:29:49",
+                      "r1": 0,
+                      "r2": 0,
+                      "r3": 0,
+                      "r4": 0,
+                      "season": 0,
+                      "source": 1,
+                      "validated": true
+                  },
+                  "meteringPointId": "9d27c82d-73d3-5ce0-b7a5-fcee142acd63"
+              }
+          ],
+          "next_page": "https://apinergia.somenergia.coop/cch/0000004?type=tg_cchfact&cursor=NWY4NTA2ZGEtM2JlNC01MGE0LThiZjEtZWQyZjhiODA1Zjc0Ok13PT0=&limit=1",
+          "total_results": 720
+      }
+    tgcchval-response-example:
+      value: {
+        "count": 1,
+        "cursor": "YTMwZDJlMTYtYzcxMi01ODlkLTkzNzAtNWY4YTU5MWVmY2NiOk1RPT0=",
+        "data": [
+            {
+                "contractId": "0000004",
+                "measurements": {
+                    "ai": 599,
+                    "ao": 0,
+                    "date": "2022-11-27 23:00:00+0000",
+                    "dateDownload": "2022-12-01 03:35:25",
+                    "dateUpdate": "2022-12-01 03:35:25",
+                    "season": 0
+                },
+                "meteringPointId": "9d27c82d-73d3-5ce0-b7a5-fcee142acd63"
+            }
+        ],
+        "next_page": "https://apinergia.somenergia.coop/cch/0000004?type=tg_cchval&cursor=YTMwZDJlMTYtYzcxMi01ODlkLTkzNzAtNWY4YTU5MWVmY2NiOk1RPT0=&limit=1",
+        "total_results": 1128
+      }
+    tgf1-response-example:
+      value: {
+        "count": 1,
+        "cursor": "MTY4Nzg2ZDYtZmJmYy01ZDYzLWJiNzktZTc5MGFmYjY2YzAwOk1RPT0=",
+        "data": [
+            {
+                "contractId": "0222511",
+                "measurements": {
+                    "ai": 163.0,
+                    "ao": 0.0,
+                    "date": "2022-11-29 00:00:00+0000",
+                    "dateDownload": "2022-12-23 12:02:31",
+                    "dateUpdate": "2022-12-23 12:02:31",
+                    "measureType": 11,
+                    "r1": 0.0,
+                    "r2": 0.0,
+                    "r3": 0.0,
+                    "r4": 0.0,
+                    "reserve1": 0.0,
+                    "reserve2": 0.0,
+                    "season": 0,
+                    "source": 8,
+                    "validated": false
+                },
+                "meteringPointId": "ffd5b061-4999-5ad5-a248-8e444deee2e1"
+            }
+        ],
+        "next_page": "https://apinergia.somenergia.coop/cch/0222511?type=tg_f1&cursor=MTY4Nzg2ZDYtZmJmYy01ZDYzLWJiNzktZTc5MGFmYjY2YzAwOk1RPT0=&limit=1",
+        "total_results": 47
+      }
+    p1-response-example:
+      value: {
+        "count": 1,
+        "cursor": "MTQwNzIyMzktNzlmMS01YjcxLTk4ZTUtMWI1MjMzOTY1MWVhOk1RPT0=",
+        "data": [
+            {
+                "contractId": "0217828",
+                "measurements": {
+                    "ai": 0.0,
+                    "aiquality": 0,
+                    "ao": 0.0,
+                    "aoQuality": 0,
+                    "date": "2022-11-23 23:00:00+0000",
+                    "dateDownload": "2022-12-01 03:56:28",
+                    "dateUpdate": "2022-12-01 03:56:28",
+                    "measureType": 11,
+                    "r1": 0.0,
+                    "r1Quality": 0,
+                    "r2": 0.0,
+                    "r2Quality": 0,
+                    "r3": 0.0,
+                    "r3Quality": 0,
+                    "r4": 1.0,
+                    "r4Quality": 0,
+                    "reserve1": 0.0,
+                    "reserve1Quality": 0,
+                    "reserve2": 0.0,
+                    "reserve2Quality": 0,
+                    "season": 0,
+                    "source": 1,
+                    "type": "p",
+                    "validated": false
+                },
+                "meteringPointId": "a9fef2ae-fadc-55f6-87c4-e70018b7cfc8"
+            }
+        ],
+        "next_page": "https://apinergia.somenergia.coop/cch/0217828?type=P1&cursor=MTQwNzIyMzktNzlmMS01YjcxLTk4ZTUtMWI1MjMzOTY1MWVhOk1RPT0=&limit=1",
+        "total_results": 1248
+      }
+    p2-response-example:
+      value: {
+        "count": 1,
+        "cursor": "NDdhYjk0NTctMDY2OC01NjhlLTk5ZWMtNDhlMjZiMTVkNDkwOk1RPT0=",
+        "data": [
+            {
+                "contractId": "0100752",
+                "measurements": {
+                    "ai": 1.0,
+                    "aiquality": 0,
+                    "ao": 0.0,
+                    "aoQuality": 0,
+                    "date": "2021-12-30 22:00:00+0000",
+                    "dateDownload": "2022-01-01 03:39:32",
+                    "dateUpdate": "2022-01-01 03:39:32",
+                    "measureType": 11,
+                    "r1": 2.0,
+                    "r1Quality": 0,
+                    "r2": 0.0,
+                    "r2Quality": 0,
+                    "r3": 0.0,
+                    "r3Quality": 0,
+                    "r4": 0.0,
+                    "r4Quality": 0,
+                    "reserve1": 0.0,
+                    "reserve1Quality": 0,
+                    "reserve2": 0.0,
+                    "reserve2Quality": 0,
+                    "season": 0,
+                    "source": 1,
+                    "type": "p4",
+                    "validated": false
+                },
+                "meteringPointId": "7b1485ad-91db-5526-854a-4b0af1a81d4d"
+            }
+        ],
+        "next_page": "https://apinergia.somenergia.coop/cch/0100752?type=P2&cursor=NDdhYjk0NTctMDY2OC01NjhlLTk5ZWMtNDhlMjZiMTVkNDkwOk1RPT0=&limit=1",
+        "total_results": 36576
       }
