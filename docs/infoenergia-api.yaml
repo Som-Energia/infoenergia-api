@@ -22,12 +22,12 @@ tags:
   description: All information about contract f1 measurements
 - name: cch
   description: All hourly curves
-- name: reports
-  description: Reports to infoenergia
 - name: measurements
   description: All information about contract energy measurements
 - name: tariff
   description: Tariff pricelist
+- name: reports
+  description: Reports to infoenergia
 paths:
   /auth:
     post:
@@ -227,42 +227,6 @@ paths:
            $ref: "#/components/responses/UnauthorizedResponse"
       security:
         - infoenergiaAuth: []
-  /reports:
-    post:
-      tags:
-      - reports
-      summary: uploads report for all contracts
-      operationId: server.reports
-      requestBody:
-        description: json with contracts Ids and type of report to be processed
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/reports'
-      responses:
-        200:
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  reports:
-                    type: integer
-                    description: number of submited reports
-                    example: 3
-                  unprocessed_reports:
-                    type: array
-                    description: reports that could not be processed
-                    items:
-                      type: string
-                    example: ["0000001", "0000002"]
-        400:
-          description: Invalid username/password supplied
-          content: {}
-      security:
-        - infoenergiaAuth: []
   /tariff:
       get:
         tags:
@@ -297,6 +261,23 @@ paths:
                     $ref: "#/components/examples/badrequest-response-example"
         security:
           - infoenergiaAuth: []
+  /reports:
+    post:
+      tags:
+      - reports
+      summary: Hook to notify that inforenergia reports are ready
+      operationId: server.reports
+      requestBody:
+        $ref: "#/components/requestBodies/ReportRequestBody"
+      responses:
+        200:
+          $ref: "#/components/responses/ReportsResponse"
+        400:
+           $ref: "#/components/responses/BadRequestResponse"
+        401:
+           $ref: "#/components/responses/UnauthorizedResponse"
+      security:
+        - infoenergiaAuth: []
 components:
   securitySchemes:
     infoenergiaAuth:
@@ -463,6 +444,12 @@ components:
           examples:
             auth-body-example:
               $ref: "#/components/examples/auth-body-example"
+    ReportRequestBody:
+        description: Contains a json with the contract id information that will be retrieved in the beedata api
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReportBody'
   responses:
     AuthResponse:
       description: Returns a valid access token to make authenticated requests
@@ -575,9 +562,17 @@ components:
               $ref: "#/components/examples/p1-response-example"
             p2-response-example:
               $ref: "#/components/examples/p2-response-example"
-
+    ReportsResponse:
+      description: Returns a contract with the number of results and the corresponding data. If the request is paginated, returns the next page cursor and the next page url.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ReportResponse"
+          examples:
+            report-response-example:
+              $ref: "#/components/examples/report-response-example"
   schemas:
-    reports:
+    ReportBody:
       type: object
       properties:
         id:
@@ -1430,7 +1425,6 @@ components:
               type: array
               items:
                 $ref: "#/components/schemas/F1"
-
     TariffResponse:
       allOf:
         - $ref: "#/components/schemas/BaseResponse"
@@ -1438,6 +1432,22 @@ components:
           properties:
             data:
               $ref: "#/components/schemas/Tariff"
+    ReportResponse:
+      type: object
+      properties:
+        state:
+          type: boolean
+          description: True if request has been successful
+          example: True
+        data:
+          type: object
+          properties:
+            reports:
+              type: integer
+              description: Reports that api has received
+            request_id:
+              type: string
+              description: ID of the request that is processing the reports
     Error:
       type: object
       properties:
@@ -2476,4 +2486,12 @@ components:
         ],
         "next_page": "https://apinergia.somenergia.coop/cch/0100752?type=P2&cursor=NDdhYjk0NTctMDY2OC01NjhlLTk5ZWMtNDhlMjZiMTVkNDkwOk1RPT0=&limit=1",
         "total_results": 36576
+      }
+    report-response-example:
+      value: {
+        "state": True,
+        "data": {
+          "reports": 5,
+          "request_id": "2354tydssds"
+        }
       }
