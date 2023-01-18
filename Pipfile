@@ -20,6 +20,7 @@ nest-asyncio = "*"
 pudb = "*"
 pre-commit = "*"
 black = "*"
+wcwidth = "*"
 
 [packages]
 connexion = "*"
@@ -41,3 +42,4 @@ sentry-sdk = "*"
 aiohttp = "*"
 hiredis = "*"
 ipdb = "*"
+psycopg = "*"
