@@ -59,7 +59,7 @@ def user():
             email="someone@foo.bar",
             id_partner=1,
             is_superuser=True,
-            category="partner",
+            category="admin",
         )
         commit()
     user._clear_psw = "password"
@@ -149,7 +149,7 @@ def f1_id():
     """
     Returns a random f1 curve id
     """
-    return "5e1d8d9612cd738e89bb3cfb"
+    return 721
 
 
 @pytest.fixture

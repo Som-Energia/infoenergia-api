@@ -92,6 +92,32 @@ class TestCchRequest:
         assert response.status == 200
         assert response.json == {"count": 0, "total_results": 0, "data": []}
 
+    async def test__get_f1_by_id(self, app, auth_token, scenarios, mocked_next_cursor):
+        params = {
+            "from_": "2018-11-16",
+            "to_": "2023-01-20",
+            "limit": 10,
+            "type": "tg_f1",
+        }
+        _, response = await app.asgi_client.get(
+            "/cch/{}".format(scenarios["tg_f1"]["contractId"]),
+            headers={"Authorization": "Bearer {}".format(auth_token)},
+            params=params,
+        )
+        assert response.status == 200
+        assert response.json["count"] == 10
+        assert response.json["total_results"] == 13201
+        assert (
+            response.json["cursor"]
+            == "N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0="
+        )
+        assert response.json[
+            "next_page"
+        ] == "http://{}/cch/{}?type=tg_f1&cursor=N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=&limit=10".format(
+            response.url.netloc.decode(), scenarios["tg_f1"]["contractId"]
+        )
+        assert len(response.json["data"]) == 10
+
     async def test__get_p1__for_contract_id(
         self, app, auth_token, scenarios, mocked_next_cursor
     ):
@@ -160,29 +186,29 @@ class TestCchModels:
             "validated": True,
         }
 
-    async def test__create_f1(self, f1_id, app):
+    async def test__create_f1(self, f1_id, event_loop):
         f1 = await TgCchF1.create(f1_id)
         assert isinstance(f1, TgCchF1)
 
-    async def test__get_f1_measurements(self, f1_id, app):
+    async def test__get_f1_measurements(self, f1_id, event_loop):
         f1 = await TgCchF1.create(f1_id)
         measurements = f1.measurements
         assert measurements == {
-            "ai": 14.0,
+            "season": 1,
+            "ai": 5.0,
             "ao": 0.0,
-            "date": "2017-12-01 22:00:00+0000",
-            "dateUpdate": "2020-01-14 10:44:54",
-            "season": 0,
-            "validated": False,
-            "r1": 1.0,
+            "r1": 3.0,
             "r2": 0.0,
             "r3": 0.0,
-            "r4": 2.0,
-            "reserve1": 0,
-            "reserve2": 0,
+            "r4": 0.0,
             "source": 1,
+            "validated": 0,
+            "date": "2022-05-31 22:00:00+0000",
+            "dateDownload": "2022-09-19 13:44:56",
+            "dateUpdate": "2022-09-19 13:44:56",
+            "reserve1": 0.0,
+            "reserve2": 0.0,
             "measureType": 11,
-            "dateDownload": "2020-01-14 10:44:54",
         }
 
     async def test__get_P1_measurements(self, p1_id, app):
