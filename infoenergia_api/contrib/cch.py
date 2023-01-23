@@ -159,7 +159,7 @@ class TgCchF1(BaseCch):
 class TgCchP1(BaseCch):
     @classmethod
     async def create(cls, cch_id):
-        cch_fact_curve = await super().create(cch_id, "tg_cchval")
+        cch_fact_curve = await super().create(cch_id, "tg_p1")
         return cch_fact_curve
 
     @property
