@@ -36,7 +36,7 @@ class Contract(object):
         "persona_fisica",
         "titular_nif",
         "llista_preu",
-        "tipo_medida"
+        "tipo_medida",
     ]
 
     def __init__(self, contract_id):
@@ -498,7 +498,7 @@ class Contract(object):
             },
             "devices": {
                 self.tipo_medida,
-                self.devices
+                self.devices,
             },
             "report": self.report,
             "version": self.version,

@@ -156,49 +156,67 @@ def get_juridic_filter(erp_client, juridic_type):
     return juridic_filters
 
 
-async def get_cch_filters(request, filters):
+async def get_cch_erp_query(filters, cups):
+    query = []
 
-    if "from_" in request.args:
-        filters.update(
-            {
-                "datetime": {
-                    "$gte": datetime.strptime(request.args["from_"][0], "%Y-%m-%d")
-                }
-            }
+    if "from_" in filters:
+        query += [("utc_timestamp", ">=", filters["from_"][0])]
+
+    if "to_" in filters:
+        query += [("utc_timestamp", "<=", filters["to_"][0])]
+
+    if "downloaded_from" in filters:
+        query += [("create_at", ">=", filters["downloaded_from"][0])]
+
+    if "downloaded_to" in filters:
+        query += [("create_at", "<=", filters["downloaded_to"][0])]
+
+    if cups:
+        query += [("name", "ilike", cups[0][:20])]
+
+    return query
+
+
+async def get_cch_query(filters, cups):
+    query = {}
+    if "from_" in filters:
+        query.update(
+            {"datetime": {"$gte": datetime.strptime(filters["from_"][0], "%Y-%m-%d")}}
         )
 
-    if "to_" in request.args:
-        datetime_query = filters.get("datetime", {})
+    if "to_" in filters:
+        datetime_query = query.get("datetime", {})
         datetime_query.update(
-            {"$lte": datetime.strptime(request.args["to_"][0], "%Y-%m-%d")}
+            {"$lte": datetime.strptime(filters["to_"][0], "%Y-%m-%d")}
         )
-        filters["datetime"] = datetime_query
+        query["datetime"] = datetime_query
 
-    if "downloaded_from" in request.args:
-        filters.update(
+    if "downloaded_from" in filters:
+        query.update(
             {
                 "create_at": {
-                    "$gte": datetime.strptime(
-                        request.args["downloaded_from"][0], "%Y-%m-%d"
-                    )
+                    "$gte": datetime.strptime(filters["downloaded_from"][0], "%Y-%m-%d")
                 }
             }
         )
 
-    if "downloaded_to" in request.args:
-        create_at_query = filters.get("create_at", {})
+    if "downloaded_to" in filters:
+        create_at_query = query.get("create_at", {})
         create_at_query.update(
-            {"$lte": datetime.strptime(request.args["downloaded_to"][0], "%Y-%m-%d")}
+            {"$lte": datetime.strptime(filters["downloaded_to"][0], "%Y-%m-%d")}
         )
-        filters["create_at"] = create_at_query
+        query["create_at"] = create_at_query
 
-    if "P1" in request.args["type"]:
-        filters.update({"type": {"$eq": "p"}})
+    if "P1" in filters["type"][0].upper():
+        query.update({"type": {"$eq": "p"}})
 
-    if "P2" in request.args["type"]:
-        filters.update({"type": {"$eq": "p4"}})
+    if "P2" in filters["type"][0].upper():
+        query.update({"type": {"$eq": "p4"}})
 
-    return filters
+    if cups:
+        query.update({"name": {"$regex": "^{}".format(cups[0][:20])}})
+
+    return query
 
 
 def get_contract_id(erp_client, cups, user):

@@ -1,22 +1,24 @@
 import asyncio
 from bson.objectid import ObjectId
-from datetime import timedelta
+from datetime import timedelta, datetime
 import pytz
 
-from ..utils import get_cch_filters, make_uuid, get_contract_id
+from sanic import Sanic
+
+from ..utils import get_cch_query, make_uuid, get_contract_id, get_cch_erp_query
 from ..tasks import get_cups
+from .erp import get_erp_instance
 
 
 class BaseCch(object):
 
     iso_format = "%Y-%m-%d %H:%M:%S"
+    _erp = get_erp_instance()
 
     @classmethod
     async def create(cls, cch_id, collection):
-        from infoenergia_api.app import app
-
+        app = Sanic.get_app()
         self = cls()
-        self._erp = app.ctx.erp_client
         self._executor = app.ctx.thread_pool
         self._mongo = app.ctx.mongo_client.somenergia
         self._collection = collection
@@ -109,10 +111,26 @@ class TgCchVal(BaseCch):
 
 
 class TgCchF1(BaseCch):
+
+    erp_model = "tg.f1"
+
     @classmethod
     async def create(cls, cch_id):
-        cch_fact_curve = await super().create(cch_id, "tg_f1")
-        return cch_fact_curve
+        self = cls()
+        self._loop = asyncio.get_running_loop()
+        self.TgF1 = self._erp.model(self.erp_model)
+        self.raw_curve = await self._loop.run_in_executor(None, self.TgF1.read, cch_id)
+
+        for name, value in self.raw_curve.items():
+            setattr(self, name, value)
+        return self
+
+    @property
+    def date_cch(self):
+        _utc_timestamp = datetime.strptime(
+            self.utc_timestamp, "%Y-%m-%d %H:%M:%S"
+        ).replace(tzinfo=pytz.UTC)
+        return _utc_timestamp.strftime("%Y-%m-%d %H:%M:%S%z")
 
     @property
     def measurements(self):
@@ -129,9 +147,9 @@ class TgCchF1(BaseCch):
             "r4": self.r4,
             "source": self.source,
             "validated": self.validated,
-            "date": self.dateCch,
-            "dateDownload": (self.create_at).strftime(self.iso_format),
-            "dateUpdate": (self.update_at).strftime(self.iso_format),
+            "date": self.date_cch,
+            "dateDownload": self.create_at,
+            "dateUpdate": self.update_at,
             "reserve1": self.reserve1,
             "reserve2": self.reserve2,
             "measureType": self.measure_type,
@@ -141,7 +159,7 @@ class TgCchF1(BaseCch):
 class TgCchP1(BaseCch):
     @classmethod
     async def create(cls, cch_id):
-        cch_fact_curve = await super().create(cch_id, "tg_cchval")
+        cch_fact_curve = await super().create(cch_id, "tg_p1")
         return cch_fact_curve
 
     @property
@@ -178,21 +196,36 @@ class TgCchP1(BaseCch):
 
 
 async def async_get_cch(request, contract_id=None):
-    filters = {}
     loop = asyncio.get_running_loop()
-
-    collection = request.args.get("type")
-    if collection in ("P1", "P2"):
-        collection = "tg_p1"
-    cch_collection = request.app.ctx.mongo_client.somenergia[collection]
+    filters = request.args
+    cups = None
 
     if contract_id:
         cups = await loop.run_in_executor(None, get_cups, request, contract_id)
         if not cups:
             return []
-        filters.update({"name": {"$regex": "^{}".format(cups[0][:20])}})
 
-    if request.args:
-        filters = await get_cch_filters(request, filters)
+    collection = filters.get("type")
+    if collection != "tg_f1":
+        return await get_from_mongo(
+            request.app.ctx.mongo_client, collection, filters, cups
+        )
 
-    return [cch["_id"] async for cch in cch_collection.find(filters) if cch.get("_id")]
+    return await get_from_erp(get_erp_instance(), collection, filters, cups)
+
+
+async def get_from_mongo(mongo_client, collection, filters, cups):
+    query = await get_cch_query(filters, cups)
+    if collection in ("P1", "P2"):
+        collection = "tg_p1"
+    cch_collection = mongo_client.somenergia[collection]
+
+    return [cch["_id"] async for cch in cch_collection.find(query) if cch.get("_id")]
+
+
+async def get_from_erp(erp, collection, filters, cups):
+    loop = asyncio.get_running_loop()
+    collection_map = {"tg_f1": "tg.f1"}
+    model = erp.model(collection_map.get(collection))
+    query = await get_cch_erp_query(filters, cups)
+    return await loop.run_in_executor(None, model.search, query)
