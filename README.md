@@ -40,7 +40,7 @@ Now our api is ready to run. You can simply execute `pipenv run python run.py` a
 
 ```bash
 sudo apt install redis-server
-git clone git@github.com:Som-Energia/infoenergia-api.git . 
+git clone git@github.com:Som-Energia/infoenergia-api.git .
 cd infoenergia-api
 pip install --user pipenv
 pipenv install --dev
@@ -86,6 +86,10 @@ $ pipenv run pytest
 ## Usage
 
 ## Changes
+
+### 2.1.0
+- F1 curves now are obtained from ERP instead of access directly to mongo
+- Added attribute "tipo_medida" to contract information
 
 ### 2.0.1
 - Add the magnitud of active energy (if its AE or AS)
