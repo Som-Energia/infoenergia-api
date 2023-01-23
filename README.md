@@ -87,6 +87,9 @@ $ pipenv run pytest
 
 ## Changes
 
+### 2.1.1
+- TgCchP1 reads from tg_p1 collection
+
 ### 2.1.0
 - F1 curves now are obtained from ERP instead of access directly to mongo
 - Added attribute "tipo_medida" to contract information
