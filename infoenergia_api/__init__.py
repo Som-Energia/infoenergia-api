@@ -28,6 +28,7 @@ from .api.reports import bp_reports
 from .api.tariff import bp_tariff
 from .api.utils import get_db_instance
 from .contrib.mixins import ResponseMixin
+from .contrib.erp import get_erp_instance
 
 
 def attach_signals(app: Sanic):
@@ -87,12 +88,10 @@ def attach_bluprints_and_routes(app: Sanic):
 
 def attach_context(app: Sanic):
     app.ctx.thread_pool = futures.ThreadPoolExecutor(app.config.MAX_THREADS)
-    app.ctx.erp_client = Client(
-        transport=PoolTransport(secure=app.config.TRANSPORT_POOL_CONF["secure"]),
-        **app.config.ERP_CONF,
-    )
 
+    app.ctx.erp_client = get_erp_instance()
     db = get_db_instance()
+
     try:
         db.bind(
             provider="sqlite",
