@@ -74,7 +74,7 @@ paths:
       description: Returns a single contract
       operationId: server.get_contract_by_id
       parameters:
-        - $ref: "#components/parameters/contractIDParam"
+        - $ref: "#/components/parameters/contractIDParam"
       responses:
         200:
           $ref: "#/components/responses/ContractResponse"
@@ -115,7 +115,7 @@ paths:
       description: Get one or more contract amendments by date and type for a specific contract.
       operationId: server.get_modcontracts_by_id
       parameters:
-        - $ref: "#components/parameters/contractIDParam"
+        - $ref: "#/components/parameters/contractIDParam"
         - $ref: "#/components/parameters/modconTypeParam"
         - $ref: "#/components/parameters/fromParam"
         - $ref: "#/components/parameters/toParam"
@@ -210,6 +210,7 @@ paths:
       description: Get cch curves information depending on some date and tariff parameters for a specific contract
       operationId: server.get_cch_by_contract_id
       parameters:
+        - $ref: "#/components/parameters/contractIDParam"
         - $ref: "#/components/parameters/cchTypeParam"
         - $ref: "#/components/parameters/tariffsParam"
         - $ref: "#/components/parameters/fromParam"
