@@ -4,6 +4,9 @@ from datetime import timedelta, datetime
 import pytz
 
 from sanic import Sanic
+from somenergia_utils import isodates
+
+from config import config
 
 from ..utils import get_cch_query, make_uuid, get_contract_id, get_cch_erp_query
 from ..tasks import get_cups
@@ -195,6 +198,91 @@ class TgCchP1(BaseCch):
         }
 
 
+class TgCchGennetabeta(BaseCch):
+
+    erp_model_name = "tg.cch_gennetabeta"
+
+    @classmethod
+    async def create(cls, cch_id):
+        self = cls()
+        self._loop = asyncio.get_running_loop()
+        self.erp_model = self._erp.model(self.erp_model_name)
+        self.raw_curve = await self._loop.run_in_executor(
+            None, self.er_model.read, cch_id
+        )
+
+        for name, value in self.raw_curve.items():
+            setattr(self, name, value)
+        return self
+
+    @property
+    def date_cch(self):
+        localtime = isodates.parseLocalTime(self.datetime, isSummer=self.season)
+        return localtime.strftime("%Y-%m-%d %H:%M:%S%z")
+
+    def measurements(self):
+        if not self.raw_curve:
+            return {}
+
+        return {
+            "ae": self.ae,
+            "ai": self.ai,
+            "bill": self.bill,
+            "dateDownload": self.create_at,
+            "dateUpdate": self.update_at,
+            "date": self.date_cch,
+            "r1": self.r1,
+            "r2": self.r2,
+            "r3": self.r3,
+            "r4": self.r4,
+            "season": self.season,
+            "source": self.source,
+            "validated": self.validated,
+        }
+
+
+class TgCchAutocons(BaseCch):
+    erp_model_name = "tg.cch_autocons"
+
+    @classmethod
+    async def create(cls, cch_id):
+        self = cls()
+        self._loop = asyncio.get_running_loop()
+        self.erp_model = self._erp.model(self.erp_model_name)
+        self.raw_curve = await self._loop.run_in_executor(
+            None, self.er_model.read, cch_id
+        )
+
+        for name, value in self.raw_curve.items():
+            setattr(self, name, value)
+        return self
+
+    @property
+    def date_cch(self):
+        localtime = isodates.parseLocalTime(self.datetime, isSummer=self.season)
+        return localtime.strftime("%Y-%m-%d %H:%M:%S%z")
+
+    def measurements(self):
+        if not self.raw_curve:
+            return {}
+
+        return {
+            "ae": self.ae,
+            "ai": self.ai,
+            "bill": self.bill,
+            "dateDownload": self.create_at,
+            "dateUpdate": self.update_at,
+            "date": self.date_cch,
+            "r1": self.r1,
+            "r2": self.r2,
+            "r3": self.r3,
+            "r4": self.r4,
+            "season": self.season,
+            "source": self.source,
+            "validated": self.validated,
+        }
+
+
 async def async_get_cch(request, contract_id=None):
     loop = asyncio.get_running_loop()
     filters = request.args
@@ -206,7 +294,7 @@ async def async_get_cch(request, contract_id=None):
             return []
 
     collection = filters.get("type")
-    if collection != "tg_f1":
+    if collection not in config.ERP_CURVES:
         return await get_from_mongo(
             request.app.ctx.mongo_client, collection, filters, cups
         )
@@ -225,7 +313,11 @@ async def get_from_mongo(mongo_client, collection, filters, cups):
 
 async def get_from_erp(erp, collection, filters, cups):
     loop = asyncio.get_running_loop()
-    collection_map = {"tg_f1": "tg.f1"}
+    collection_map = {
+        "tg_f1": "tg.f1",
+        "tg_gennetabeta": "tg.cch_gennetabeta",
+        "tg_cchautocons": "tg.cch_autocons",
+    }
     model = erp.model(collection_map.get(collection))
     query = await get_cch_erp_query(filters, cups)
     return await loop.run_in_executor(None, model.search, query)

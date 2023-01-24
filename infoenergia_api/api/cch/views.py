@@ -13,6 +13,8 @@ from infoenergia_api.contrib.cch import (
     TgCchF5d,
     TgCchP1,
     TgCchVal,
+    TgCchGennetabeta,
+    TgCchAutocons,
     async_get_cch,
 )
 from infoenergia_api.contrib.mixins import ResponseMixin
@@ -30,6 +32,8 @@ class BaseCchMeasuresContractView(ResponseMixin, PaginationLinksMixin, HTTPMetho
         "tg_cchfact": TgCchF5d,
         "tg_cchval": TgCchVal,
         "tg_f1": TgCchF1,
+        "tg_gennetabeta": TgCchGennetabeta,
+        "tg_cchautocons": TgCchAutocons,
         "P1": TgCchP1,
         "P2": TgCchP1,
     }

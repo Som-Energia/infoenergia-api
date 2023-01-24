@@ -28,3 +28,5 @@ RESPONSE_TIMEOUT = 36000
 SANIC_JWT_USER_ID = "id"
 
 SENTRY_DSN = env.str("SENTRY_DSN")
+
+ERP_CURVES = env.list("ERP_CURVES", ["tg_f1", "tg_cchautoconsum", "tg_gennetabeta"])
