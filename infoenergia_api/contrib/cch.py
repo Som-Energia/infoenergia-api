@@ -4,7 +4,7 @@ from datetime import timedelta, datetime
 import pytz
 
 from sanic import Sanic
-from somenergia_utils import isodates
+from somutils import isodates
 
 from config import config
 
@@ -208,7 +208,7 @@ class TgCchGennetabeta(BaseCch):
         self._loop = asyncio.get_running_loop()
         self.erp_model = self._erp.model(self.erp_model_name)
         self.raw_curve = await self._loop.run_in_executor(
-            None, self.er_model.read, cch_id
+            None, self.erp_model.read, cch_id
         )
 
         for name, value in self.raw_curve.items():
@@ -220,6 +220,7 @@ class TgCchGennetabeta(BaseCch):
         localtime = isodates.parseLocalTime(self.datetime, isSummer=self.season)
         return localtime.strftime("%Y-%m-%d %H:%M:%S%z")
 
+    @property
     def measurements(self):
         if not self.raw_curve:
             return {}

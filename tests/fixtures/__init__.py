@@ -167,6 +167,15 @@ def p2_id():
     """
     return "5e3011f912cd738e8991aca7"
 
+@pytest.fixture
+def gennetabeta_id():
+    """
+    Returns a random p2 curve id
+    """
+    return 4311
+
+
+
 
 @pytest.fixture
 def beedata_api_correct_credentials():

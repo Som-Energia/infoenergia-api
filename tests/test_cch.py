@@ -1,4 +1,4 @@
-from infoenergia_api.contrib import TgCchF5d, TgCchF1, TgCchP1
+from infoenergia_api.contrib import TgCchF5d, TgCchF1, TgCchP1, TgCchGennetabeta
 
 
 class TestCchRequest:
@@ -269,4 +269,27 @@ class TestCchModels:
             "source": 1,
             "type": "p4",
             "validated": False,
+        }
+
+    async def test__create_gennetabeta(self, gennetabeta_id, event_loop):
+        f1 = await TgCchGennetabeta.create(gennetabeta_id)
+        assert isinstance(f1, TgCchGennetabeta)
+
+    async def test__get_gennetabeta_measurements(self, gennetabeta_id, event_loop):
+        curve = await TgCchGennetabeta.create(gennetabeta_id)
+        measurements = curve.measurements
+        assert measurements == {
+            "ae": 0,
+            "ai": 0,
+            "bill": "F4001N07516369",
+            "date": "2020-07-13 01:00:00+0200",
+            "dateDownload": "2021-06-26 04:54:42",
+            "dateUpdate": "2021-06-26 04:55:03",
+            "r1": False,
+            "r2": False,
+            "r3": False,
+            "r4": False,
+            "season": 1,
+            "source": False,
+            "validated": ""
         }
