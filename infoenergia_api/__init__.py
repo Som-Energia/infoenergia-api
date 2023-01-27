@@ -131,7 +131,7 @@ def build_app(app_name: str) -> Sanic:
     except Exception as e:
         msg = "An error ocurred building Infoenergia API: %s"
         logger.exception(msg, str(e))
-        raise e
+        raise
     else:
         logger.info("Build api finished")
         return app
