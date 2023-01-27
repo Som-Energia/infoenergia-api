@@ -49,19 +49,19 @@ cp .env.example .env
 
 Edit the .env file:
 
+- Note: Somenergia's credentials for ERP, Mongo and Beedata API can be found in private documentation dbconfig and infoenergia documentation.
 - Configure `ERP_CONF` pointing to your ERP instance
 - Configure `MONGO_CONF` pointing to your Mongo instance
-- If the `ERP_CONF` "server" starts with https, set:
+- If the `ERP_CONF` "server" starts with http instead of https, set:
 	```
-	TRANSPORT_POOL_CONF={"secure": true}
+	TRANSPORT_POOL_CONF={"secure": false}
 	```
-	Otherwise, set it `{"secure": false}`
+	Otherwise, set it `{"secure": true}`
 - Configure `REDIS_CONF` as `redis://localhost:6379` (if you are using local redis)
 - Point the `DATA_DIR` to an existing local directory to store the database file
 - Given  Beedata API credentials:
 	- Move certificate files locally and update `CERT_FILE` and `KEY_FILE` accordingly
 	- Edit `USERNAME`, `PASSWORD`, `COMPANY_ID` and `BASE_URL` to the provided access parameters.
-- Somenergia's credentials for ERP, Mongo and Beedata API can be found in private documentation dbconfig and infoenergia documentation.
 
 
 ## Testing
@@ -71,7 +71,7 @@ Setup test data (Requires VPN access):
 ```bash
 # From the directory containing infoenergia-api
 git clone git@gitlab.somenergia.coop:IT/it-docs.git -o testdata
-cd infoenergia-api/test
+cd infoenergia-api/tests
 ln -s ../../testdata/b2bs/json4test.yaml
 cd ..
 ```
