@@ -1,5 +1,10 @@
-from infoenergia_api.contrib import TgCchF5d, TgCchF1, TgCchP1, TgCchGennetabeta
-
+from infoenergia_api.contrib import (
+    TgCchF5d,
+    TgCchF1,
+    TgCchP1,
+    TgCchGennetabeta,
+    TgCchAutocons,
+)
 
 class TestCchRequest:
     async def test__get_f5d_by_id__2A(
@@ -293,3 +298,28 @@ class TestCchModels:
             "source": False,
             "validated": ""
         }
+
+    async def test__create_autocons(self, autocons_id, event_loop):
+        point = await TgCchAutocons.create(autocons_id)
+        assert isinstance(point, TgCchAutocons)
+
+    async def test__get_autocons_measurements(self, autocons_id, event_loop):
+        point = await TgCchAutocons.create(autocons_id)
+        measurements = point.measurements
+        assert measurements == {
+            "ae": False,
+            "ai": 0,
+            "bill": "103N210600880779",
+            "date": "2021-05-01 01:00:00+0200",
+            "dateDownload": "2021-06-16 08:09:56",
+            "dateUpdate": "2021-06-26 07:23:11",
+            "r1": False,
+            "r2": False,
+            "r3": False,
+            "r4": False,
+            "season": 1,
+            "source": False,
+            "validated": ""
+            }
+
+
