@@ -12,10 +12,15 @@ from ..utils import get_cch_query, make_uuid, get_contract_id, get_cch_erp_query
 from ..tasks import get_cups
 from .erp import get_erp_instance
 
+def iso_format(date):
+    return date.strftime("%Y-%m-%d %H:%M:%S")
 
-class BaseCch(object):
+def iso_format_tz(date):
+    return date.strftime("%Y-%m-%d %H:%M:%S%z")
 
-    iso_format = "%Y-%m-%d %H:%M:%S"
+
+class BaseCch:
+
     _erp = get_erp_instance()
 
     @classmethod
@@ -40,7 +45,7 @@ class BaseCch(object):
 
         date_cch = tz.localize(self.datetime, is_dst=self.season).astimezone(pytz.utc)
         date_cch -= timedelta(hours=1)
-        return date_cch.strftime("%Y-%m-%d %H:%M:%S%z")
+        return iso_format_tz(date_cch)
 
     async def cch_measures(self, user, contract_id=None):
         loop = asyncio.get_running_loop()
@@ -87,8 +92,8 @@ class TgCchF5d(BaseCch):
             "source": self.source,
             "validated": self.validated,
             "date": self.date_cch,
-            "dateDownload": (self.create_at).strftime(self.iso_format),
-            "dateUpdate": (self.update_at).strftime(self.iso_format),
+            "dateDownload": iso_format(self.create_at),
+            "dateUpdate": iso_format(self.update_at),
         }
 
 
@@ -108,54 +113,8 @@ class TgCchVal(BaseCch):
             "ai": self.ai,
             "ao": self.ao,
             "date": self.date_cch,
-            "dateDownload": (self.create_at).strftime(self.iso_format),
-            "dateUpdate": (self.update_at).strftime(self.iso_format),
-        }
-
-
-class TgCchF1(BaseCch):
-
-    erp_model = "tg.f1"
-
-    @classmethod
-    async def create(cls, cch_id):
-        self = cls()
-        self._loop = asyncio.get_running_loop()
-        self.TgF1 = self._erp.model(self.erp_model)
-        self.raw_curve = await self._loop.run_in_executor(None, self.TgF1.read, cch_id)
-
-        for name, value in self.raw_curve.items():
-            setattr(self, name, value)
-        return self
-
-    @property
-    def date_cch(self):
-        _utc_timestamp = datetime.strptime(
-            self.utc_timestamp, "%Y-%m-%d %H:%M:%S"
-        ).replace(tzinfo=pytz.UTC)
-        return _utc_timestamp.strftime("%Y-%m-%d %H:%M:%S%z")
-
-    @property
-    def measurements(self):
-        if not self.raw_curve:
-            return {}
-
-        return {
-            "season": self.season,
-            "ai": self.ai,
-            "ao": self.ao,
-            "r1": self.r1,
-            "r2": self.r2,
-            "r3": self.r3,
-            "r4": self.r4,
-            "source": self.source,
-            "validated": self.validated,
-            "date": self.date_cch,
-            "dateDownload": self.create_at,
-            "dateUpdate": self.update_at,
-            "reserve1": self.reserve1,
-            "reserve2": self.reserve2,
-            "measureType": self.measure_type,
+            "dateDownload": iso_format(self.create_at),
+            "dateUpdate": iso_format(self.update_at),
         }
 
 
@@ -193,32 +152,71 @@ class TgCchP1(BaseCch):
             "r1": self.r1,
             "r1Quality": self.r1quality,
             "measureType": self.measure_type,
-            "dateDownload": (self.create_at).strftime(self.iso_format),
-            "dateUpdate": (self.update_at).strftime(self.iso_format),
+            "dateDownload": iso_format(self.create_at),
+            "dateUpdate": iso_format(self.update_at),
         }
 
 
-class TgCchGennetabeta(BaseCch):
+class BaseErpCch:
 
-    erp_model_name = "tg.cch_gennetabeta"
+    _erp = get_erp_instance()
 
     @classmethod
     async def create(cls, cch_id):
+        if not hasattr(cls, 'erp_model'):
+            cls.erp_model = cls._erp.model(cls.erp_model_name)
         self = cls()
         self._loop = asyncio.get_running_loop()
-        self.erp_model = self._erp.model(self.erp_model_name)
         self.raw_curve = await self._loop.run_in_executor(
             None, self.erp_model.read, cch_id
         )
-
         for name, value in self.raw_curve.items():
             setattr(self, name, value)
         return self
 
+class TgCchF1(BaseErpCch):
+
+    erp_model_name = "tg.f1"
+
+    @property
+    def date_cch(self):
+        _utc_timestamp = datetime.strptime(
+            self.utc_timestamp, "%Y-%m-%d %H:%M:%S"
+        ).replace(tzinfo=pytz.UTC)
+        return _utc_timestamp.strftime("%Y-%m-%d %H:%M:%S%z")
+
+    @property
+    def measurements(self):
+        if not self.raw_curve:
+            return {}
+
+        return {
+            "season": self.season,
+            "ai": self.ai,
+            "ao": self.ao,
+            "r1": self.r1,
+            "r2": self.r2,
+            "r3": self.r3,
+            "r4": self.r4,
+            "source": self.source,
+            "validated": self.validated,
+            "date": self.date_cch,
+            "dateDownload": self.create_at,
+            "dateUpdate": self.update_at,
+            "reserve1": self.reserve1,
+            "reserve2": self.reserve2,
+            "measureType": self.measure_type,
+        }
+
+
+class TgCchGennetabeta(BaseErpCch):
+
+    erp_model_name = "tg.cch_gennetabeta"
+
     @property
     def date_cch(self):
         localtime = isodates.parseLocalTime(self.datetime, isSummer=self.season)
-        return localtime.strftime("%Y-%m-%d %H:%M:%S%z")
+        return iso_format_tz(localtime)
 
     @property
     def measurements(self):
@@ -242,27 +240,16 @@ class TgCchGennetabeta(BaseCch):
         }
 
 
-class TgCchAutocons(BaseCch):
+class TgCchAutocons(BaseErpCch):
+
     erp_model_name = "tg.cch_autocons"
-
-    @classmethod
-    async def create(cls, cch_id):
-        self = cls()
-        self._loop = asyncio.get_running_loop()
-        self.erp_model = self._erp.model(self.erp_model_name)
-        self.raw_curve = await self._loop.run_in_executor(
-            None, self.er_model.read, cch_id
-        )
-
-        for name, value in self.raw_curve.items():
-            setattr(self, name, value)
-        return self
 
     @property
     def date_cch(self):
         localtime = isodates.parseLocalTime(self.datetime, isSummer=self.season)
-        return localtime.strftime("%Y-%m-%d %H:%M:%S%z")
+        return iso_format_tz(localtime)
 
+    @property
     def measurements(self):
         if not self.raw_curve:
             return {}
