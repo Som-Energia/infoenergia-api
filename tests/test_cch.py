@@ -277,12 +277,12 @@ class TestCchModels:
         }
 
     async def test__create_gennetabeta(self, gennetabeta_id, event_loop):
-        f1 = await TgCchGennetabeta.create(gennetabeta_id)
-        assert isinstance(f1, TgCchGennetabeta)
+        point = await TgCchGennetabeta.create(gennetabeta_id)
+        assert isinstance(point, TgCchGennetabeta)
 
     async def test__get_gennetabeta_measurements(self, gennetabeta_id, event_loop):
-        curve = await TgCchGennetabeta.create(gennetabeta_id)
-        measurements = curve.measurements
+        point = await TgCchGennetabeta.create(gennetabeta_id)
+        measurements = point.measurements
         assert measurements == {
             "ae": 0,
             "ai": 0,
