@@ -387,7 +387,7 @@ components:
             - canceled
             - tariff_power
     cchTypeParam:
-      name: cch_type
+      name: type
       in: query
       description: >
         type of hourly curve. You can choose from:
@@ -401,6 +401,11 @@ components:
         - **P1:** Validated curve. Includes only the hourly records validated by the meter. It has P1 format
 
         - **P2:** Validated curve. Includes curves every fifteen minutes validated by the meter. It has P2 format
+
+        - **tg_gennetabeta:** Any collective generation entitled for the supply point by means of the Beta coefficients. It has B5D format.
+
+        - **tg_autocons:** The fraction of the collective generation from tg_gennetabeta that has been used as autoconsumption. It has A5D format.
+
       required: true
       style: form
       explode: false
