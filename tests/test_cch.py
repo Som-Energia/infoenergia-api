@@ -5,6 +5,7 @@ from infoenergia_api.contrib import (
     TgCchGennetabeta,
     TgCchAutocons,
 )
+import pytest
 
 class TestCchRequest:
     async def test__get_f5d_by_id__2A(
@@ -170,20 +171,37 @@ class TestCchRequest:
 
 class TestCchModels:
 
-    def assert_build_erp_query(self, filters: dict, expected_query: list[tuple]):
-        query = TgCchF5d.build_query(filters)
+    async def assert_build_erp_query(self, filters: dict, expected_query: list[tuple]):
+        query = await TgCchF5d.build_query(filters)
         assert query == expected_query
-
-    async def test__build_query__erp_model__with_cups(self, f5d_id, app):
-        cups = "a_cups",
-        self.assert_build_erp_query(dict(
-            cups = cups,
-        ),[
-            ('name', '=', cups),
-        ])
 
     async def test__build_query__erp_model__no_filters(self, f5d_id, app):
         self.assert_build_erp_query(dict(), [])
+
+    @pytest.mark.parametrize('parameter,value,expected', [
+        ('cups', 'a_cups',
+            [('name', '=', 'a_cups'),]),
+        ('from_', '2022-01-01', 
+            [('utc_timestamp', '>=', '2022-01-01'),]),
+        ('to_', '2022-01-01', 
+            [('utc_timestamp', '<=', '2022-01-01'),]),
+        ('downloaded_from', '2022-01-01', 
+            [('create_at', '>=', '2022-01-01'),]),
+        ('downloaded_to', '2022-01-01', 
+            [('create_at', '<=', '2022-01-01'),]),
+    ])
+    async def test__build_query__erp_model__with_single_parameter(self, parameter, value, expected):
+        await self.assert_build_erp_query({ parameter: [value]}, expected)
+
+    async def test__build_query__erp_model__with_several_parameters(self, f5d_id, app):
+        cups = "a_cups"
+        await self.assert_build_erp_query(dict(
+            cups = [cups],
+            **{'from_': ['2022-01-01']}
+        ),[
+            ('utc_timestamp', '>=', '2022-01-01'),
+            ('name', '=', cups),
+        ])
 
     async def test__create_f5d(self, f5d_id, app):
         f5d = await TgCchF5d.create(f5d_id)
