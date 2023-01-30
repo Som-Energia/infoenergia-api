@@ -210,7 +210,8 @@ class TestCchModels:
 
     async def assert_build_mongo_query(self, filters, expected_query):
         from infoenergia_api.utils import get_cch_query
-        filters = dict(filters, type="tg_f1")
+        filters = dict(filters)
+        filters.setdefault('type', "tg_f1")
         cups = filters.pop('cups',None)
         query = await get_cch_query(filters, cups)
         assert query == expected_query
@@ -229,9 +230,23 @@ class TestCchModels:
             {'create_at': {'$gte': datetime.datetime(2022, 1, 1, 0, 0)}}),
         ('downloaded_to', '2022-01-01',
             {'create_at': {'$lte': datetime.datetime(2022, 1, 1, 0, 0)}}),
+        ('type', 'p1',
+            {'type': {'$eq': 'p'}}),
+        ('type', 'p2',
+            {'type': {'$eq': 'p4'}}),
     ])
     async def test__build_query__mongo_model__with_single_parameter(self, parameter, value, expected):
         await self.assert_build_mongo_query({ parameter: [value]}, expected)
+
+    async def test__build_query__mongo_model__with_several_parameters(self):
+        cups = "a_cups"
+        await self.assert_build_mongo_query(dict(
+            cups = [cups],
+            **{'from_': ['2022-01-01']}
+        ),{
+            'datetime': {'$gte': datetime.datetime(2022, 1, 1, 0, 0)},
+            'name': {'$regex': '^a_cups'},
+        })
 
     # Instanciating curve points
 
