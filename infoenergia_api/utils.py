@@ -170,32 +170,24 @@ def get_juridic_filter(erp_client, juridic_type):
 async def get_cch_query(filters, cups):
     query = {}
     if "from_" in filters:
-        query.update(
-            {"datetime": {"$gte": isodate(filters["from_"][0])}}
+        query.setdefault('datetime', {}).update(
+            {"$gte": isodate(filters["from_"][0])}
         )
 
     if "to_" in filters:
-        datetime_query = query.get("datetime", {})
-        datetime_query.update(
+        query.setdefault('datetime', {}).update(
             {"$lte": isodate(filters["to_"][0])}
         )
-        query["datetime"] = datetime_query
 
     if "downloaded_from" in filters:
-        query.update(
-            {
-                "create_at": {
-                    "$gte": isodate(filters["downloaded_from"][0])
-                }
-            }
+        query.setdefault('create_at', {}).update(
+            {"$gte": isodate(filters["downloaded_from"][0])}
         )
 
     if "downloaded_to" in filters:
-        create_at_query = query.get("create_at", {})
-        create_at_query.update(
+        query.setdefault('create_at', {}).update(
             {"$lte": isodate(filters["downloaded_to"][0])}
         )
-        query["create_at"] = create_at_query
 
     if "P1" in filters["type"][0].upper():
         query.update({"type": {"$eq": "p"}})
@@ -204,7 +196,7 @@ async def get_cch_query(filters, cups):
         query.update({"type": {"$eq": "p4"}})
 
     if cups:
-        query.update({"name": {"$regex": "^{}".format(cups[0][:20])}})
+        query.update(name={"$regex": "^{}".format(cups[0][:20])})
 
     return query
 
