@@ -6,6 +6,7 @@ from infoenergia_api.contrib import (
     TgCchAutocons,
 )
 import pytest
+import datetime
 
 class TestCchRequest:
     async def test__get_f5d_by_id__2A(
@@ -204,6 +205,35 @@ class TestCchModels:
             ('utc_timestamp', '>=', '2022-01-01'),
             ('name', '=', cups),
         ])
+
+    # Build queries for Mongo curves
+
+    async def assert_build_mongo_query(self, filters, expected_query):
+        from infoenergia_api.utils import get_cch_query
+        filters = dict(filters, type="tg_f1")
+        cups = filters.pop('cups',None)
+        query = await get_cch_query(filters, cups)
+        assert query == expected_query
+
+    async def test__build_query__mongo_model__no_filters(self):
+        self.assert_build_mongo_query(dict(), [])
+
+    @pytest.mark.parametrize('parameter,value,expected', [
+        ('cups', 'a_cups',
+            {'name': {'$regex': '^a_cups'}}),
+        ('from_', '2022-01-01',
+            {'datetime': {'$gte': datetime.datetime(2022, 1, 1, 0, 0)}}),
+        ('to_', '2022-01-01',
+            {'datetime': {'$lte': datetime.datetime(2022, 1, 1, 0, 0)}}),
+        ('downloaded_from', '2022-01-01',
+            {'create_at': {'$gte': datetime.datetime(2022, 1, 1, 0, 0)}}),
+        ('downloaded_to', '2022-01-01',
+            {'create_at': {'$lte': datetime.datetime(2022, 1, 1, 0, 0)}}),
+    ])
+    async def test__build_query__mongo_model__with_single_parameter(self, parameter, value, expected):
+        await self.assert_build_mongo_query({ parameter: [value]}, expected)
+
+    # Instanciating curve points
 
     async def test__create_f5d(self, f5d_id, app):
         f5d = await TgCchF5d.create(f5d_id)
