@@ -17,6 +17,14 @@ def make_timestamp(date):
     datetime_obj = datetime.strptime(date, "%Y-%m-%d")
     return tz.localize(datetime_obj).isoformat("T")
 
+def iso_format(date):
+    """Format a date in naive iso format"""
+    return date.strftime("%Y-%m-%d %H:%M:%S")
+
+def iso_format_tz(date):
+    """Format a date in tz aware iso format"""
+    return date.strftime("%Y-%m-%d %H:%M:%S%z")
+
 
 def get_id_for_contract(obj, modcontract_ids):
     ids = (obj.search([("modcontractual_id", "=", ids)]) for ids in modcontract_ids)

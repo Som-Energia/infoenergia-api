@@ -8,17 +8,12 @@ from somutils import isodates
 
 from config import config
 
-from ..utils import get_cch_query, make_uuid, get_contract_id
+from ..utils import (
+    get_cch_query, make_uuid, get_contract_id,
+    iso_format, iso_format_tz,
+)
 from ..tasks import get_cups
 from .erp import get_erp_instance
-
-def iso_format(date):
-    """Format a date in naive iso format"""
-    return date.strftime("%Y-%m-%d %H:%M:%S")
-
-def iso_format_tz(date):
-    """Format a date in tz aware iso format"""
-    return date.strftime("%Y-%m-%d %H:%M:%S%z")
 
 class BaseCch:
 
