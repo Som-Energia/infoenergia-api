@@ -175,6 +175,28 @@ class BaseErpCch:
             setattr(self, name, value)
         return self
 
+    async def cch_measures(self, user, contract_id=None):
+        loop = asyncio.get_running_loop()
+        if not self.raw_curve:
+            return {}
+
+        if not contract_id:
+            contract_id = await loop.run_in_executor(
+                None,
+                get_contract_id,
+                self._erp,
+                self.name,
+                user,
+            )
+        if contract_id:
+            return {
+                "contractId": contract_id,
+                "meteringPointId": make_uuid("giscedata.cups.ps", self.name),
+                "measurements": self.measurements,
+            }
+
+        return {}
+
 class TgCchF1(BaseErpCch):
 
     erp_model_name = "tg.f1"
