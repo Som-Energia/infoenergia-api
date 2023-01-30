@@ -172,7 +172,9 @@ async def get_cch_erp_query(filters, cups):
         query += [("create_at", "<=", filters["downloaded_to"][0])]
 
     if cups:
-        query += [("name", "ilike", cups[0][:20])]
+        # Not using ilike because ERP model turns it into
+        # into '=' anyway, see the erp code
+        query += [("name", "=", cups[0])]
 
     return query
 
