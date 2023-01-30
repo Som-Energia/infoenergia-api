@@ -77,28 +77,6 @@ class TgCchF5d(BaseCch):
         cch_fact_curve = await super().create(cch_id, "tg_cchfact")
         return cch_fact_curve
 
-    @classmethod
-    async def build_query(self, filters):
-        result = []
-        if 'from_' in filters:
-            result += [('utc_timestamp', '>=', filters['from_'][0])]
-
-        if 'to_' in filters:
-            result += [('utc_timestamp', '<=', filters['to_'][0])]
-
-        if 'downloaded_from' in filters:
-            result += [('create_at', '>=', filters['downloaded_from'][0])]
-
-        if 'downloaded_to' in filters:
-            result += [('create_at', '<=', filters['downloaded_to'][0])]
-
-        if 'cups' in filters:
-            # Not using ilike because ERP model turns it into
-            # into '=' anyway, see the erp code
-            result += [('name', '=', filters['cups'][0])]
-
-        return result
-
     @property
     def measurements(self):
         if not self.raw_curve:
@@ -183,6 +161,28 @@ class TgCchP1(BaseCch):
 class BaseErpCch:
 
     _erp = get_erp_instance()
+
+    @classmethod
+    async def build_query(self, filters):
+        result = []
+        if 'from_' in filters:
+            result += [('utc_timestamp', '>=', filters['from_'][0])]
+
+        if 'to_' in filters:
+            result += [('utc_timestamp', '<=', filters['to_'][0])]
+
+        if 'downloaded_from' in filters:
+            result += [('create_at', '>=', filters['downloaded_from'][0])]
+
+        if 'downloaded_to' in filters:
+            result += [('create_at', '<=', filters['downloaded_to'][0])]
+
+        if 'cups' in filters:
+            # Not using ilike because ERP model turns it into
+            # into '=' anyway, see the erp code
+            result += [('name', '=', filters['cups'][0])]
+
+        return result
 
     @classmethod
     async def create(cls, cch_id):

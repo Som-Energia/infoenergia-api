@@ -171,8 +171,10 @@ class TestCchRequest:
 
 class TestCchModels:
 
+    # Build queries for ERP curves
+
     async def assert_build_erp_query(self, filters: dict, expected_query: list[tuple]):
-        query = await TgCchF5d.build_query(filters)
+        query = await TgCchF1.build_query(filters)
         assert query == expected_query
 
     async def test__build_query__erp_model__no_filters(self, f5d_id, app):
