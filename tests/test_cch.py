@@ -179,7 +179,7 @@ class TestCchModels:
         assert query == expected_query
 
     async def test__build_query__erp_model__no_filters(self):
-        self.assert_build_erp_query(dict(), [])
+        await self.assert_build_erp_query(dict(), [])
 
     @pytest.mark.parametrize('parameter,value,expected', [
         ('cups', 'a_cups',
@@ -216,7 +216,7 @@ class TestCchModels:
         assert query == expected_query
 
     async def test__build_query__mongo_model__no_filters(self):
-        self.assert_build_mongo_query(dict(), [])
+        await self.assert_build_mongo_query(dict(), {})
 
     @pytest.mark.parametrize('parameter,value,expected', [
         ('cups', 'a_cups',
