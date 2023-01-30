@@ -206,7 +206,7 @@ class TgCchF1(BaseErpCch):
         _utc_timestamp = datetime.strptime(
             self.utc_timestamp, "%Y-%m-%d %H:%M:%S"
         ).replace(tzinfo=pytz.UTC)
-        return _utc_timestamp.strftime("%Y-%m-%d %H:%M:%S%z")
+        return iso_format_tz(_utc_timestamp)
 
     @property
     def measurements(self):
