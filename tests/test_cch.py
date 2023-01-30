@@ -183,13 +183,13 @@ class TestCchModels:
     @pytest.mark.parametrize('parameter,value,expected', [
         ('cups', 'a_cups',
             [('name', '=', 'a_cups'),]),
-        ('from_', '2022-01-01', 
+        ('from_', '2022-01-01',
             [('utc_timestamp', '>=', '2022-01-01'),]),
-        ('to_', '2022-01-01', 
+        ('to_', '2022-01-01',
             [('utc_timestamp', '<=', '2022-01-01'),]),
-        ('downloaded_from', '2022-01-01', 
+        ('downloaded_from', '2022-01-01',
             [('create_at', '>=', '2022-01-01'),]),
-        ('downloaded_to', '2022-01-01', 
+        ('downloaded_to', '2022-01-01',
             [('create_at', '<=', '2022-01-01'),]),
     ])
     async def test__build_query__erp_model__with_single_parameter(self, parameter, value, expected):
