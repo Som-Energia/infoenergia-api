@@ -25,6 +25,9 @@ def iso_format_tz(date):
     """Format a date in tz aware iso format"""
     return date.strftime("%Y-%m-%d %H:%M:%S%z")
 
+def isodate(isodate: str):
+    return datetime.strptime(isodate, "%Y-%m-%d")
+
 
 def get_id_for_contract(obj, modcontract_ids):
     ids = (obj.search([("modcontractual_id", "=", ids)]) for ids in modcontract_ids)
@@ -168,13 +171,13 @@ async def get_cch_query(filters, cups):
     query = {}
     if "from_" in filters:
         query.update(
-            {"datetime": {"$gte": datetime.strptime(filters["from_"][0], "%Y-%m-%d")}}
+            {"datetime": {"$gte": isodate(filters["from_"][0])}}
         )
 
     if "to_" in filters:
         datetime_query = query.get("datetime", {})
         datetime_query.update(
-            {"$lte": datetime.strptime(filters["to_"][0], "%Y-%m-%d")}
+            {"$lte": isodate(filters["to_"][0])}
         )
         query["datetime"] = datetime_query
 
@@ -182,7 +185,7 @@ async def get_cch_query(filters, cups):
         query.update(
             {
                 "create_at": {
-                    "$gte": datetime.strptime(filters["downloaded_from"][0], "%Y-%m-%d")
+                    "$gte": isodate(filters["downloaded_from"][0])
                 }
             }
         )
@@ -190,7 +193,7 @@ async def get_cch_query(filters, cups):
     if "downloaded_to" in filters:
         create_at_query = query.get("create_at", {})
         create_at_query.update(
-            {"$lte": datetime.strptime(filters["downloaded_to"][0], "%Y-%m-%d")}
+            {"$lte": isodate(filters["downloaded_to"][0])}
         )
         query["create_at"] = create_at_query
 
