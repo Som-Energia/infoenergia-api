@@ -77,6 +77,13 @@ class TgCchF5d(BaseCch):
         cch_fact_curve = await super().create(cch_id, "tg_cchfact")
         return cch_fact_curve
 
+    @classmethod
+    def build_query(self, filters):
+        if 'cups' not in filters: return []
+        cups = filters['cups']
+        return [('name', '=', cups)]
+
+
     @property
     def measurements(self):
         if not self.raw_curve:

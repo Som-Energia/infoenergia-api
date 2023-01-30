@@ -169,6 +169,22 @@ class TestCchRequest:
 
 
 class TestCchModels:
+
+    def assert_build_erp_query(self, filters: dict, expected_query: list[tuple]):
+        query = TgCchF5d.build_query(filters)
+        assert query == expected_query
+
+    async def test__build_query__erp_model__with_cups(self, f5d_id, app):
+        cups = "a_cups",
+        self.assert_build_erp_query(dict(
+            cups = cups,
+        ),[
+            ('name', '=', cups),
+        ])
+
+    async def test__build_query__erp_model__no_filters(self, f5d_id, app):
+        self.assert_build_erp_query(dict(), [])
+
     async def test__create_f5d(self, f5d_id, app):
         f5d = await TgCchF5d.create(f5d_id)
         assert isinstance(f5d, TgCchF5d)
