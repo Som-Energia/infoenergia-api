@@ -177,7 +177,7 @@ class TestCchModels:
         query = await TgCchF1.build_query(filters)
         assert query == expected_query
 
-    async def test__build_query__erp_model__no_filters(self, f5d_id, app):
+    async def test__build_query__erp_model__no_filters(self):
         self.assert_build_erp_query(dict(), [])
 
     @pytest.mark.parametrize('parameter,value,expected', [
@@ -195,7 +195,7 @@ class TestCchModels:
     async def test__build_query__erp_model__with_single_parameter(self, parameter, value, expected):
         await self.assert_build_erp_query({ parameter: [value]}, expected)
 
-    async def test__build_query__erp_model__with_several_parameters(self, f5d_id, app):
+    async def test__build_query__erp_model__with_several_parameters(self):
         cups = "a_cups"
         await self.assert_build_erp_query(dict(
             cups = [cups],
