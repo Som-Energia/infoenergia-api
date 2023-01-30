@@ -156,29 +156,6 @@ def get_juridic_filter(erp_client, juridic_type):
     return juridic_filters
 
 
-async def get_cch_erp_query(filters, cups):
-    query = []
-
-    if "from_" in filters:
-        query += [("utc_timestamp", ">=", filters["from_"][0])]
-
-    if "to_" in filters:
-        query += [("utc_timestamp", "<=", filters["to_"][0])]
-
-    if "downloaded_from" in filters:
-        query += [("create_at", ">=", filters["downloaded_from"][0])]
-
-    if "downloaded_to" in filters:
-        query += [("create_at", "<=", filters["downloaded_to"][0])]
-
-    if cups:
-        # Not using ilike because ERP model turns it into
-        # into '=' anyway, see the erp code
-        query += [("name", "=", cups[0])]
-
-    return query
-
-
 async def get_cch_query(filters, cups):
     query = {}
     if "from_" in filters:

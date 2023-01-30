@@ -8,7 +8,7 @@ from somutils import isodates
 
 from config import config
 
-from ..utils import get_cch_query, make_uuid, get_contract_id, get_cch_erp_query
+from ..utils import get_cch_query, make_uuid, get_contract_id
 from ..tasks import get_cups
 from .erp import get_erp_instance
 
@@ -346,11 +346,12 @@ async def get_from_mongo(mongo_client, collection, filters, cups):
 
 async def get_from_erp(erp, collection, filters, cups):
     loop = asyncio.get_running_loop()
+    # REDFLAG: Duplicated information respect ERP_CURVES, makes configuration dont work
     collection_map = {
         "tg_f1": "tg.f1",
         "tg_gennetabeta": "tg.cch_gennetabeta",
         "tg_cchautocons": "tg.cch_autocons",
     }
     model = erp.model(collection_map.get(collection))
-    query = await get_cch_erp_query(filters, cups)
+    query = await BaseErpCch.build_query(dict(filters, cups=cups))
     return await loop.run_in_executor(None, model.search, query)
