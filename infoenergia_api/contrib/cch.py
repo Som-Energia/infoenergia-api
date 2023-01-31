@@ -214,7 +214,6 @@ class BaseErpCch:
         loop = asyncio.get_running_loop()
         erp_model = cls._erp.model(cls.erp_model_name)
         query = await cls.build_query(dict(filters, cups=cups))
-        print(query)
         return await loop.run_in_executor(None, erp_model.search, query)
 
     async def cch_measures(self, user, contract_id=None):
