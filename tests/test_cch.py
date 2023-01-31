@@ -38,7 +38,8 @@ def assert_response_contains(response, expected, expected_status=200):
 def cchquery(app, auth_token, mocked_next_cursor):
     async def inner(contract_id=None, params={}):
         url="/cch/{}".format(contract_id) if contract_id else "/cch"
-        _, response = await app.asgi_client.get(url,
+        _, response = await app.asgi_client.get(
+            url,
             headers={"Authorization": "Bearer {}".format(auth_token)},
             params=params,
         )
@@ -46,8 +47,7 @@ def cchquery(app, auth_token, mocked_next_cursor):
     return inner
 
 class TestCchRequest:
-    async def test__get_f5d_by_id__2A(
-        self, cchquery, scenarios, mocked_next_cursor
+    async def test__get_f5d_by_id__2A(self, cchquery, scenarios
     ):
         response = await cchquery(
             contract_id=scenarios["f5d"]["contractId"],
@@ -70,9 +70,7 @@ class TestCchRequest:
         ))
         assert len(response.json["data"]) == 10
 
-    async def test__get_f5d__all_contracts(
-        self, app, auth_token, scenarios, mocked_next_cursor
-    ):
+    async def test__get_f5d__all_contracts(self, cchquery, scenarios):
         response = await cchquery(
             params = {
                 "to_": "2019-10-08",
@@ -107,8 +105,7 @@ class TestCchRequest:
             data=[],
         ))
 
-    @pytest.mark.skip("Falla por que no encuentra el contrato!")
-    async def test__get_p5d__for_contract_id(self, cchquery, scenarios):
+    async def test__get_p5d__for_contract_id(self, cchquery, scenario):
         response = await cchquery(
             contract_id=scenarios["p5d"]["contractId"],
             params = {
@@ -136,7 +133,7 @@ class TestCchRequest:
             data=[],
         ))
 
-    async def test__get_f1_by_id(self, cchquery, scenarios, mocked_next_cursor):
+    async def test__get_f1_by_id(self, cchquery, scenarios):
         response = await cchquery(
             contract_id=scenarios["tg_f1"]["contractId"],
             params = {
@@ -159,9 +156,7 @@ class TestCchRequest:
         ))
         assert len(response.json["data"]) == 10
 
-    async def test__get_p1__for_contract_id(
-        self, cchquery, scenarios
-    ):
+    async def test__get_p1__for_contract_id(self, cchquery, scenarios):
         response = await cchquery(
             contract_id=scenarios["p1"]["contractId"],
             params = {
@@ -183,9 +178,7 @@ class TestCchRequest:
             ),
         ))
 
-    async def test__get_p2__for_all_contracts(
-        self, app, auth_token, scenarios, mocked_next_cursor
-    ):
+    async def test__get_p2__for_all_contracts(self, cchquery):
         response = await cchquery(
             params = {
                 "from_": "2020-01-28",
