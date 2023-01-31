@@ -32,6 +32,15 @@ class BaseCch:
             setattr(self, name, value)
         return self
 
+    @classmethod
+    async def search(cls, mongo_client, collection, filters, cups):
+        query = await get_cch_query(filters, cups)
+        if collection in ("P1", "P2"):
+            collection = "tg_p1"
+        cch_collection = mongo_client.somenergia[collection]
+
+        return [cch["_id"] async for cch in cch_collection.find(query) if cch.get("_id")]
+
     @property
     def date_cch(self):
         if not self.raw_curve:
@@ -322,21 +331,13 @@ async def async_get_cch(request, contract_id=None):
             return []
 
     collection = filters.get("type")
+    model = cch_model(collection)
     if collection not in config.ERP_CURVES:
-        return await get_from_mongo(
+        return await model.search(
             request.app.ctx.mongo_client, collection, filters, cups
         )
 
     return await get_from_erp(get_erp_instance(), collection, filters, cups)
-
-
-async def get_from_mongo(mongo_client, collection, filters, cups):
-    query = await get_cch_query(filters, cups)
-    if collection in ("P1", "P2"):
-        collection = "tg_p1"
-    cch_collection = mongo_client.somenergia[collection]
-
-    return [cch["_id"] async for cch in cch_collection.find(query) if cch.get("_id")]
 
 
 async def get_from_erp(erp, collection, filters, cups):
