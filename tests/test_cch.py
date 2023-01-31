@@ -143,7 +143,7 @@ class TestCchRequest:
             "data": scenarios["p1"]["cch_data"],
             "cursor": mocked_next_cursor,
             "next_page": "http://{}/cch/0020309?type=P1&cursor=N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=&limit=1".format(
-                response.url.netloc.decode
+                response.url.netloc.decode()
             ),
         }
 
@@ -165,7 +165,7 @@ class TestCchRequest:
             "data": scenarios["p2"]["cch_data"],
             "cursor": mocked_next_cursor,
             "next_page": "http://{}/cch?type=P2&cursor=N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=&limit=1".format(
-                response.url.netloc.decode
+                response.url.netloc.decode()
             ),
         }
 
