@@ -356,7 +356,7 @@ async def async_get_cch(request, contract_id=None):
 
     collection = filters.get("type")
     model = cch_model(collection)
-    if collection not in config.ERP_CURVES:
+    if not issubclass(model, BaseErpCch):
         return await model.search(
             request.app.ctx.mongo_client, collection, filters, cups
         )
