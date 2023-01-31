@@ -76,9 +76,10 @@ class BaseCch:
 
 
 class TgCchF5d(BaseCch):
+    mongo_collection = "tg_cchfact"
     @classmethod
     async def create(cls, cch_id):
-        cch_fact_curve = await super().create(cch_id, "tg_cchfact")
+        cch_fact_curve = await super().create(cch_id, cls.mongo_collection)
         return cch_fact_curve
 
     @property
@@ -103,9 +104,10 @@ class TgCchF5d(BaseCch):
 
 
 class TgCchVal(BaseCch):
+    mongo_collection = "tg_cchval"
     @classmethod
     async def create(cls, cch_id):
-        cch_fact_curve = await super().create(cch_id, "tg_cchval")
+        cch_fact_curve = await super().create(cch_id, cls.mongo_collection)
         return cch_fact_curve
 
     @property
@@ -124,9 +126,10 @@ class TgCchVal(BaseCch):
 
 
 class TgCchP1(BaseCch):
+    mongo_collection = "tg_p1"
     @classmethod
     async def create(cls, cch_id):
-        cch_fact_curve = await super().create(cch_id, "tg_p1")
+        cch_fact_curve = await super().create(cch_id, cls.mongo_collection)
         return cch_fact_curve
 
     @property
