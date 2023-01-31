@@ -201,6 +201,20 @@ class BaseErpCch:
             setattr(self, name, value)
         return self
 
+    @classmethod
+    async def search(cls, erp, collection, filters, cups):
+        loop = asyncio.get_running_loop()
+        # REDFLAG: Duplicated information respect ERP_CURVES, makes configuration dont work
+        collection_map = {
+            "tg_f1": "tg.f1",
+            "tg_gennetabeta": "tg.cch_gennetabeta",
+            "tg_cchautocons": "tg.cch_autocons",
+        }
+        model = erp.model(collection_map.get(collection))
+        query = await cls.build_query(dict(filters, cups=cups))
+        print(query)
+        return await loop.run_in_executor(None, model.search, query)
+
     async def cch_measures(self, user, contract_id=None):
         loop = asyncio.get_running_loop()
         if not self.raw_curve:
@@ -261,6 +275,7 @@ class TgCchF1(BaseErpCch):
 class TgCchGennetabeta(BaseErpCch):
 
     erp_model_name = "tg.cch_gennetabeta"
+    timefield = 'datetime'
 
     @property
     def date_cch(self):
@@ -337,20 +352,8 @@ async def async_get_cch(request, contract_id=None):
             request.app.ctx.mongo_client, collection, filters, cups
         )
 
-    return await get_from_erp(get_erp_instance(), collection, filters, cups)
+    return await model.search(get_erp_instance(), collection, filters, cups)
 
-
-async def get_from_erp(erp, collection, filters, cups):
-    loop = asyncio.get_running_loop()
-    # REDFLAG: Duplicated information respect ERP_CURVES, makes configuration dont work
-    collection_map = {
-        "tg_f1": "tg.f1",
-        "tg_gennetabeta": "tg.cch_gennetabeta",
-        "tg_cchautocons": "tg.cch_autocons",
-    }
-    model = erp.model(collection_map.get(collection))
-    query = await BaseErpCch.build_query(dict(filters, cups=cups))
-    return await loop.run_in_executor(None, model.search, query)
 
 def cch_model(type_name):
     return {
