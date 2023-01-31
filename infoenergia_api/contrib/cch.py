@@ -350,3 +350,15 @@ async def get_from_erp(erp, collection, filters, cups):
     model = erp.model(collection_map.get(collection))
     query = await BaseErpCch.build_query(dict(filters, cups=cups))
     return await loop.run_in_executor(None, model.search, query)
+
+def cch_model(type_name):
+    return {
+        "tg_cchfact": TgCchF5d,
+        "tg_cchval": TgCchVal,
+        "tg_f1": TgCchF1,
+        "tg_gennetabeta": TgCchGennetabeta,
+        "tg_cchautocons": TgCchAutocons,
+        "P1": TgCchP1,
+        "P2": TgCchP1,
+    }.get(type_name, None)
+

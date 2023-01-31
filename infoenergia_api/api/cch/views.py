@@ -9,6 +9,7 @@ from sanic_jwt.decorators import inject_user, protected
 from config import config
 from infoenergia_api.contrib import PaginationLinksMixin
 from infoenergia_api.contrib.cch import (
+    cch_model,
     TgCchF1,
     TgCchF5d,
     TgCchP1,
@@ -24,20 +25,11 @@ bp_cch_measures = Blueprint("cch")
 
 
 class ModelNotFoundError(Exception):
+    # REDFLAG: chh -> cch
     code = "chh_model_not_found"
 
 
 class BaseCchMeasuresContractView(ResponseMixin, PaginationLinksMixin, HTTPMethodView):
-    CCH_MODEL = {
-        "tg_cchfact": TgCchF5d,
-        "tg_cchval": TgCchVal,
-        "tg_f1": TgCchF1,
-        "tg_gennetabeta": TgCchGennetabeta,
-        "tg_cchautocons": TgCchAutocons,
-        "P1": TgCchP1,
-        "P2": TgCchP1,
-    }
-
     async def get_cch_ids(self, request, contract_id=None):
         cch_ids, links, total_results = await self.paginate_results(
             request, function=async_get_cch, contract_id=contract_id
@@ -71,7 +63,7 @@ class CchMeasuresContractIdView(BaseCchMeasuresContractView):
         request.ctx.user = user
 
         try:
-            model = self.CCH_MODEL.get(request.args.get("type", ""))
+            model = cch_model(request.args.get("type", ""))
             if not model:
                 raise ModelNotFoundError()
 
@@ -104,7 +96,7 @@ class CchMeasuresView(BaseCchMeasuresContractView):
         request.ctx.user = user
         logger.info("Getting cch measures")
         try:
-            model = self.CCH_MODEL.get(request.args.get("type", ""))
+            model = cch_model(request.args.get("type", ""))
             if not model:
                 raise ModelNotFoundError()
 
