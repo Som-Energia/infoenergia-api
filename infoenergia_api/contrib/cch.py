@@ -209,16 +209,10 @@ class BaseErpCch:
     @classmethod
     async def search(cls, erp, collection, filters, cups):
         loop = asyncio.get_running_loop()
-        # REDFLAG: Duplicated information respect ERP_CURVES, makes configuration dont work
-        collection_map = {
-            "tg_f1": "tg.f1",
-            "tg_gennetabeta": "tg.cch_gennetabeta",
-            "tg_cchautocons": "tg.cch_autocons",
-        }
-        model = erp.model(collection_map.get(collection))
+        erp_model = erp.model(cls.erp_model_name)
         query = await cls.build_query(dict(filters, cups=cups))
         print(query)
-        return await loop.run_in_executor(None, model.search, query)
+        return await loop.run_in_executor(None, erp_model.search, query)
 
     async def cch_measures(self, user, contract_id=None):
         loop = asyncio.get_running_loop()
