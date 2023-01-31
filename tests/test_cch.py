@@ -183,8 +183,8 @@ class TestCchModels:
         await self.assert_build_erp_query(dict(), [])
 
     @pytest.mark.parametrize('parameter,value,expected', [
-        ('cups', 'a_cups',
-            [('name', '=', 'a_cups'),]),
+        ('cups', '12345678901234567890_this_should_be_kept',
+            [('name', '=', '12345678901234567890_this_should_be_kept'),]),
         ('from_', '2022-01-01',
             [('datetime', '>=', '2022-01-01'),]),
         ('to_', '2022-01-01',
@@ -208,8 +208,8 @@ class TestCchModels:
         ])
 
     @pytest.mark.parametrize('parameter,value,expected', [
-        ('cups', 'a_cups',
-            [('name', '=', 'a_cups'),]),
+        ('cups', '12345678901234567890_this_should_be_kept',
+            [('name', '=', '12345678901234567890_this_should_be_kept'),]),
         ('from_', '2022-01-01',
             [('utc_timestamp', '>=', '2022-01-01'),]), # changes time field
         ('to_', '2022-01-01',
@@ -236,8 +236,8 @@ class TestCchModels:
         await self.assert_build_mongo_query(dict(), {})
 
     @pytest.mark.parametrize('parameter,value,expected', [
-        ('cups', 'a_cups',
-            {'name': {'$regex': '^a_cups'}}),
+        ('cups', '12345678901234567890_this_should_disappear',
+            {'name': {'$regex': '^12345678901234567890'}}),
         ('from_', '2022-01-01',
             {'datetime': {'$gte': datetime.datetime(2022, 1, 1, 0, 0)}}),
         ('to_', '2022-01-01',
