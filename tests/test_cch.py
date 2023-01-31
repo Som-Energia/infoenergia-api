@@ -178,7 +178,7 @@ class TestCchModels:
         query = await model.build_query(filters)
         assert query == expected_query
 
-    async def test__build_query__erp_model__no_filters(self):
+    async def test__build_query__erp_mongo_model__no_filters(self):
         await self.assert_build_erp_query(dict(), [])
 
     @pytest.mark.parametrize('parameter,value,expected', [
@@ -193,10 +193,10 @@ class TestCchModels:
         ('downloaded_to', '2022-01-01',
             [('create_at', '<=', '2022-01-01'),]),
     ])
-    async def test__build_query__erp_model__with_single_parameter(self, parameter, value, expected):
+    async def test__build_query__erp_mongo_model__with_single_parameter(self, parameter, value, expected):
         await self.assert_build_erp_query({ parameter: [value]}, expected)
 
-    async def test__build_query__erp_model__with_several_parameters(self):
+    async def test__build_query__erp_mongo_model__with_several_parameters(self):
         cups = "a_cups"
         await self.assert_build_erp_query(dict(
             cups = [cups],
@@ -218,7 +218,7 @@ class TestCchModels:
         ('downloaded_to', '2022-01-01',
             [('create_at', '<=', '2022-01-01'),]),
     ])
-    async def test__build_query__f1__with_single_parameter(self, parameter, value, expected):
+    async def test__build_query__erp_timescale_model__with_single_parameter(self, parameter, value, expected):
         await self.assert_build_erp_query({ parameter: [value]}, expected, TgCchF1)
 
     # Build queries for Mongo curves
