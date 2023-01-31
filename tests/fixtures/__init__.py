@@ -126,14 +126,15 @@ def mocked_next_cursor(monkeypatch):
     """
     Returns a mocked cursor
     """
-
+    cursor = "N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0="
     async def next_cursor_mock(self, request_id, next_cursor):
-        return "N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0="
+        return cursor
 
     monkeypatch.setattr(
         "infoenergia_api.contrib.pagination.PaginationLinksMixin._next_cursor",
         next_cursor_mock,
     )
+    return cursor
 
 
 @pytest.fixture
