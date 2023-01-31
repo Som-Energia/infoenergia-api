@@ -210,9 +210,9 @@ class BaseErpCch:
         return self
 
     @classmethod
-    async def search(cls, erp, collection, filters, cups):
+    async def search(cls, collection, filters, cups):
         loop = asyncio.get_running_loop()
-        erp_model = erp.model(cls.erp_model_name)
+        erp_model = cls._erp.model(cls.erp_model_name)
         query = await cls.build_query(dict(filters, cups=cups))
         print(query)
         return await loop.run_in_executor(None, erp_model.search, query)
@@ -360,8 +360,7 @@ async def async_get_cch(request, contract_id=None):
         return await model.search(
             request.app.ctx.mongo_client, collection, filters, cups
         )
-
-    return await model.search(get_erp_instance(), collection, filters, cups)
+    return await model.search(collection, filters, cups)
 
 
 def cch_model(type_name):
