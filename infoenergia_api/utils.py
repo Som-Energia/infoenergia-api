@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime
+from datetime import datetime, timedelta, date
 import pytz
 
 from .api.registration.models import UserCategory
@@ -25,9 +25,16 @@ def iso_format_tz(date):
     """Format a date in tz aware iso format"""
     return date.strftime("%Y-%m-%d %H:%M:%S%z")
 
-def isodate(isodate: str):
+def isodate2datetime(isodate: str):
     return datetime.strptime(isodate, "%Y-%m-%d")
 
+def isodate(isodate: str):
+    return datetime.strptime(isodate, "%Y-%m-%d").date()
+
+def increment_isodate(aisodate, days=1):
+    date = isodate(aisodate)
+    newdate = date + timedelta(days=days)
+    return str(newdate)
 
 def get_id_for_contract(obj, modcontract_ids):
     ids = (obj.search([("modcontractual_id", "=", ids)]) for ids in modcontract_ids)
@@ -171,22 +178,22 @@ async def get_cch_query(filters, cups):
     query = {}
     if "from_" in filters:
         query.setdefault('datetime', {}).update(
-            {"$gte": isodate(filters["from_"][0])}
+            {"$gte": isodate2datetime(filters["from_"][0])}
         )
 
     if "to_" in filters:
         query.setdefault('datetime', {}).update(
-            {"$lte": isodate(filters["to_"][0])}
+            {"$lte": isodate2datetime(filters["to_"][0])}
         )
 
     if "downloaded_from" in filters:
         query.setdefault('create_at', {}).update(
-            {"$gte": isodate(filters["downloaded_from"][0])}
+            {"$gte": isodate2datetime(filters["downloaded_from"][0])}
         )
 
     if "downloaded_to" in filters:
         query.setdefault('create_at', {}).update(
-            {"$lte": isodate(filters["downloaded_to"][0])}
+            {"$lte": isodate2datetime(filters["downloaded_to"][0])}
         )
 
     if "P1" in filters["type"][0].upper():
