@@ -170,10 +170,10 @@ class BaseErpCch:
     async def build_query(self, filters):
         result = []
         if 'from_' in filters:
-            result += [('utc_timestamp', '>=', filters['from_'][0])]
+            result += [('datetime', '>=', filters['from_'][0])]
 
         if 'to_' in filters:
-            result += [('utc_timestamp', '<=', filters['to_'][0])]
+            result += [('datetime', '<=', filters['to_'][0])]
 
         if 'downloaded_from' in filters:
             result += [('create_at', '>=', filters['downloaded_from'][0])]

@@ -185,9 +185,9 @@ class TestCchModels:
         ('cups', 'a_cups',
             [('name', '=', 'a_cups'),]),
         ('from_', '2022-01-01',
-            [('utc_timestamp', '>=', '2022-01-01'),]),
+            [('datetime', '>=', '2022-01-01'),]),
         ('to_', '2022-01-01',
-            [('utc_timestamp', '<=', '2022-01-01'),]),
+            [('datetime', '<=', '2022-01-01'),]),
         ('downloaded_from', '2022-01-01',
             [('create_at', '>=', '2022-01-01'),]),
         ('downloaded_to', '2022-01-01',
@@ -202,7 +202,7 @@ class TestCchModels:
             cups = [cups],
             **{'from_': ['2022-01-01']}
         ),[
-            ('utc_timestamp', '>=', '2022-01-01'),
+            ('datetime', '>=', '2022-01-01'),
             ('name', '=', cups),
         ])
 
