@@ -10,7 +10,7 @@ from config import config
 
 from ..utils import (
     get_cch_query, make_uuid, get_contract_id,
-    iso_format, iso_format_tz,
+    iso_format, iso_format_tz, increment_isodate
 )
 from ..tasks import get_cups
 from .erp import get_erp_instance
@@ -165,15 +165,20 @@ class TgCchP1(BaseCch):
 class BaseErpCch:
 
     _erp = get_erp_instance()
+    timefield = 'datetime'
 
     @classmethod
-    async def build_query(self, filters):
+    def to_filter(cls, filters):
+        return [(cls.timefield, '<', increment_isodate(filters['to_'][0]))]
+
+    @classmethod
+    async def build_query(cls, filters):
         result = []
         if 'from_' in filters:
-            result += [('datetime', '>=', filters['from_'][0])]
+            result += [(cls.timefield, '>=', filters['from_'][0])]
 
         if 'to_' in filters:
-            result += [('datetime', '<=', filters['to_'][0])]
+            result += cls.to_filter(filters)
 
         if 'downloaded_from' in filters:
             result += [('create_at', '>=', filters['downloaded_from'][0])]
@@ -237,7 +242,14 @@ class BaseErpCch:
 
         return {}
 
-class TgCchF1(BaseErpCch):
+class BaseTimescaleErpCch(BaseErpCch):
+    timefield = 'utc_timestamp'
+
+    @classmethod
+    def to_filter(cls, filters):
+        return [(cls.timefield, '<=', filters['to_'][0])]
+
+class TgCchF1(BaseTimescaleErpCch):
 
     erp_model_name = "tg.f1"
 

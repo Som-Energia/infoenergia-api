@@ -174,8 +174,8 @@ class TestCchModels:
 
     # Build queries for ERP curves
 
-    async def assert_build_erp_query(self, filters: dict, expected_query: list[tuple]):
-        query = await TgCchF1.build_query(filters)
+    async def assert_build_erp_query(self, filters, expected_query, model=TgCchGennetabeta):
+        query = await model.build_query(filters)
         assert query == expected_query
 
     async def test__build_query__erp_model__no_filters(self):
@@ -187,7 +187,7 @@ class TestCchModels:
         ('from_', '2022-01-01',
             [('datetime', '>=', '2022-01-01'),]),
         ('to_', '2022-01-01',
-            [('datetime', '<=', '2022-01-01'),]),
+            [('datetime', '<', '2022-01-02'),]), # the date is next day
         ('downloaded_from', '2022-01-01',
             [('create_at', '>=', '2022-01-01'),]),
         ('downloaded_to', '2022-01-01',
@@ -205,6 +205,21 @@ class TestCchModels:
             ('datetime', '>=', '2022-01-01'),
             ('name', '=', cups),
         ])
+
+    @pytest.mark.parametrize('parameter,value,expected', [
+        ('cups', 'a_cups',
+            [('name', '=', 'a_cups'),]),
+        ('from_', '2022-01-01',
+            [('utc_timestamp', '>=', '2022-01-01'),]), # changes time field
+        ('to_', '2022-01-01',
+            [('utc_timestamp', '<=', '2022-01-01'),]), # changes time field
+        ('downloaded_from', '2022-01-01',
+            [('create_at', '>=', '2022-01-01'),]),
+        ('downloaded_to', '2022-01-01',
+            [('create_at', '<=', '2022-01-01'),]),
+    ])
+    async def test__build_query__f1__with_single_parameter(self, parameter, value, expected):
+        await self.assert_build_erp_query({ parameter: [value]}, expected, TgCchF1)
 
     # Build queries for Mongo curves
 
