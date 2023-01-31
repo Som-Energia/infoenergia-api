@@ -26,12 +26,16 @@ def iso_format_tz(date):
     return date.strftime("%Y-%m-%d %H:%M:%S%z")
 
 def isodate2datetime(isodate: str):
+    """Given an iso formated date, returns a naive datetime at 00:00"""
     return datetime.strptime(isodate, "%Y-%m-%d")
 
 def isodate(isodate: str):
+    """Given an iso formated date, returns ae date"""
     return datetime.strptime(isodate, "%Y-%m-%d").date()
 
 def increment_isodate(aisodate, days=1):
+    """Given an iso formated date, returns another iso date adding
+    or substracting the given number of days"""
     date = isodate(aisodate)
     newdate = date + timedelta(days=days)
     return str(newdate)
