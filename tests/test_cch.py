@@ -1,3 +1,4 @@
+from infoenergia_api.utils import get_cch_query
 from infoenergia_api.contrib import (
     TgCchF5d,
     TgCchF1,
@@ -224,7 +225,7 @@ class TestCchModels:
     # Build queries for Mongo curves
 
     async def assert_build_mongo_query(self, filters, expected_query):
-        from infoenergia_api.utils import get_cch_query
+        # TODO: get_cch_query should not be the frontend
         filters = dict(filters)
         filters.setdefault('type', "tg_f1")
         cups = filters.pop('cups',None)
@@ -261,6 +262,30 @@ class TestCchModels:
         ),{
             'datetime': {'$gte': datetime.datetime(2022, 1, 1, 0, 0)},
             'name': {'$regex': '^a_cups'},
+        })
+
+    async def test__build_query__mongo_model__with_from_and_to(self):
+        await self.assert_build_mongo_query({
+            'from_': ['2022-01-01'],
+            'to_': ['2022-01-02'],
+        },{
+            'datetime': {
+                # Both conditions on datetime are joined
+                '$gte': datetime.datetime(2022, 1, 1, 0, 0),
+                '$lte': datetime.datetime(2022, 1, 2, 0, 0),
+            },
+        })
+
+    async def test__build_query__mongo_model__with_downloaded_from_and_to(self):
+        await self.assert_build_mongo_query({
+            'downloaded_from': ['2022-01-01'],
+            'downloaded_to': ['2022-01-02'],
+        },{
+            'create_at': {
+                # Both conditions on datetime are joined
+                '$gte': datetime.datetime(2022, 1, 1, 0, 0),
+                '$lte': datetime.datetime(2022, 1, 2, 0, 0),
+            },
         })
 
     # Instanciating curve points
