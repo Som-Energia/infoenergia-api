@@ -47,8 +47,7 @@ def cchquery(app, auth_token, mocked_next_cursor):
     return inner
 
 class TestCchRequest:
-    async def test__get_f5d_by_id__2A(self, cchquery, scenarios
-    ):
+    async def test__get_f5d_by_id__2A(self, cchquery, scenarios):
         response = await cchquery(
             contract_id=scenarios["f5d"]["contractId"],
             params={
@@ -105,7 +104,7 @@ class TestCchRequest:
             data=[],
         ))
 
-    async def test__get_p5d__for_contract_id(self, cchquery, scenario):
+    async def test__get_p5d__for_contract_id(self, cchquery, scenarios):
         response = await cchquery(
             contract_id=scenarios["p5d"]["contractId"],
             params = {
@@ -178,7 +177,7 @@ class TestCchRequest:
             ),
         ))
 
-    async def test__get_p2__for_all_contracts(self, cchquery):
+    async def test__get_p2__for_all_contracts(self, cchquery, scenarios):
         response = await cchquery(
             params = {
                 "from_": "2020-01-28",
