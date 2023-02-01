@@ -269,7 +269,7 @@ class TestCchModels:
         ('from_', '2022-01-01',
             {'datetime': {'$gte': datetime.datetime(2022, 1, 1, 0, 0)}}),
         ('to_', '2022-01-01',
-            {'datetime': {'$lte': datetime.datetime(2022, 1, 1, 0, 0)}}),
+            {'datetime': {'$lte': datetime.datetime(2022, 1, 2, 0, 0)}}),
         ('downloaded_from', '2022-01-01',
             {'create_at': {'$gte': datetime.datetime(2022, 1, 1, 0, 0)}}),
         ('downloaded_to', '2022-01-01',
@@ -300,7 +300,7 @@ class TestCchModels:
             'datetime': {
                 # Both conditions on datetime are joined
                 '$gte': datetime.datetime(2022, 1, 1, 0, 0),
-                '$lte': datetime.datetime(2022, 1, 2, 0, 0),
+                '$lte': datetime.datetime(2022, 1, 3, 0, 0),
             },
         })
 

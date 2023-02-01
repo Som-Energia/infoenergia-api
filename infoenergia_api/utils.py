@@ -187,7 +187,7 @@ async def get_cch_query(filters, cups):
 
     if "to_" in filters:
         query.setdefault('datetime', {}).update(
-            {"$lte": isodate2datetime(filters["to_"][0])}
+            {"$lte": isodate2datetime(increment_isodate(filters["to_"][0]))}
         )
 
     if "downloaded_from" in filters:
