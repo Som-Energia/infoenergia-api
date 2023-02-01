@@ -60,7 +60,7 @@ class TestCchRequest:
         cursor = response.json.get("cursor", "NO_CURSOR_RETURNED")
         assert_response_contains(response, ns(
             count=10,
-            total_results=721,
+            total_results=745,
             cursor=cursor,
             next_page="http://{}/cch/0067411?type=tg_cchfact&cursor={}&limit=10".format(
                 response.url.netloc.decode(),
@@ -168,7 +168,7 @@ class TestCchRequest:
         cursor = response.json.get("cursor", "NO_CURSOR_RETURNED")
         assert_response_equal(response, ns(
             count=1,
-            total_results=265,
+            total_results=289,
             data=scenarios["p1"]["cch_data"],
             cursor=cursor,
             next_page="http://{}/cch/0020309?type=P1&cursor={}&limit=1".format(
@@ -180,9 +180,9 @@ class TestCchRequest:
     async def test__get_p2__for_all_contracts(self, cchquery, scenarios):
         response = await cchquery(
             params = {
+                "type": "P2",
                 "from_": "2020-01-28",
                 "to_": "2020-01-29",
-                "type": "P2",
                 "limit": 1,
             }
         )
