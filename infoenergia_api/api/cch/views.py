@@ -25,8 +25,7 @@ bp_cch_measures = Blueprint("cch")
 
 
 class ModelNotFoundError(Exception):
-    # REDFLAG: chh -> cch
-    code = "chh_model_not_found"
+    code = "cch_model_not_found"
 
 
 class BaseCchMeasuresContractView(ResponseMixin, PaginationLinksMixin, HTTPMethodView):
