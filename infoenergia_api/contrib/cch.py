@@ -9,8 +9,10 @@ from somutils import isodates
 from config import config
 
 from ..utils import (
-    get_cch_query, make_uuid, get_contract_id,
-    iso_format, iso_format_tz, increment_isodate
+    make_uuid, get_contract_id,
+    iso_format, iso_format_tz,
+    increment_isodate,
+    isodate2datetime,
 )
 from ..tasks import get_cups
 from .erp import get_erp_instance
@@ -33,8 +35,42 @@ class BaseCch:
         return self
 
     @classmethod
+    async def build_query(cls, filters):
+        query = {}
+        if "from_" in filters:
+            query.setdefault('datetime', {}).update(
+                {"$gte": isodate2datetime(filters["from_"][0])}
+            )
+
+        if "to_" in filters:
+            query.setdefault('datetime', {}).update(
+                {"$lte": isodate2datetime(increment_isodate(filters["to_"][0]))}
+            )
+
+        if "downloaded_from" in filters:
+            query.setdefault('create_at', {}).update(
+                {"$gte": isodate2datetime(filters["downloaded_from"][0])}
+            )
+
+        if "downloaded_to" in filters:
+            query.setdefault('create_at', {}).update(
+                {"$lte": isodate2datetime(filters["downloaded_to"][0])}
+            )
+
+        if "P1" in filters["type"][0].upper():
+            query.update({"type": {"$eq": "p"}})
+
+        if "P2" in filters["type"][0].upper():
+            query.update({"type": {"$eq": "p4"}})
+
+        if "cups" in filters:
+            query.update(name={"$regex": "^{}".format(filters["cups"][0][:20])})
+
+        return query
+
+    @classmethod
     async def search(cls, mongo_client, collection, filters, cups):
-        query = await get_cch_query(filters, cups)
+        query = await cls.build_query(dict(filters, cups=cups))
         if collection in ("P1", "P2"):
             collection = "tg_p1"
         cch_collection = mongo_client.somenergia[collection]
@@ -352,14 +388,16 @@ async def async_get_cch(request, contract_id=None):
         cups = await loop.run_in_executor(None, get_cups, request, contract_id)
         if not cups:
             return []
+            raise Exception("Contract not availble")
 
-    collection = filters.get("type")
-    model = cch_model(collection)
-    if not issubclass(model, BaseErpCch):
-        return await model.search(
-            request.app.ctx.mongo_client, collection, filters, cups
+    curve_type = filters.get("type")
+    print(curve_type)
+    Cch = cch_model(curve_type)
+    if not issubclass(Cch, BaseErpCch):
+        return await Cch.search(
+            request.app.ctx.mongo_client, curve_type, filters, cups
         )
-    return await model.search(collection, filters, cups)
+    return await Cch.search(curve_type, filters, cups)
 
 
 def cch_model(type_name):

@@ -1,10 +1,10 @@
-from infoenergia_api.utils import get_cch_query
 from infoenergia_api.contrib import (
     TgCchF5d,
     TgCchF1,
     TgCchP1,
     TgCchGennetabeta,
     TgCchAutocons,
+    cch_model,
 )
 import pytest
 import datetime
@@ -253,11 +253,10 @@ class TestCchModels:
     # Build queries for Mongo curves
 
     async def assert_build_mongo_query(self, filters, expected_query):
-        # TODO: get_cch_query should not be the frontend
         filters = dict(filters)
-        filters.setdefault('type', "tg_f1")
-        cups = filters.pop('cups',None)
-        query = await get_cch_query(filters, cups)
+        filters.setdefault("type", ['tg_cchfact'])
+        model = cch_model(filters['type'][0])
+        query = await model.build_query(filters)
         assert query == expected_query
 
     async def test__build_query__mongo_model__no_filters(self):
@@ -274,9 +273,9 @@ class TestCchModels:
             {'create_at': {'$gte': datetime.datetime(2022, 1, 1, 0, 0)}}),
         ('downloaded_to', '2022-01-01',
             {'create_at': {'$lte': datetime.datetime(2022, 1, 1, 0, 0)}}),
-        ('type', 'p1',
+        ('type', 'P1',
             {'type': {'$eq': 'p'}}),
-        ('type', 'p2',
+        ('type', 'P2',
             {'type': {'$eq': 'p4'}}),
     ])
     async def test__build_query__mongo_model__with_single_parameter(self, parameter, value, expected):

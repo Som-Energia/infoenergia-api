@@ -178,39 +178,6 @@ def get_juridic_filter(erp_client, juridic_type):
     return juridic_filters
 
 
-async def get_cch_query(filters, cups):
-    query = {}
-    if "from_" in filters:
-        query.setdefault('datetime', {}).update(
-            {"$gte": isodate2datetime(filters["from_"][0])}
-        )
-
-    if "to_" in filters:
-        query.setdefault('datetime', {}).update(
-            {"$lte": isodate2datetime(increment_isodate(filters["to_"][0]))}
-        )
-
-    if "downloaded_from" in filters:
-        query.setdefault('create_at', {}).update(
-            {"$gte": isodate2datetime(filters["downloaded_from"][0])}
-        )
-
-    if "downloaded_to" in filters:
-        query.setdefault('create_at', {}).update(
-            {"$lte": isodate2datetime(filters["downloaded_to"][0])}
-        )
-
-    if "P1" in filters["type"][0].upper():
-        query.update({"type": {"$eq": "p"}})
-
-    if "P2" in filters["type"][0].upper():
-        query.update({"type": {"$eq": "p4"}})
-
-    if cups:
-        query.update(name={"$regex": "^{}".format(cups[0][:20])})
-
-    return query
-
 
 def get_contract_id(erp_client, cups, user):
     contract_obj = erp_client.model("giscedata.polissa")
