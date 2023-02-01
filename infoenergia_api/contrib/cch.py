@@ -63,13 +63,15 @@ class BaseCch:
         if "P2" in filters["type"][0].upper():
             query.update({"type": {"$eq": "p4"}})
 
-        if "cups" in filters:
+        if filters.get("cups",None):
             query.update(name={"$regex": "^{}".format(filters["cups"][0][:20])})
 
         return query
 
     @classmethod
-    async def search(cls, mongo_client, collection, filters, cups):
+    async def search(cls, collection, filters, cups):
+        app = Sanic.get_app()
+        mongo_client = app.ctx.mongo_client
         query = await cls.build_query(dict(filters, cups=cups))
         if collection in ("P1", "P2"):
             collection = "tg_p1"
@@ -393,10 +395,6 @@ async def async_get_cch(request, contract_id=None):
     curve_type = filters.get("type")
     print(curve_type)
     Cch = cch_model(curve_type)
-    if not issubclass(Cch, BaseErpCch):
-        return await Cch.search(
-            request.app.ctx.mongo_client, curve_type, filters, cups
-        )
     return await Cch.search(curve_type, filters, cups)
 
 
