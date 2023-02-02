@@ -147,7 +147,7 @@ class TestCchRequest:
             count=10,
             total_results=13201,
             cursor=cursor,
-            next_page="http://{}/cch/{}?type=tg_f1&cursor={}=&limit=10".format(
+            next_page="http://{}/cch/{}?type=tg_f1&cursor={}&limit=10".format(
                 response.url.netloc.decode(),
                 scenarios["tg_f1"]["contractId"],
                 cursor,
