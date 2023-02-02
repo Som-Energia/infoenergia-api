@@ -71,7 +71,10 @@ Setup test data (Requires VPN access):
 ```bash
 # From the directory containing infoenergia-api
 git clone git@gitlab.somenergia.coop:IT/it-docs.git -o testdata
-cd infoenergia-api/tests
+git clone git@gitlab.somenergia.coop:IT/somenergia-back2backdata.git
+cd infoenergia-api/
+ln -s ../somenergia-back2backdata/infoenergia-api/testdata
+cd tests
 ln -s ../../testdata/b2bs/json4test.yaml
 cd ..
 ```
