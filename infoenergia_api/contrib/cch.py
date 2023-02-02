@@ -393,7 +393,6 @@ async def async_get_cch(request, contract_id=None):
             raise Exception("Contract not availble")
 
     curve_type = filters.get("type")
-    print(curve_type)
     Cch = cch_model(curve_type)
     return await Cch.search(curve_type, filters, cups)
 
