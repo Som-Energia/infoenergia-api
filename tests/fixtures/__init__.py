@@ -158,7 +158,7 @@ def p1_id():
     """
     Returns a random p1 curve point id
     """
-    return "5e1d8dd112cd738e89bc42eb"
+    return "5c115125cb2f477212353420"
 
 
 @pytest.fixture
