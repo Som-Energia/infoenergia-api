@@ -166,7 +166,7 @@ def p2_id():
     """
     Returns a random p2 curve point id
     """
-    return "5e3011f912cd738e8991aca7"
+    return "5de09cdecb2f477212bf065d"
 
 @pytest.fixture
 def gennetabeta_id():
