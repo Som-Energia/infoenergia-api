@@ -177,27 +177,19 @@ class TestCchRequest:
             ),
         ))
 
-    async def test__get_p2__for_all_contracts(self, cchquery, scenarios):
+    async def test__get_p2__for_all_contracts(self, cchquery, scenarios, yaml_snapshot):
         response = await cchquery(
             params = {
                 "type": "P2",
                 "from_": "2020-01-28",
-                "to_": "2020-01-29",
+                "to_": "2020-01-28",
                 "limit": 1,
             }
         )
-        cursor = response.json.get("cursor", "NO_CURSOR_RETURNED")
-        assert_response_equal(response, ns(
-            count=1,
-            total_results=629,
-            data=scenarios["p2"]["cch_data"],
-            cursor=cursor,
-            next_page="http://{}/cch?type=P2&cursor={}&limit=1".format(
-                response.url.netloc.decode(),
-                cursor,
-            ),
+        yaml_snapshot(ns(
+            status=response.status,
+            json=response.json,
         ))
-
 
 class TestCchModels:
 
