@@ -496,10 +496,7 @@ class Contract(object):
                 "profile": self.eprofile,
                 "customisedServiceParameters": self.service,
             },
-            "devices": {
-                self.tipo_medida,
-                self.devices,
-            },
+            "devices": self.devices,
             "report": self.report,
             "version": self.version,
             "experimentalGroupUserTest": False,
