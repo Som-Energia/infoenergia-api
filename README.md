@@ -85,10 +85,24 @@ Then just:
 $ pipenv run pytest
 ```
 
+## Upgrading dependencies
+
+pipenv install package # Use --dev for development dependencies
+pipenv lock  # To upgrade all versions, add --keep-lock to just add the new deps
+
 
 ## Usage
 
 ## Changes
+
+### 2.2.0
+
+- Added cch curves `tg_gennetabeta` and `tg_cchautocons`
+- Fix: empty points were returned if the name/CUPS was different 
+- Breaking change: all curves include the `to_` date
+- Security: Limit the jwt decoding algorithms to avoid using RAW
+  - This would enable an attacker bypassing token signature check
+    by crafting a token whose signature is set to RAW
 
 ### 2.1.1
 - TgCchP1 reads from tg_p1 collection
