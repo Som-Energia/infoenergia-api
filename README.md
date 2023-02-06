@@ -90,6 +90,13 @@ $ pipenv run pytest
 pipenv install package # Use --dev for development dependencies
 pipenv lock  # To upgrade all versions, add --keep-lock to just add the new deps
 
+## Release process
+
+- Determine the nes semantic version `M.m.r`
+- Update version at `infoenergia_api/__init__.py`
+- Update changelog at `README.md`
+- Commit with "bump to vM.m.r"
+- Tag the commit with `vM.m.r`
 
 ## Usage
 
