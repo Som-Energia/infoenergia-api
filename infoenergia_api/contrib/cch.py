@@ -162,8 +162,7 @@ class TgCchVal(BaseCch):
             "dateUpdate": iso_format(self.update_at),
         }
 
-
-class TgCchP1(BaseCch):
+class TgCchPn(BaseCch):
     mongo_collection = "tg_p1"
     @classmethod
     async def create(cls, cch_id):
@@ -202,6 +201,19 @@ class TgCchP1(BaseCch):
             "dateUpdate": iso_format(self.update_at),
         }
 
+class TgCchP1(TgCchPn):
+    @classmethod
+    async def build_query(cls, filters):
+        query = await super().build_query(filters)
+        query.update({"type": {"$eq": "p"}})
+        return query
+
+class TgCchP2(TgCchPn):
+    @classmethod
+    async def build_query(cls, filters):
+        query = await super().build_query(filters)
+        query.update({"type": {"$eq": "p4"}})
+        return query
 
 class BaseErpCch:
 
@@ -405,6 +417,6 @@ def cch_model(type_name):
         "tg_gennetabeta": TgCchGennetabeta,
         "tg_cchautocons": TgCchAutocons,
         "P1": TgCchP1,
-        "P2": TgCchP1,
+        "P2": TgCchP2,
     }.get(type_name, None)
 
