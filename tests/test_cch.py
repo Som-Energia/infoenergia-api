@@ -191,6 +191,42 @@ class TestCchRequest:
             json=response.json,
         ))
 
+    contract_collective_self_consumption = '0069752'
+    contract_with_readings = contract_collective_self_consumption # also complies
+    # Most Px curves are received with CUPS with a different suffix
+    # (border point suffix) than the contract as in ERP: 0F vs xP
+    #TODO: Make nP suffix to work
+    contract_with_px_and_0F_cups = '0188943'
+    contract_with_f1_curves = '0220579'
+
+    @pytest.mark.parametrize('curve_type,contract_id', [
+        ('tg_f1', contract_with_f1_curves),
+        ('tg_cchval', contract_with_readings),
+        ('tg_cchfact', contract_with_readings),
+        ('tg_gennetabeta', contract_collective_self_consumption),
+        ('tg_cchautocons', contract_collective_self_consumption),
+        ('P1', contract_with_px_and_0F_cups),
+        ('P2', contract_with_px_and_0F_cups), # 4 times more curves than P1 but paginated
+    ])
+    async def test__two_days_curve(self, curve_type, contract_id, cchquery, yaml_snapshot):
+        response = await cchquery(
+            contract_id=contract_id,
+            params = {
+                "type": curve_type,
+                "from_": "2022-11-29",
+                "to_": "2022-11-30",
+            }
+        )
+        if response.json.get('data',[]):
+            response.json['data'] = list(sorted(
+                response.json['data'], key=lambda x: x.get('measurements',{}).get('date','')
+            ))
+        yaml_snapshot(ns(
+            status=response.status,
+            json=response.json,
+        ))
+
+
 class TestCchModels:
 
     # Build queries for ERP curves
