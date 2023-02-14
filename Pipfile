@@ -23,7 +23,6 @@ ipdb = "*"
 black = "*"
 
 [packages]
-connexion = "*"
 python-jose = "*"
 sanic = ">=22.3"
 erppeek = "*"
@@ -43,3 +42,4 @@ aiohttp = "*"
 hiredis = "*"
 somutils = "*"
 yamlns = "*"
+connexion = {extras = ["swagger-ui"], version = "*"}

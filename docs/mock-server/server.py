@@ -11,7 +11,7 @@ from werkzeug.exceptions import Unauthorized
 BASE_DIR = os.path.dirname(os.path.abspath(__name__))
 
 with open(os.path.join(BASE_DIR, "tests/json4test.yaml")) as f:
-    json4test = yaml.load(f.read())
+    json4test = yaml.load(f.read(), Loader=yaml.SafeLoader)
 
 
 JWT_ISSUER = "som-energia"
