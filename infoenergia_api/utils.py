@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime
+from datetime import datetime, timedelta, date
 import pytz
 
 from .api.registration.models import UserCategory
@@ -17,6 +17,28 @@ def make_timestamp(date):
     datetime_obj = datetime.strptime(date, "%Y-%m-%d")
     return tz.localize(datetime_obj).isoformat("T")
 
+def iso_format(date):
+    """Format a date in naive iso format"""
+    return date.strftime("%Y-%m-%d %H:%M:%S")
+
+def iso_format_tz(date):
+    """Format a date in tz aware iso format"""
+    return date.strftime("%Y-%m-%d %H:%M:%S%z")
+
+def isodate2datetime(isodate: str):
+    """Given an iso formated date, returns a naive datetime at 00:00"""
+    return datetime.strptime(isodate, "%Y-%m-%d")
+
+def isodate(isodate: str):
+    """Given an iso formated date, returns ae date"""
+    return datetime.strptime(isodate, "%Y-%m-%d").date()
+
+def increment_isodate(aisodate, days=1):
+    """Given an iso formated date, returns another iso date adding
+    or substracting the given number of days"""
+    date = isodate(aisodate)
+    newdate = date + timedelta(days=days)
+    return str(newdate)
 
 def get_id_for_contract(obj, modcontract_ids):
     ids = (obj.search([("modcontractual_id", "=", ids)]) for ids in modcontract_ids)
@@ -156,68 +178,6 @@ def get_juridic_filter(erp_client, juridic_type):
     return juridic_filters
 
 
-async def get_cch_erp_query(filters, cups):
-    query = []
-
-    if "from_" in filters:
-        query += [("utc_timestamp", ">=", filters["from_"][0])]
-
-    if "to_" in filters:
-        query += [("utc_timestamp", "<=", filters["to_"][0])]
-
-    if "downloaded_from" in filters:
-        query += [("create_at", ">=", filters["downloaded_from"][0])]
-
-    if "downloaded_to" in filters:
-        query += [("create_at", "<=", filters["downloaded_to"][0])]
-
-    if cups:
-        query += [("name", "ilike", cups[0][:20])]
-
-    return query
-
-
-async def get_cch_query(filters, cups):
-    query = {}
-    if "from_" in filters:
-        query.update(
-            {"datetime": {"$gte": datetime.strptime(filters["from_"][0], "%Y-%m-%d")}}
-        )
-
-    if "to_" in filters:
-        datetime_query = query.get("datetime", {})
-        datetime_query.update(
-            {"$lte": datetime.strptime(filters["to_"][0], "%Y-%m-%d")}
-        )
-        query["datetime"] = datetime_query
-
-    if "downloaded_from" in filters:
-        query.update(
-            {
-                "create_at": {
-                    "$gte": datetime.strptime(filters["downloaded_from"][0], "%Y-%m-%d")
-                }
-            }
-        )
-
-    if "downloaded_to" in filters:
-        create_at_query = query.get("create_at", {})
-        create_at_query.update(
-            {"$lte": datetime.strptime(filters["downloaded_to"][0], "%Y-%m-%d")}
-        )
-        query["create_at"] = create_at_query
-
-    if "P1" in filters["type"][0].upper():
-        query.update({"type": {"$eq": "p"}})
-
-    if "P2" in filters["type"][0].upper():
-        query.update({"type": {"$eq": "p4"}})
-
-    if cups:
-        query.update({"name": {"$regex": "^{}".format(cups[0][:20])}})
-
-    return query
-
 
 def get_contract_id(erp_client, cups, user):
     contract_obj = erp_client.model("giscedata.polissa")
@@ -231,7 +191,7 @@ def get_contract_id(erp_client, cups, user):
     filters = get_contract_user_filters(erp_client, user, filters)
     contract = contract_obj.search(filters)
     if not contract:
-        filters += [("cups.name", "ilike", cups[:20])]
+        filters[3] = ("cups.name", "ilike", cups[:20])
         contract = contract_obj.search(filters)
     if contract:
         return contract_obj.read(contract, ["name"])[0]["name"]

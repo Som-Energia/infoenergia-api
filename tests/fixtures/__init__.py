@@ -126,20 +126,21 @@ def mocked_next_cursor(monkeypatch):
     """
     Returns a mocked cursor
     """
-
+    cursor = "N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0="
     async def next_cursor_mock(self, request_id, next_cursor):
-        return "N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0="
+        return cursor
 
     monkeypatch.setattr(
         "infoenergia_api.contrib.pagination.PaginationLinksMixin._next_cursor",
         next_cursor_mock,
     )
+    return cursor
 
 
 @pytest.fixture
 def f5d_id():
     """
-    Returns a random f5d curve id
+    Returns a random f5d curve point id
     """
     return "5c2dd783cb2f477212c77abb"
 
@@ -147,7 +148,7 @@ def f5d_id():
 @pytest.fixture
 def f1_id():
     """
-    Returns a random f1 curve id
+    Returns a random f1 curve point id
     """
     return 721
 
@@ -155,18 +156,31 @@ def f1_id():
 @pytest.fixture
 def p1_id():
     """
-    Returns a random p1 curve id
+    Returns a random p1 curve point id
     """
-    return "5e1d8dd112cd738e89bc42eb"
+    return "5c115125cb2f477212353420"
 
 
 @pytest.fixture
 def p2_id():
     """
-    Returns a random p2 curve id
+    Returns a random p2 curve point id
     """
-    return "5e3011f912cd738e8991aca7"
+    return "5de09cdecb2f477212bf065d"
 
+@pytest.fixture
+def gennetabeta_id():
+    """
+    Returns a random gennetabeta curve point id
+    """
+    return 4311
+
+@pytest.fixture
+def autocons_id():
+    """
+    Returns a random autocons curve point id
+    """
+    return 181539
 
 @pytest.fixture
 def beedata_api_correct_credentials():

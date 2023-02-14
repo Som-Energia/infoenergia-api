@@ -1,4 +1,4 @@
-__version__ = VERSION = "2.1.1"
+__version__ = VERSION = "2.2.0"
 
 import os
 from concurrent import futures
@@ -88,7 +88,6 @@ def attach_bluprints_and_routes(app: Sanic):
 
 def attach_context(app: Sanic):
     app.ctx.thread_pool = futures.ThreadPoolExecutor(app.config.MAX_THREADS)
-
     app.ctx.erp_client = get_erp_instance()
     db = get_db_instance()
 
@@ -132,7 +131,7 @@ def build_app(app_name: str) -> Sanic:
     except Exception as e:
         msg = "An error ocurred building Infoenergia API: %s"
         logger.exception(msg, str(e))
-        raise e
+        raise
     else:
         logger.info("Build api finished")
         return app

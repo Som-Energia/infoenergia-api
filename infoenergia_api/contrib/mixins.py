@@ -65,6 +65,8 @@ class ResponseMixin(object):
     @staticmethod
     def unexpected_error_response(exception):
         capture_exception(exception)
+        logger.error(exception)
+        import traceback; traceback.print_exc()
         response = {
             "error": {
                 "code": "unexpected_error",

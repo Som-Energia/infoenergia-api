@@ -402,3 +402,17 @@ class TestContracts(BaseTestCase):
         contract = Contract(self.contract_id_3X)
         juridic_person = contract.juridicType
         self.assertEqual(juridic_person, "juridicPerson-ESH")
+
+    def test__get_devices(self):
+       contract = Contract(self.contract_id)
+       devices = contract.devices
+       self.assertListEqual(
+           devices,
+           [
+               {
+                   "dateStart": "2011-12-23T00:00:00+01:00",
+                   "dateEnd": None,
+                   "deviceId": "ab201f66-4da7-517b-be40-13b7e0de7429",
+               }
+           ],
+       )
