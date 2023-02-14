@@ -1,4 +1,3 @@
-import functools
 import re
 from sanic.request import RequestParameters
 
@@ -8,6 +7,8 @@ from infoenergia_api.utils import (
     make_uuid,
     get_invoice_user_filters,
 )
+
+from ..contrib.erp import get_erp_instance
 
 
 class Invoice(object):
@@ -25,9 +26,8 @@ class Invoice(object):
     ]
 
     def __init__(self, invoice_id):
-        from infoenergia_api.app import app
 
-        self._erp = app.ctx.erp_client
+        self._erp = get_erp_instance()
         self._FacturacioFactura = self._erp.model("giscedata.facturacio.factura")
         for name, value in self._FacturacioFactura.read(
             invoice_id, self.FIELDS
