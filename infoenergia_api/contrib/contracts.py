@@ -5,6 +5,7 @@ from infoenergia_api.contrib.climatic_zones import ine_to_zc
 from infoenergia_api.contrib.postal_codes import ine_to_dp
 from sanic.log import logger
 
+from ..contrib.erp import get_erp_instance
 from ..tasks import find_changes
 from ..utils import (
     get_contract_user_filters,
@@ -40,11 +41,10 @@ class Contract(object):
     ]
 
     def __init__(self, contract_id):
-        from infoenergia_api.app import app
 
         logger.debug("Creating object for contract %d", contract_id)
 
-        self._erp = app.ctx.erp_client
+        self._erp = get_erp_instance()
         self._Polissa = self._erp.model("giscedata.polissa")
         for name, value in self._Polissa.read(contract_id, self.FIELDS).items():
             setattr(self, name, value)

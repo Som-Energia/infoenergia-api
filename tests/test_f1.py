@@ -82,7 +82,9 @@ class TestF1(BaseTestCase):
     @mock.patch("infoenergia_api.contrib.f1.get_invoices")
     @mock.patch("infoenergia_api.contrib.pagination.PaginationLinksMixin._next_cursor")
     @db_session
-    async def test__get_f1_measure_pagination(self, next_cursor_mock, get_invoices_mock):
+    async def test__get_f1_measure_pagination(
+        self, next_cursor_mock, get_invoices_mock
+    ):
         get_invoices_mock.return_value = [7590942, 7730323, 8174595]
         next_cursor_mock.return_value = (
             "N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0="
@@ -274,12 +276,11 @@ class TestF1(BaseTestCase):
 
 class TestInvoice(BaseTestCase):
 
-    invoice_id_2x = 8174595
+    invoice_id_2x = 17615667
     invoice_id_3x = 8119604
 
     def test__create_invoice(self):
         invoice = Invoice(self.invoice_id_2x)
-
         self.assertIsInstance(invoice, Invoice)
 
     def test__get_devices(self):
@@ -347,7 +348,15 @@ class TestInvoice(BaseTestCase):
         f1_active_energy = invoice.f1_active_energy_kWh
         self.assertListEqual(
             f1_active_energy,
-            [{"consum": 280, "period": "P1", "source": "Telegestió", "magnitud": "AE", "units": "kWh"}],
+            [
+                {
+                    "consum": 280,
+                    "period": "P1",
+                    "source": "Telegestió",
+                    "magnitud": "AE",
+                    "units": "kWh",
+                }
+            ],
         )
 
     def test__get_f1_active_energy_3X(self):
@@ -358,12 +367,48 @@ class TestInvoice(BaseTestCase):
         self.assertListEqual(
             f1_active_energy,
             [
-                {"consum": 307, "period": "P1", "source": "TPL", "magnitud": "AE", "units": "kWh"},
-                {"consum": 324, "period": "P2", "source": "TPL", "magnitud": "AE", "units": "kWh"},
-                {"consum": 113, "period": "P3", "source": "TPL", "magnitud": "AE", "units": "kWh"},
-                {"consum": 94, "period": "P4", "source": "TPL", "magnitud": "AE", "units": "kWh"},
-                {"consum": 209, "period": "P5", "source": "TPL", "magnitud": "AE", "units": "kWh"},
-                {"consum": 212, "period": "P6", "source": "TPL", "magnitud": "AE", "units": "kWh"},
+                {
+                    "consum": 307,
+                    "period": "P1",
+                    "source": "TPL",
+                    "magnitud": "AE",
+                    "units": "kWh",
+                },
+                {
+                    "consum": 324,
+                    "period": "P2",
+                    "source": "TPL",
+                    "magnitud": "AE",
+                    "units": "kWh",
+                },
+                {
+                    "consum": 113,
+                    "period": "P3",
+                    "source": "TPL",
+                    "magnitud": "AE",
+                    "units": "kWh",
+                },
+                {
+                    "consum": 94,
+                    "period": "P4",
+                    "source": "TPL",
+                    "magnitud": "AE",
+                    "units": "kWh",
+                },
+                {
+                    "consum": 209,
+                    "period": "P5",
+                    "source": "TPL",
+                    "magnitud": "AE",
+                    "units": "kWh",
+                },
+                {
+                    "consum": 212,
+                    "period": "P6",
+                    "source": "TPL",
+                    "magnitud": "AE",
+                    "units": "kWh",
+                },
             ],
         )
 
@@ -375,21 +420,92 @@ class TestInvoice(BaseTestCase):
         self.assertListEqual(
             f1_reactive_energy,
             [
-                {'source': 'Estimada', 'period': 'P1', 'consum': 0, 'magnitud': 'AS', 'units': 'kWh'},
-                {'source': 'Estimada', 'period': 'P1', 'consum': 0, 'magnitud': 'AE', 'units': 'kWh'},
-                {'source': 'Estimada', 'period': 'P2', 'consum': 0, 'magnitud': 'AS', 'units': 'kWh'},
-                {'source': 'Estimada', 'period': 'P2', 'consum': 0, 'magnitud': 'AE', 'units': 'kWh'},
-                {'source': 'Estimada', 'period': 'P3', 'consum': 22, 'magnitud': 'AE', 'units': 'kWh'},
-                {'source': 'Estimada', 'period': 'P3', 'consum': 0, 'magnitud': 'AS', 'units': 'kWh'},
-                {'source': 'Estimada', 'period': 'P4', 'consum': 0, 'magnitud': 'AS', 'units': 'kWh'},
-                {'source': 'Estimada', 'period': 'P4', 'consum': 17, 'magnitud': 'AE', 'units': 'kWh'},
-                {'source': 'Estimada', 'period': 'P5', 'consum': 0, 'magnitud': 'AE', 'units': 'kWh'},
-                {'source': 'Estimada', 'period': 'P5', 'consum': 0, 'magnitud': 'AS', 'units': 'kWh'},
-                {'source': 'Estimada', 'period': 'P6', 'consum': 228, 'magnitud': 'AE', 'units': 'kWh'},
-                {'source': 'Estimada', 'period': 'P6', 'consum': 0, 'magnitud': 'AS', 'units': 'kWh'}
-            ]
+                {
+                    "source": "Estimada",
+                    "period": "P1",
+                    "consum": 0,
+                    "magnitud": "AS",
+                    "units": "kWh",
+                },
+                {
+                    "source": "Estimada",
+                    "period": "P1",
+                    "consum": 0,
+                    "magnitud": "AE",
+                    "units": "kWh",
+                },
+                {
+                    "source": "Estimada",
+                    "period": "P2",
+                    "consum": 0,
+                    "magnitud": "AS",
+                    "units": "kWh",
+                },
+                {
+                    "source": "Estimada",
+                    "period": "P2",
+                    "consum": 0,
+                    "magnitud": "AE",
+                    "units": "kWh",
+                },
+                {
+                    "source": "Estimada",
+                    "period": "P3",
+                    "consum": 22,
+                    "magnitud": "AE",
+                    "units": "kWh",
+                },
+                {
+                    "source": "Estimada",
+                    "period": "P3",
+                    "consum": 0,
+                    "magnitud": "AS",
+                    "units": "kWh",
+                },
+                {
+                    "source": "Estimada",
+                    "period": "P4",
+                    "consum": 0,
+                    "magnitud": "AS",
+                    "units": "kWh",
+                },
+                {
+                    "source": "Estimada",
+                    "period": "P4",
+                    "consum": 17,
+                    "magnitud": "AE",
+                    "units": "kWh",
+                },
+                {
+                    "source": "Estimada",
+                    "period": "P5",
+                    "consum": 0,
+                    "magnitud": "AE",
+                    "units": "kWh",
+                },
+                {
+                    "source": "Estimada",
+                    "period": "P5",
+                    "consum": 0,
+                    "magnitud": "AS",
+                    "units": "kWh",
+                },
+                {
+                    "source": "Estimada",
+                    "period": "P6",
+                    "consum": 228,
+                    "magnitud": "AE",
+                    "units": "kWh",
+                },
+                {
+                    "source": "Estimada",
+                    "period": "P6",
+                    "consum": 0,
+                    "magnitud": "AS",
+                    "units": "kWh",
+                },
+            ],
         )
-
 
     def test_f1_measures_2x(self):
         invoice = Invoice(self.invoice_id_2x)

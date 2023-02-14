@@ -212,12 +212,11 @@ class TestBaseContracts(BaseTestCase):
 
 class TestContracts(BaseTestCase):
 
-    contract_id = 4
+    contract_id = 322497
     contract_id_3X = 158697
 
-    def test__create_invoice(self):
+    def test__create_contract(self):
         contract = Contract(self.contract_id)
-
         self.assertIsInstance(contract, Contract)
 
     def test__get_current_tariff(self):
@@ -404,15 +403,15 @@ class TestContracts(BaseTestCase):
         self.assertEqual(juridic_person, "juridicPerson-ESH")
 
     def test__get_devices(self):
-       contract = Contract(self.contract_id)
-       devices = contract.devices
-       self.assertListEqual(
-           devices,
-           [
-               {
-                   "dateStart": "2011-12-23T00:00:00+01:00",
-                   "dateEnd": None,
-                   "deviceId": "ab201f66-4da7-517b-be40-13b7e0de7429",
-               }
-           ],
-       )
+        contract = Contract(self.contract_id)
+        devices = contract.devices
+        self.assertListEqual(
+            devices,
+            [
+                {
+                    "dateStart": "2011-12-23T00:00:00+01:00",
+                    "dateEnd": None,
+                    "deviceId": "ab201f66-4da7-517b-be40-13b7e0de7429",
+                }
+            ],
+        )
