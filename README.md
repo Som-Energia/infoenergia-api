@@ -102,10 +102,13 @@ pipenv lock  # To upgrade all versions, add --keep-lock to just add the new deps
 
 ## Changes
 
+### 2.2.1
+- fixed mock server
+
 ### 2.2.0
 
 - Added cch curves `tg_gennetabeta` and `tg_cchautocons`
-- Fix: empty points were returned if the name/CUPS was different 
+- Fix: empty points were returned if the name/CUPS was different
 - Breaking change: all curves include the `to_` date
 - Security: Limit the jwt decoding algorithms to avoid using RAW
   - This would enable an attacker bypassing token signature check
