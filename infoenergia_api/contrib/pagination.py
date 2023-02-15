@@ -2,8 +2,9 @@ import pickle
 from base64 import urlsafe_b64decode, urlsafe_b64encode
 from datetime import datetime
 
-from infoenergia_api.utils import make_uuid
 from sanic.log import logger
+
+from infoenergia_api.utils import make_uuid
 
 
 class DecodeException(Exception):
@@ -82,20 +83,17 @@ class PaginationLinksMixin:
 
         if "cch" in self.endpoint_name:
             next_page = (
-                "{url}?type={cch_type}&cursor={cursor}&limit={limit}".format(
+                "{url}?type={cch_type}&cursor={cursor}".format(
                     url=url,
                     cch_type=request.args["type"][0],
                     cursor=url_cursor,
-                    limit=pagination_list.page_size,
                 )
                 if url_cursor
                 else False
             )
         else:
             next_page = (
-                "{url}?cursor={cursor}&limit={limit}".format(
-                    url=url, cursor=url_cursor, limit=pagination_list.page_size
-                )
+                "{url}?cursor={cursor}".format(url=url, cursor=url_cursor)
                 if url_cursor
                 else False
             )
@@ -107,9 +105,7 @@ class PaginationLinksMixin:
 
     async def paginate_results(self, request, function, **kwargs):
         args = request.args
-        page_size = int(
-            args.get("limit", request.app.config.get("MAX_RESULT_SIZE", 50))
-        )
+        page_size = int(args.get("limit", Pagination.MAX_PAGE_SIZE))
         links = {}
         total_results = 0
 

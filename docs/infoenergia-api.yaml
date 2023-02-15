@@ -1577,7 +1577,7 @@ components:
         "count": 1,
         "total_results": 123161,
         "cursor": "ZjliNmQ5YmMtOGI5ZS01ZThkLWExNmQtMzc4Y2RhYjY4ZDE0Ok1RPT0=",
-        "next_page": "https://apinergia.somenergia.coop/contracts?cursor=ZjliNmQ5YmMtOGI5ZS01ZThkLWExNmQtMzc4Y2RhYjY4ZDE0Ok1RPT0=&limit=1",
+        "next_page": "https://apinergia.somenergia.coop/contracts?cursor=ZjliNmQ5YmMtOGI5ZS01ZThkLWExNmQtMzc4Y2RhYjY4ZDE0Ok1RPT0=",
         "data": [
             {
                 "activityCode": "9820 - Actividades de los hogares como productores de servicios para uso propio",
@@ -1847,7 +1847,7 @@ components:
         "count": 1,
         "total_results": 314,
         "cursor": "MDY1NjlkOWQtY2FmMi01MzQ2LWJiMzEtNjZhMTYyZjVjZjg1Ok1RPT0=",
-        "next_page": "https://apinergia.somenergia.coop/modcontracts?cursor=MDY1NjlkOWQtY2FmMi01MzQ2LWJiMzEtNjZhMTYyZjVjZjg1Ok1RPT0=&limit=1",
+        "next_page": "https://apinergia.somenergia.coop/modcontracts?cursor=MDY1NjlkOWQtY2FmMi01MzQ2LWJiMzEtNjZhMTYyZjVjZjg1Ok1RPT0=",
         "data": [
             {
                 "activityCode": "9820 - Actividades de los hogares como productores de servicios para uso propio",
@@ -2092,7 +2092,7 @@ components:
         "count": 1,
         "total_results": 54,
         "cursor": "NDBlMGQ2MTMtNWVlOC01NmU1LWI4NWItMWExMjczYTQ1MmIzOk1RPT0=",
-        "next_page": "https://apinergia.somenergia.coop/f1?cursor=NDBlMGQ2MTMtNWVlOC01NmU1LWI4NWItMWExMjczYTQ1MmIzOk1RPT0=&limit=1",
+        "next_page": "https://apinergia.somenergia.coop/f1?cursor=NDBlMGQ2MTMtNWVlOC01NmU1LWI4NWItMWExMjczYTQ1MmIzOk1RPT0=",
         "data": [
             {
                 "contractId": "0100790",
@@ -2231,7 +2231,7 @@ components:
         "count": 2,
         "total_results": 100,
         "cursor": "MWMwMjBlMjktNzA5OS01OTIwLWJkY2UtOWJiMWQ2ZGE1ZDJkOk5UQT0=",
-        "next_page": "https://apinergia.somenergia.coop/f1/0000004?cursor=MWMwMjBlMjktNzA5OS01OTIwLWJkY2UtOWJiMWQ2ZGE1ZDJkOk5UQT0=&limit=2",
+        "next_page": "https://apinergia.somenergia.coop/f1/0000004?cursor=MWMwMjBlMjktNzA5OS01OTIwLWJkY2UtOWJiMWQ2ZGE1ZDJkOk5UQT0=",
         "data": [
             {
                 "contractId": "0000004",
@@ -2361,7 +2361,7 @@ components:
                   "meteringPointId": "9d27c82d-73d3-5ce0-b7a5-fcee142acd63"
               }
           ],
-          "next_page": "https://apinergia.somenergia.coop/cch/0000004?type=tg_cchfact&cursor=NWY4NTA2ZGEtM2JlNC01MGE0LThiZjEtZWQyZjhiODA1Zjc0Ok13PT0=&limit=1",
+          "next_page": "https://apinergia.somenergia.coop/cch/0000004?type=tg_cchfact&cursor=NWY4NTA2ZGEtM2JlNC01MGE0LThiZjEtZWQyZjhiODA1Zjc0Ok13PT0=",
           "total_results": 720
       }
     tgcchval-response-example:
@@ -2382,7 +2382,7 @@ components:
                 "meteringPointId": "9d27c82d-73d3-5ce0-b7a5-fcee142acd63"
             }
         ],
-        "next_page": "https://apinergia.somenergia.coop/cch/0000004?type=tg_cchval&cursor=YTMwZDJlMTYtYzcxMi01ODlkLTkzNzAtNWY4YTU5MWVmY2NiOk1RPT0=&limit=1",
+        "next_page": "https://apinergia.somenergia.coop/cch/0000004?type=tg_cchval&cursor=YTMwZDJlMTYtYzcxMi01ODlkLTkzNzAtNWY4YTU5MWVmY2NiOk1RPT0=",
         "total_results": 1128
       }
     tgf1-response-example:
@@ -2412,7 +2412,7 @@ components:
                 "meteringPointId": "ffd5b061-4999-5ad5-a248-8e444deee2e1"
             }
         ],
-        "next_page": "https://apinergia.somenergia.coop/cch/0222511?type=tg_f1&cursor=MTY4Nzg2ZDYtZmJmYy01ZDYzLWJiNzktZTc5MGFmYjY2YzAwOk1RPT0=&limit=1",
+        "next_page": "https://apinergia.somenergia.coop/cch/0222511?type=tg_f1&cursor=MTY4Nzg2ZDYtZmJmYy01ZDYzLWJiNzktZTc5MGFmYjY2YzAwOk1RPT0=",
         "total_results": 47
       }
     p1-response-example:
@@ -2451,7 +2451,7 @@ components:
                 "meteringPointId": "a9fef2ae-fadc-55f6-87c4-e70018b7cfc8"
             }
         ],
-        "next_page": "https://apinergia.somenergia.coop/cch/0217828?type=P1&cursor=MTQwNzIyMzktNzlmMS01YjcxLTk4ZTUtMWI1MjMzOTY1MWVhOk1RPT0=&limit=1",
+        "next_page": "https://apinergia.somenergia.coop/cch/0217828?type=P1&cursor=MTQwNzIyMzktNzlmMS01YjcxLTk4ZTUtMWI1MjMzOTY1MWVhOk1RPT0=",
         "total_results": 1248
       }
     p2-response-example:
@@ -2490,7 +2490,7 @@ components:
                 "meteringPointId": "7b1485ad-91db-5526-854a-4b0af1a81d4d"
             }
         ],
-        "next_page": "https://apinergia.somenergia.coop/cch/0100752?type=P2&cursor=NDdhYjk0NTctMDY2OC01NjhlLTk5ZWMtNDhlMjZiMTVkNDkwOk1RPT0=&limit=1",
+        "next_page": "https://apinergia.somenergia.coop/cch/0100752?type=P2&cursor=NDdhYjk0NTctMDY2OC01NjhlLTk5ZWMtNDhlMjZiMTVkNDkwOk1RPT0=",
         "total_results": 36576
       }
     report-response-example:
