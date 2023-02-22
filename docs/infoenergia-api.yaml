@@ -474,6 +474,8 @@ components:
             - tg_cchfact
             - tg_cchval
             - tg_f1
+            - tg_gennetabeta
+            - tg_autocons
             - P1
             - P2
     cchDownloadedFromParam:
