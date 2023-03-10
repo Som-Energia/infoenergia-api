@@ -14,7 +14,7 @@ class ResponseMixin(object):
 
         todo = [
             request.app.loop.run_in_executor(
-                request.app.ctx.thread_pool, self.serializer, object_
+                None, self.serializer, object_
             )
             for object_ in instances
         ]
