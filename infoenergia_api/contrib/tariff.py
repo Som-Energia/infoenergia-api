@@ -30,18 +30,6 @@ class TariffPrice(ResponseMixin, object):
         return self
 
     @property
-    def reactiveEnergy(self):
-
-        price_version = self._PricelistItem.read(
-            [
-                ("name", "like", "%Cos%"),
-                ("base_pricelist_id", "=", 3),
-            ],
-            ["price_version_id"],
-            order="price_version_id",
-
-
-    @property
     def get_erp_tariff_prices(self):
         prices = self._Tariff.get_tariff_prices(
             self.tariff_id,
