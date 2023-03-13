@@ -209,6 +209,37 @@ class TestBaseContracts(BaseTestCase):
         )
         self.delete_user(user)
 
+    @db_session
+    def test__get_contract_tariff_by_id__2TD(self):
+        user = self.get_or_create_user(
+            username="someone",
+            password=self.dummy_passwd,
+            email="someone@somenergia.coop",
+            partner_id=1,
+            is_superuser=True,
+            category="partner",
+        )
+        token = self.get_auth_token(user.username, self.dummy_passwd)
+        _, response = self.loop.run_until_complete(
+            self.client.get(
+                "/contracts/0000004/tariff",
+                headers={"Authorization": "Bearer {}".format(token)},
+                timeout=None,
+            )
+        )
+
+        self.assertEqual(response.status, 200)
+        self.assertDictEqual(
+            response.json,
+            {
+                "count": 1,
+                "data": [self.json4test["contract_id_2A"]["contract_data"]],
+                "total_results": 1,
+            },
+        )
+        self.delete_user(user)
+
+
 
 class TestContracts(BaseTestCase):
 

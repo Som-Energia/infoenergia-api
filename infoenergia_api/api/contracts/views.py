@@ -1,10 +1,13 @@
 from infoenergia_api.contrib import (
     Contract,
+    TariffPrice,
     PageNotFoundError,
     PaginationLinksMixin,
     ResponseMixin,
 )
 from infoenergia_api.contrib.contracts import async_get_contracts
+from infoenergia_api.contrib.tariff import async_get_tariff_prices
+
 from sanic import Blueprint
 from sanic.log import logger
 from sanic.response import json
@@ -72,6 +75,42 @@ class ContractsView(ResponseMixin, PaginationLinksMixin, HTTPMethodView):
         return json(response_body)
 
 
+class ContractsIdTariffView(ResponseMixin, PaginationLinksMixin, HTTPMethodView):
+    decorators = [
+        inject_user(),
+        protected(),
+    ]
+
+    endpoint_name = "contracts.get_contract_by_id_tariff"
+
+    async def get(self, request, contract_id, user):
+        request.ctx.user = user
+        logger.info("Getting tariffs")
+
+        try:
+            contracts_ids, links, total_results = await self.paginate_results(
+                request, function=async_get_contracts, contract_id=contract_id
+            )
+
+        except PageNotFoundError as e:
+            return self.error_response(e)
+
+        else:
+            tariff_price_filters, links, total_results = await self.paginate_results(
+                request, function=async_get_tariff_prices, contract_id=contracts_ids
+            )
+            tariff_prices = [
+                await TariffPrice.create(
+                    int(tariff_price_id), tariff_price_filters)
+                    for tariff_price_id in tariff_price_filters["tariffPriceId"]
+            ]
+
+            base_response = {"total_results": total_results, **links}
+            response_body = await self.make_response_body(request, tariff_prices, base_response)
+            return json(response_body)
+
+
+
 bp_contracts.add_route(
     ContractsView.as_view(),
     "/contracts/",
@@ -79,5 +118,13 @@ bp_contracts.add_route(
 )
 
 bp_contracts.add_route(
-    ContractsIdView.as_view(), "/contracts/<contract_id>", name="get_contract_by_id"
+    ContractsIdView.as_view(),
+    "/contracts/<contract_id>",
+    name="get_contract_by_id"
+)
+
+bp_contracts.add_route(
+    ContractsIdTariffView.as_view(),
+    "/contracts/<contract_id>/tariff",
+    name="get_contract_by_id_tariff"
 )

@@ -31,15 +31,22 @@ class TariffPrice(ResponseMixin, object):
 
     @property
     def get_erp_tariff_prices(self):
-        prices = self._Tariff.get_tariff_prices(
-            self.tariff_id,
-            self.filters.get('municipi_id', 3830),
-            self.filters.get('max_power', 5000),
-            self.filters.get('fiscal_position', None),
-            self.filters.get('with_taxes', False),
-            self.filters.get('date_from', False),
-            self.filters.get('date_to', False)
-        )
+        if self.filters.get('contract_id'):
+           return {} #self.get_erp_tariff_prices_by_contract_id
+        else:
+           return self._Tariff.get_tariff_prices(
+                self.tariff_id,
+                self.filters.get('municipi_id', 3830),
+                self.filters.get('max_power', 5000),
+                self.filters.get('fiscal_position', None),
+                self.filters.get('with_taxes', False),
+                self.filters.get('date_from', False),
+                self.filters.get('date_to', False)
+            )
+
+    @property
+    def get_tariff_prices(self):
+        prices = self.get_erp_tariff_prices
 
         if any(d.get('error', False) for d in prices):
             return prices[0]
@@ -56,7 +63,11 @@ class TariffPrice(ResponseMixin, object):
                     "bonoSocial": price["bo_social"],
                     "reactiveEnergy": price["reactiva"]
                 }
-                for price in sorted(prices, key=lambda x: x['start_date'], reverse=True)
+                for price in sorted(
+                    prices,
+                    key=lambda x: x['start_date'],
+                    reverse=True
+                )
             ]
 
             if price_detail[0]['dateEnd']:
@@ -75,18 +86,19 @@ class TariffPrice(ResponseMixin, object):
     def tariff(self):
         return {
             "tariffPriceId": self.tariff_id,
-            "price": self.get_erp_tariff_prices,
+            "price": self.get_tariff_prices,
         }
 
     def __iter__(self):
         yield from self.tariff.items()
 
+
 def get_tariff_prices(request, contract_id=None):
     tariff_obj = request.app.ctx.erp_client.model("giscedata.polissa.tarifa")
-    contract_obj = request.app.ctx.erp_client.model("giscedata.polissa")
     erp_filters = [
         ("active", "=", True),
     ]
+
     if request.args:
         filters = { key: value for (key, value) in request.args.items()}
 
@@ -99,18 +111,10 @@ def get_tariff_prices(request, contract_id=None):
             tariff_id = tariff_obj.search(erp_filters)
             filters["tariffPriceId"] = tariff_id
             return filters
+    
     if contract_id:
-        tariff_price_id = contract_obj.read(
-            [("name", "=", contract_id)], ["llista_preu"]
-        )[0]["llista_preu"][0]
-        return [tariff_price_id]
-
-    tariff_id = tariff_obj.search(filters)
-    tariff_price_ids = [
-        price["llistes_preus_comptatibles"] for price in tariff_obj.read(tariff_id)
-    ]
-    return list(set(functools.reduce(operator.concat, tariff_price_ids)))
-
+        filters['contract_id'] = contract_id
+        return filters
 
     tariff_ids = tariff_obj.search(erp_filters)
     filters["tariffPriceId"] = tariff_ids
