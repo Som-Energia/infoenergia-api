@@ -145,75 +145,38 @@ class TestBaseTariff(BaseTestCase):
 
 class TestTariff(BaseTestCase):
 
-    tariff_id_2x = 4
-    tariff_id_3x = 12
-    tariff_id_3X_reactiva = 3
-    items_id_2019_2X = [4955, 4956, 4959, 4960, 4957, 5318, 4958]
-    items_id_2012_2X = [621, 622, 623, 624]
-    items_id_2019_3X = [
-        5057,
-        5058,
-        5059,
-        5060,
-        5061,
-        5062,
-        5066,
-        5067,
-        5068,
-        5069,
-        5063,
-        5064,
-        5324,
-        5325,
-        5326,
-        5065,
-    ]
-    items_id_reactiva = [
-        572,
-        1524,
-        314,
-        1881,
-        457,
-        2125,
-        747,
-        3524,
-        93,
-        4472,
-        1222,
-        5220,
-        199,
-        5221,
-        94,
-        315,
-        458,
-        573,
-        200,
-        748,
-        1223,
-        1525,
-        1882,
-        2126,
-        3525,
-        4473,
-    ]
+    tariff_id_2TD = 43
+    tariff_id_3TD = 44
+    tariff_id_6TD = 45
+
+    filters = {'municipi_id': 3830}
 
     def test__create_tariff(self):
-        tariff = TariffPrice(self.tariff_id_2x)
+        tariff = TariffPrice(self.tariff_id_2TD, self.filters)
 
         self.assertIsInstance(tariff, TariffPrice)
 
-    def test__get_active_energy_2019price2X(self):
-        tariff = TariffPrice(self.tariff_id_2x)
-        energy = tariff.termPrice(self.items_id_2019_2X, "ENERGIA", "€/kWh")
+    def test__get_erp_tariff_prices__active_20TD_OK(self):
+       # Get today's tariff
+       tariff = TariffPrice(self.tariff_id_2TD, self.filters)
+       _prices = tariff.get_erp_tariff_prices
+       self.assertFalse(_prices['current']['dateEnd'])
 
-        self.assertEqual(energy, [{"period": "P1", "price": 0.139, "units": "€/kWh"}])
+       self.assertEqual(0, len(_prices['history']))
 
-    def test__get_active_energy_2012price2X(self):
-        tariff = TariffPrice(self.tariff_id_2x)
-        energy = tariff.termPrice(self.items_id_2012_2X, "ENERGIA", "€/kWh")
+    def test__get_erp_tariff_prices__date_range_20TD_OK(self):
+        self.filters['date_from'] = '2021-01-01'
+        self.filters['date_to'] = date.today().strftime("%Y-%m-%d")
 
+        tariff = TariffPrice(self.tariff_id_2TD, self.filters)
+        _prices = tariff.get_erp_tariff_prices
+
+        # For a large date range we should get more than one tariff version
+        self.assertGreater(len(_prices['history']), 0)
+        # Check if tariff's version start date starts one day after end date of previous version
         self.assertEqual(
-            energy, [{"period": "P1", "price": 0.144722, "units": "€/kWh"}]
+            datetime.strptime(_prices['current']['dateStart'], "%Y-%m-%d"),
+            datetime.strptime(_prices['history'][0]['dateEnd'], "%Y-%m-%d")+ timedelta(days=1)
         )
 
     def test__get_active_energy_price3X(self):
