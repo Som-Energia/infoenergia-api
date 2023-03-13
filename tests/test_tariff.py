@@ -278,16 +278,27 @@ class TestTariff(BaseTestCase):
            }
         )
 
-    def test__get_GkWh_price3X(self):
-        tariff = TariffPrice(self.tariff_id_3x)
-        energy = tariff.termPrice(self.items_id_2019_3X, "GKWh", "€/kWh")
+    def test__get_erp_tariff_prices__6TD_price_reactive(self):
+        # Select old prices for tariff 6.1TD
+        self.filters['date_from'] = '2022-10-01'
+        self.filters['date_to'] = '2022-12-01'
+        tariff = TariffPrice(self.tariff_id_6TD, self.filters)
+        prices = tariff.get_erp_tariff_prices
 
         self.assertEqual(
-            energy,
-            [
-                {"period": "P1", "price": 0.092, "units": "€/kWh"},
-                {"period": "P2", "price": 0.081, "units": "€/kWh"},
-            ],
+            prices['history'][0]['reactiveEnergy'],
+            {
+                'BOE núm. 76 - 30/03/2022': {
+                    '0 - 0.80': {
+                        'unit': '€/kVArh',
+                        'value': 0.062332
+                    },
+                    '0.80 - 0.95': {
+                        'unit': '€/kVArh',
+                        'value': 0.041554
+                    }
+                }
+            }
         )
 
     def test__get_tariff_historical_prices_2X(self):

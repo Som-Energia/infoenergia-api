@@ -9,10 +9,6 @@ from ..utils import get_request_filters
 
 from infoenergia_api.contrib import ResponseMixin
 
-class ReactiveEnergyPrice(object):
-    @classmethod
-    def create(cls):
-        from infoenergia_api.app import app
 
 class TariffPrice(ResponseMixin, object):
 
@@ -44,26 +40,6 @@ class TariffPrice(ResponseMixin, object):
             ["price_version_id"],
             order="price_version_id",
 
-        boe_prices = [pv["price_version_id"] for pv in price_version]
-
-        reactive_prices = [
-            boe_prices for boe_prices, _ in itertools.groupby(boe_prices)
-        ]
-        price_detail = [
-            {
-                "BOE": rp[1],
-                "price33": self.reactiveEnergyPrice(rp[0], str("Cos(fi) 0.80 - 0.95")),
-                "price75": self.reactiveEnergyPrice(rp[0], str("Cos(fi) 0 - 0.80")),
-                "units": "€/kVArh",
-            }
-            for rp in reactive_prices
-        ]
-        return {
-            "priceReactiveEnergy": {
-                "current": price_detail[-1],
-                "history": price_detail[:-1],
-            }
-        }
 
     @property
     def get_erp_tariff_prices(self):
