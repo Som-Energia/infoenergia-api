@@ -1,6 +1,8 @@
 from pony.orm import db_session
 
-from infoenergia_api.contrib import TariffPrice, ReactiveEnergyPrice
+from datetime import datetime, timedelta, date
+
+from infoenergia_api.contrib import TariffPrice
 
 from tests.base import BaseTestCase
 
@@ -179,59 +181,102 @@ class TestTariff(BaseTestCase):
             datetime.strptime(_prices['history'][0]['dateEnd'], "%Y-%m-%d")+ timedelta(days=1)
         )
 
-    def test__get_active_energy_price3X(self):
-        tariff = TariffPrice(self.tariff_id_3x)
-        energy = tariff.termPrice(self.items_id_2019_3X, "ENERGIA", "kWh/day")
+    def test__get_erp_tariff_prices__active_30TD_OK(self):
+       # Get today's tariff
+       tariff = TariffPrice(self.tariff_id_3TD, self.filters)
+       _prices = tariff.get_erp_tariff_prices
+       self.assertFalse(_prices['current']['dateEnd'])
 
+       self.assertEqual(0, len(_prices['history']))
+
+    def test__get_erp_tariff_prices__not_found(self):
+        self.filters['date_from'] = '2020-01-01'
+        self.filters['date_to'] = '2021-01-01'
+        tariff = TariffPrice(self.tariff_id_2TD, self.filters)
+        _prices = tariff.get_erp_tariff_prices
+
+        self.assertEqual(_prices, {'error': 'Tariff pricelist not found'})
+
+    def test__get_erp_tariff_prices__2TD_price_power(self):
+        # Select old prices for tariff 2.0TD
+        self.filters['date_from'] = '2022-10-01'
+        self.filters['date_to'] = '2022-12-01'
+        tariff = TariffPrice(self.tariff_id_2TD, self.filters)
+        prices = tariff.get_erp_tariff_prices
+        self.assertEqual(prices['history'][0]['dateEnd'], '2022-12-31')
         self.assertEqual(
-            energy,
-            [
-                {"period": "P1", "price": 0.121, "units": "kWh/day"},
-                {"period": "P2", "price": 0.105, "units": "kWh/day"},
-                {"period": "P3", "price": 0.079, "units": "kWh/day"},
-            ],
+           prices['history'][0]['power'],
+           {
+               'P1': {'unit': '€/kW/dia', 'value': 0.076668},
+               'P2': {'unit': '€/kW/dia', 'value': 0.008118},
+           }
+        )
+    def test__get_erp_tariff_prices__2TD_price_energy(self):
+         # Select old prices for tariff 2.0TD
+        self.filters['date_from'] = '2022-10-01'
+        self.filters['date_to'] = '2022-12-01'
+        tariff = TariffPrice(self.tariff_id_2TD, self.filters)
+        prices = tariff.get_erp_tariff_prices
+        self.assertEqual(prices['history'][0]['dateEnd'], '2022-12-31')
+        self.assertEqual(
+           prices['history'][0]['activeEnergy'],
+           {
+               'P1': {'unit': '€/kWh', 'value': 0.343},
+               'P2': {'unit': '€/kWh', 'value': 0.281},
+               'P3': {'unit': '€/kWh', 'value': 0.234},
+           }
         )
 
-    def test__get_power_2019price2X(self):
-        tariff = TariffPrice(self.tariff_id_2x)
-        energy = tariff.termPrice(self.items_id_2019_2X, "POTENCIA", "€/kW year")
-
+    def test__get_erp_tariff_prices__2TD_price_gkwh(self):
+        # Select old prices for tariff 2.0TD
+        self.filters['date_from'] = '2022-10-01'
+        self.filters['date_to'] = '2022-12-01'
+        tariff = TariffPrice(self.tariff_id_2TD, self.filters)
+        prices = tariff.get_erp_tariff_prices
+        self.assertEqual(prices['history'][0]['dateEnd'], '2022-12-31')
         self.assertEqual(
-            energy, [{"period": "P1", "price": 38.043426, "units": "€/kW year"}]
+           prices['history'][0]['GKWh'],
+           {
+               'P1': {'unit': '€/kWh', 'value': 0.170},
+               'P2': {'unit': '€/kWh', 'value': 0.120},
+               'P3': {'unit': '€/kWh', 'value': 0.095},
+           }
+        )
+    def test__get_erp_tariff_prices__3TD_price_gkwh(self):
+        # Select old prices for tariff 3.0TD
+        self.filters['date_from'] = '2022-10-01'
+        self.filters['date_to'] = '2022-12-01'
+        tariff = TariffPrice(self.tariff_id_3TD, self.filters)
+        prices = tariff.get_erp_tariff_prices
+        self.assertEqual(
+            prices['history'][0]['GKWh'],
+            {
+                'P1': {'unit': '€/kWh', 'value': 0.144},
+                'P2': {'unit': '€/kWh', 'value': 0.132},
+                'P3': {'unit': '€/kWh', 'value': 0.104},
+                'P4': {'unit': '€/kWh', 'value': 0.093},
+                'P5': {'unit': '€/kWh', 'value': 0.082},
+                'P6': {'unit': '€/kWh', 'value': 0.089}
+            }
         )
 
-    def test__get_power_2012price2X(self):
-        tariff = TariffPrice(self.tariff_id_2x)
-        energy = tariff.termPrice(self.items_id_2012_2X, "POTENCIA", "€/kW year")
+    def test__get_erp_tariff_prices__2TD_price_autoconsumo(self):
+        # Select old prices for tariff 2.0TD
+        self.filters['date_from'] = '2022-10-01'
+        self.filters['date_to'] = '2022-12-01'
 
+        tariff = TariffPrice(self.tariff_id_2TD, self.filters)
+        prices = tariff.get_erp_tariff_prices
+
+        self.assertEqual(prices['history'][0]['dateEnd'], '2022-12-31')
         self.assertEqual(
-            energy, [{"period": "P1", "price": 19.893189, "units": "€/kW year"}]
+           prices['history'][0]['autoconsumo'],
+           {
+               'P1': {'unit': '€/kWh', 'value': 0.176},
+               'P2': {'unit': '€/kWh', 'value': 0.176},
+               'P3': {'unit': '€/kWh', 'value': 0.176},
+           }
         )
-
-    def test__get_power_price3X(self):
-        tariff = TariffPrice(self.tariff_id_3x)
-        energy = tariff.termPrice(self.items_id_2019_3X, "POTENCIA", "€/kW year")
-
-        self.assertEqual(
-            energy,
-            [
-                {"period": "P1", "price": 40.728885, "units": "€/kW year"},
-                {"period": "P2", "price": 24.43733, "units": "€/kW year"},
-                {"period": "P3", "price": 16.291555, "units": "€/kW year"},
-            ],
-        )
-
-    def test__get_GkWh_2019price2X(self):
-        tariff = TariffPrice(self.tariff_id_2x)
-        energy = tariff.termPrice(self.items_id_2019_2X, "GKWh", "€/kWh")
-
-        self.assertEqual(energy, [{"period": "P1", "price": 0.116, "units": "€/kWh"}])
-
-    def test__get_GkWh_2012price2X(self):
-        tariff = TariffPrice(self.tariff_id_2x)
-        energy = tariff.termPrice(self.items_id_2012_2X, "GKWh", "€/kWh")
-
-        self.assertEqual(energy, [])
 
     def test__get_GkWh_price3X(self):
         tariff = TariffPrice(self.tariff_id_3x)
