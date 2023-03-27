@@ -37,7 +37,7 @@ class TariffView(ResponseMixin, PaginationLinksMixin, HTTPMethodView):
         else:
             tariff_prices = [
                 await TariffPrice.create(
-                    int(tariff_price_id), tariff_price_filters)
+                    tariff_price_filters, int(tariff_price_id))
                     for tariff_price_id in tariff_price_filters["tariffPriceId"]
             ]
             base_response = {"total_results": total_results, **links}
