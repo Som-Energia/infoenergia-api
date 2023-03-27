@@ -180,6 +180,29 @@ class TestBaseTariff(BaseTestCase):
         )
         self.delete_user(user)
 
+    @db_session
+    def test__get_tariff__20TD_without_user(self):
+        params = {
+            "tariffPriceId": 43,
+        }
+        _, response = self.loop.run_until_complete(
+            self.client.get(
+                "/tariff",
+                params=params,
+                timeout=None,
+            )
+        )
+        self.assertEqual(response.status, 200)
+
+        prices = response.json['data'][0]['prices']
+        tariffPriceId = response.json['data'][0]['tariffPriceId']
+        self.assertTrue(
+            len(prices) > 0
+        )
+        self.assertTrue(
+            tariffPriceId == 43
+        )
+
 
 class TestTariff(BaseTestCase):
 

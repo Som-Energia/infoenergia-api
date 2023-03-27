@@ -19,9 +19,6 @@ bp_tariff = Blueprint("tariff")
 
 
 class TariffView(ResponseMixin, PaginationLinksMixin, HTTPMethodView):
-    decorators = [
-        protected(),
-    ]
 
     endpoint_name = "tariff.get_tariff"
 
