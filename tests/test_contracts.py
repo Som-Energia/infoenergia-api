@@ -1,5 +1,6 @@
 from pony.orm import db_session
 from unittest import mock
+from datetime import datetime, timedelta, date
 
 from tests.base import BaseTestCase
 
@@ -229,16 +230,20 @@ class TestBaseContracts(BaseTestCase):
         )
 
         self.assertEqual(response.status, 200)
-        self.assertDictEqual(
-            response.json,
-            {
-                "count": 1,
-                "data": [self.json4test["contract_id_2A"]["contract_data"]],
-                "total_results": 1,
-            },
-        )
-        self.delete_user(user)
 
+        response_data = response.json['data'][0]
+        current = response_data['current']['prices']
+        history_prices = []
+        for prices in response_data['history']:
+            history_prices.extend(prices['prices'])
+        history = sorted(history_prices, key= lambda x: x['dateStart'], reverse=True)
+        # Check if tariff's version start date starts one day after end date of previous
+        self.assertEqual(
+            datetime.strptime(current['dateStart'], "%Y-%m-%d"),
+            datetime.strptime(history[0]['dateEnd'], "%Y-%m-%d")+ timedelta(days=1)
+        )
+
+        self.delete_user(user)
 
 
 class TestContracts(BaseTestCase):

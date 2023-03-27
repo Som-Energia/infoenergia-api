@@ -100,9 +100,7 @@ class ContractsIdTariffView(ResponseMixin, PaginationLinksMixin, HTTPMethodView)
                 request, function=async_get_tariff_prices, contract_id=contracts_ids
             )
             tariff_prices = [
-                await TariffPrice.create(
-                    int(tariff_price_id), tariff_price_filters)
-                    for tariff_price_id in tariff_price_filters["tariffPriceId"]
+                await TariffPrice.create(filters=tariff_price_filters)
             ]
 
             base_response = {"total_results": total_results, **links}
