@@ -39,12 +39,12 @@ class TariffPrice(ResponseMixin, object):
     def get_erp_tariff_prices(self):
 
         if self.contract_id:
-            return self._Tariff.get_tariff_prices_by_contract_id(
+            return self._Tariff.get_tariff_prices_by_contract_id_www(
                 self.contract_id[0],
                 self.filters.get('withTaxes', False),
             )
         else:
-            return self._Tariff.get_tariff_prices(
+            return self._Tariff.get_tariff_prices_www(
                 self.tariff_id,
                 self.geographical_region[
                     self.filters.get('geographicalRegion', 'peninsula')
@@ -64,7 +64,7 @@ class TariffPrice(ResponseMixin, object):
             "dateEnd": self.price_data["end_date"],
             "activeEnergy": self.price_data["energia"],
             "power": self.price_data["potencia"],
-            "GKWh": self.price_data["generation_kWh"],
+            "gkwh": self.price_data["generation_kWh"],
             "autoconsumo": self.price_data["energia_autoconsumida"],
             "meter": self.price_data["comptador"],
             "bonoSocial": self.price_data["bo_social"],
@@ -92,7 +92,7 @@ class TariffPrice(ResponseMixin, object):
     def tariff(self):
         tariff_prices = self.get_erp_tariff_prices
         if "error" in tariff_prices.keys():
-           return tariff_prices
+           return {"error": tariff_prices.get("error", False)}
         else:
             if self.contract_id:
                 contract_tariff_prices = {"history": []}
