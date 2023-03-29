@@ -389,8 +389,8 @@ components:
       required: false
       explode: false
       schema:
-        type: boolean
-        default: false
+        type: integer
+        default: false 
     taxesParam:
       name: withTaxes
       in: query
@@ -577,7 +577,7 @@ components:
             $ref: "#/components/schemas/SingleContractTariffPrice"
           examples:
             tariff-price-single-contract-response-example:
-              $ref: "#/components/examples/tariff-price-single-contract-response-example"
+              $ref: "#/components/examples/tariff-price-single-contract-response-example" 
     ModconsResponse:
       description: Returns a set of contracts that have been modified with the number of results and the corresponding data. If the request is paginated, return the next page cursor and the next page url
       content:
@@ -1387,7 +1387,7 @@ components:
               prices:
                 type: array
                 items:
-                  $ref: "#/components/schemas/TariffPrice"
+                  $ref: "#/components/schemas/TariffPrice" 
     TariffPrice:
       type: object
       description: A collection of prices for serveral items to apply within a date period
@@ -2002,7 +2002,7 @@ components:
         "total_results": 314,
         "cursor": "MDY1NjlkOWQtY2FmMi01MzQ2LWJiMzEtNjZhMTYyZjVjZjg1Ok1RPT0=",
         "next_page": "https://apinergia.somenergia.coop/modcontracts?cursor=MDY1NjlkOWQtY2FmMi01MzQ2LWJiMzEtNjZhMTYyZjVjZjg1Ok1RPT0=&limit=1",
-        "data": [
+        "data": [ 
           "current": {
              "tariffPriceId": 43,
              "prices": {
@@ -2055,8 +2055,9 @@ components:
             },
           },
           "history":[
-            tariffPriceId: 43,
-            prices: {
+            {
+            "tariffPriceId": 43,
+            "prices": [{
               "dateStart": "2020-06-01",
               "dateEnd": "2020-06-30",
               "activeEnergy": [
@@ -2103,9 +2104,10 @@ components:
                 'value': 0.81
               },
             },
+           }]
           }
-          ]
         ]
+      ]
       }
     modcontracts-response-example:
       value: {
