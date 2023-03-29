@@ -296,7 +296,7 @@ class TestTariff(BaseTestCase):
         prices = tariff.tariff
         self.assertEqual(prices['prices']['history'][0]['dateEnd'], '2022-12-31')
         self.assertEqual(
-           prices['prices']['history'][0]['GKWh'],
+           prices['prices']['history'][0]['gkwh'],
            {
                'P1': {'unit': '€/kWh', 'value': 0.170},
                'P2': {'unit': '€/kWh', 'value': 0.120},

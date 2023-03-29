@@ -89,7 +89,7 @@ paths:
       tags:
         - contracts
       summary: Find the tariff for a contract ID
-      description: Returns the tariif for a single contract
+      description: Get the detailed tariff prices a contract (note that if no date is specified you'll get the current tariff alone)
       operationId: server.get_tariff_by_contract_id
       parameters:
         - $ref: "#/components/parameters/contractIDParam"
@@ -100,10 +100,10 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TariffResponse'
+                $ref: '#/components/responses/ContractTariffResponse'
               examples:
                 tariff-response:
-                  $ref: "#/components/examples/tariff-response-example"
+                  $ref: "#/components/examples/tariff-price-single-contract-response-example"
         400:
            $ref: "#/components/responses/BadRequestResponse"
         401:
@@ -569,6 +569,15 @@ components:
           examples:
             single-contract-response-example:
               $ref: "#/components/examples/single-contract-response-example"
+    ContractTariffResponse:
+      description: Returns the tariff prices for a contract with the number of results and the corresponding data. If the request is paginated, returns the next page cursor and the next page url.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/SingleContractTariffPrice"
+          examples:
+            tariff-price-single-contract-response-example:
+              $ref: "#/components/examples/tariff-price-single-contract-response-example"
     ModconsResponse:
       description: Returns a set of contracts that have been modified with the number of results and the corresponding data. If the request is paginated, return the next page cursor and the next page url
       content:
@@ -635,6 +644,15 @@ components:
           examples:
             report-response-example:
               $ref: "#/components/examples/report-response-example"
+    TariffResponse:
+      description: Returns the tariff prices with the number of results and the corresponding data. If the request is paginated, return the next page cursor and the next page url.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Tariff"
+          examples:
+            modcontracts-response-example:
+              $ref: "#/components/examples/tariff-response-example"
   schemas:
     ReportBody:
       type: object
@@ -1339,7 +1357,34 @@ components:
             properties:
               current:
                 $ref: "#/components/schemas/TariffPrice"
-              historical:
+              history:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TariffPrice"
+    SingleContractTariffPrice:
+      type: object
+      properties:
+        current:
+          type: object
+          description: Current tariff data for a contract
+          properties:
+            tariffPriceId:
+              type: integer
+              description: Tariff ID
+              example: 123
+            prices:
+              $ref: "#/components/schemas/TariffPrice"
+        history:
+          type: array
+          description: Historical tariff data for a contract
+          items:
+            type: object
+            properties:
+              tariffPriceId:
+                type: integer
+                description: Tariff ID
+                example: 123
+              prices:
                 type: array
                 items:
                   $ref: "#/components/schemas/TariffPrice"
@@ -1617,7 +1662,7 @@ components:
                           'value': 0.041554
                         }
                   },
-                "bonSocial": {
+                "bonoSocial": {
                   'unit': '€/dia',
                   'value': 0.0
                 },
@@ -1626,7 +1671,7 @@ components:
                   'value': 0.81
                 },
               },
-              "historical": [
+              "history": [
                 {
                     "dateStart": "2020-06-01",
                     "dateEnd": "2020-06-30",
@@ -1644,7 +1689,7 @@ components:
                             "units": "€/kW year"
                         }
                     ],
-                    "GKWh": [
+                    "gkwh": [
                         {
                             "period": "P1",
                             "price": 0.116,
@@ -1665,7 +1710,7 @@ components:
                             'value': 0.041554
                           }
                     },
-                    "bonSocial": {
+                    "bonoSocial": {
                       'unit': '€/dia',
                       'value': 0.0
                     },
@@ -1680,29 +1725,6 @@ components:
           }
         }
       ]
-      }
-    price-reactve-energy-example:
-      value: {
-        "current": {
-          "BOE": "BOE núm. 312 - 28/12/2018",
-          "price33": 0.041554,
-          "price75": 0.062332,
-          "units": "€/kVArh"
-        },
-        "history": [
-          {
-            "BOE": "BOE núm. 236 - 30/09/2011",
-            "price33": 0.041554,
-            "price75": 0.062332,
-            "units": "€/kVArh"
-          },
-          {
-            "BOE": "BOE núm. 315 - 31/12/2011",
-            "price33": 0.041554,
-            "price75": 0.062332,
-            "units": "€/kVArh"
-          }
-        ]
       }
     contracts-response-example:
       value: {
@@ -1973,6 +1995,117 @@ components:
             }
         ],
         "total_results": 1
+      }
+    tariff-price-single-contract-response-example:
+      value: {
+        "count": 1,
+        "total_results": 314,
+        "cursor": "MDY1NjlkOWQtY2FmMi01MzQ2LWJiMzEtNjZhMTYyZjVjZjg1Ok1RPT0=",
+        "next_page": "https://apinergia.somenergia.coop/modcontracts?cursor=MDY1NjlkOWQtY2FmMi01MzQ2LWJiMzEtNjZhMTYyZjVjZjg1Ok1RPT0=&limit=1",
+        "data": [
+          "current": {
+             "tariffPriceId": 43,
+             "prices": {
+                "dateStart": "2020-07-01",
+                "dateEnd": Null,
+                "activeEnergy": [
+                  {
+                        "period": "P1",
+                        "price": 0.127,
+                        "units": "€/kWh"
+                    }
+                ],
+                "power": [
+                    {
+                        "period": "P1",
+                        "price": 38.043426,
+                        "units": "€/kW year"
+                    }
+                ],
+                "gkwh": [
+                    {
+                        "period": "P1",
+                        "price": 0.11,
+                        "units": "€/kWh"
+                    }
+                ],
+                "reactiveEnergy": {
+                  'BOE núm. 312 - 28/12/2018':
+                   {
+                        '0 - 0.80':
+                        {
+                          'unit': '€/kVArh',
+                          'value': 0.062332
+                        },
+                        '0.80 - 0.95':
+                        {
+                          'unit': '€/kVArh',
+                          'value': 0.041554
+                        }
+                  },
+                "bonoSocial": {
+                  'unit': '€/dia',
+                  'value': 0.0
+                },
+                "meter": {
+                  'unit': '€',
+                  'value': 0.81
+                },
+              },
+            },
+          },
+          "history":[
+            tariffPriceId: 43,
+            prices: {
+              "dateStart": "2020-06-01",
+              "dateEnd": "2020-06-30",
+              "activeEnergy": [
+                  {
+                      "period": "P1",
+                      "price": 0.139,
+                      "units": "€/kWh"
+                  }
+              ],
+              "power": [
+                  {
+                      "period": "P1",
+                      "price": 38.043426,
+                      "units": "€/kW year"
+                  }
+              ],
+              "gkwh": [
+                  {
+                      "period": "P1",
+                      "price": 0.116,
+                      "units": "€/kWh"
+                  }
+              ],
+              "reactiveEnergy": {
+                'BOE núm. 312 - 28/12/2018':
+                  {
+                    '0 - 0.80':
+                    {
+                      'unit': '€/kVArh',
+                      'value': 0.062332
+                    },
+                    '0.80 - 0.95':
+                    {
+                      'unit': '€/kVArh',
+                      'value': 0.041554
+                    }
+              },
+              "bonoSocial": {
+                'unit': '€/dia',
+                'value': 0.0
+              },
+              "meter": {
+                'unit': '€',
+                'value': 0.81
+              },
+            },
+          }
+          ]
+        ]
       }
     modcontracts-response-example:
       value: {
