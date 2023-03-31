@@ -1648,9 +1648,15 @@ components:
                         "units": "€/kWh"
                     }
                 ],
+                "autoconsumo": [
+                    {
+                        "period": "P1",
+                        "price": 38.043426,
+                        "units": "€/kW year"
+                    }
+                ],
                 "reactiveEnergy": {
-                  'BOE núm. 312 - 28/12/2018':
-                   {
+                  'BOE núm. 312 - 28/12/2018': {
                         '0 - 0.80':
                         {
                           'unit': '€/kVArh',
@@ -1669,6 +1675,11 @@ components:
                 "meter": {
                   'unit': '€',
                   'value': 0.81
+                },
+                "taxes": {
+                  "name": "tax name",
+                  "dateStart": "2021-01-01",
+                  "dateEnd": "2023-01-01"
                 },
               },
               "history": [
@@ -1696,6 +1707,13 @@ components:
                             "units": "€/kWh"
                         }
                     ],
+                    "autoconsumo": [
+                      {
+                        "period": "P1",
+                        "price": 38.043426,
+                        "units": "€/kW year"
+                      }
+                    ],
                     "reactiveEnergy": {
                       'BOE núm. 312 - 28/12/2018':
                         {
@@ -1709,6 +1727,7 @@ components:
                             'unit': '€/kVArh',
                             'value': 0.041554
                           }
+                      }
                     },
                     "bonoSocial": {
                       'unit': '€/dia',
@@ -1718,13 +1737,17 @@ components:
                       'unit': '€',
                       'value': 0.81
                     },
-                  },
-                }
-              ]
+                    "taxes": {
+                      "name": "tax name",
+                      "dateStart": "2021-01-01",
+                      "dateEnd": "2023-01-01"
+                    }
+                  }
+                ]
+              }
             }
           }
-        }
-      ]
+        ]
       }
     contracts-response-example:
       value: {
@@ -2029,6 +2052,13 @@ components:
                         "units": "€/kWh"
                     }
                 ],
+                "autoconsumo": [
+                    {
+                        "period": "P1",
+                        "price": 38.043426,
+                        "units": "€/kW year"
+                    }
+                ],
                 "reactiveEnergy": {
                   'BOE núm. 312 - 28/12/2018':
                    {
@@ -2043,14 +2073,19 @@ components:
                           'value': 0.041554
                         }
                   },
-                "bonoSocial": {
-                  'unit': '€/dia',
-                  'value': 0.0
                 },
-                "meter": {
-                  'unit': '€',
-                  'value': 0.81
+              "bonoSocial": {
+                'unit': '€/dia',
+                'value': 0.0
                 },
+              "meter": {
+                'unit': '€',
+                'value': 0.81
+                },
+              "taxes": {
+                "name": "tax name",
+                "dateStart": "2021-01-01",
+                "dateEnd": "2023-01-01"
               },
             },
           },
@@ -2081,6 +2116,13 @@ components:
                       "units": "€/kWh"
                   }
               ],
+              "autoconsumo": [
+                    {
+                        "period": "P1",
+                        "price": 38.043426,
+                        "units": "€/kW year"
+                    }
+                ],
               "reactiveEnergy": {
                 'BOE núm. 312 - 28/12/2018':
                   {
@@ -2094,6 +2136,7 @@ components:
                       'unit': '€/kVArh',
                       'value': 0.041554
                     }
+                }
               },
               "bonoSocial": {
                 'unit': '€/dia',
@@ -2103,7 +2146,11 @@ components:
                 'unit': '€',
                 'value': 0.81
               },
-            },
+              "taxes": {
+                "name": "tax name",
+                "dateStart": "2021-01-01",
+                "dateEnd": "2023-01-01"
+              },
            }]
           }
         ]
