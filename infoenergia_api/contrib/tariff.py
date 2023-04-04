@@ -1,16 +1,11 @@
 import asyncio
 import functools
-import itertools
-import operator
 from sanic.log import logger
 
 from ..contrib.erp import get_erp_instance
-from ..utils import get_request_filters
-
-from infoenergia_api.contrib import ResponseMixin
 
 
-class TariffPrice(ResponseMixin, object):
+class TariffPrice(object):
 
     geographical_region = {
         "canarias": 1646,
