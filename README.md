@@ -102,6 +102,13 @@ pipenv lock  # To upgrade all versions, add --keep-lock to just add the new deps
 
 ## Changes
 
+### 2.3.0
+
+- Move all logic to obtain the tariff prices to ERP
+- Adapt tariff endpoints according to ERP function
+- Open tariff endpoint
+- Move tariff prices of a contract from tariff view to contracts view
+
 ### 2.2.1
 - fixed mock server
 
