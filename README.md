@@ -30,7 +30,7 @@ user@host:> pipenv install
 
 With all requirements installed, it's time to configure our api. Copy `.env.example` to `.env` and with your favorite editor adapt it with the credentials and name that you will use
 ```bash
-user@host:> mv .env.example .env
+user@host:> cp .env.example .env
 user@host:> vim .env
 ```
 
