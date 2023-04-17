@@ -1,5 +1,6 @@
 from pony.orm import db_session
 from unittest import mock
+from datetime import datetime, timedelta, date
 
 from tests.base import BaseTestCase
 
@@ -207,6 +208,41 @@ class TestBaseContracts(BaseTestCase):
                 "total_results": 1,
             },
         )
+        self.delete_user(user)
+
+    @db_session
+    def test__get_contract_tariff_by_id__2TD(self):
+        user = self.get_or_create_user(
+            username="someone",
+            password=self.dummy_passwd,
+            email="someone@somenergia.coop",
+            partner_id=1,
+            is_superuser=True,
+            category="partner",
+        )
+        token = self.get_auth_token(user.username, self.dummy_passwd)
+        _, response = self.loop.run_until_complete(
+            self.client.get(
+                "/contracts/0000004/tariff",
+                headers={"Authorization": "Bearer {}".format(token)},
+                timeout=None,
+            )
+        )
+
+        self.assertEqual(response.status, 200)
+
+        response_data = response.json['data'][0]
+        current = response_data['current']['prices']
+        history_prices = []
+        for prices in response_data['history']:
+            history_prices.extend(prices['prices'])
+        history = sorted(history_prices, key= lambda x: x['dateStart'], reverse=True)
+        # Check if tariff's version start date starts one day after end date of previous
+        self.assertEqual(
+            datetime.strptime(current['dateStart'], "%Y-%m-%d"),
+            datetime.strptime(history[0]['dateEnd'], "%Y-%m-%d")+ timedelta(days=1)
+        )
+
         self.delete_user(user)
 
 
