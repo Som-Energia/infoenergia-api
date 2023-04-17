@@ -34,6 +34,7 @@ class Contract(object):
         "cnae",
         "modcontractuals_ids",
         "autoconsumo",
+        "autoconsum_id",
         "persona_fisica",
         "titular_nif",
         "llista_preu",
@@ -471,6 +472,24 @@ class Contract(object):
             return "physicalPerson"
 
     @property
+    def installedPower(self):
+        """
+        Generator installed power when contract with self-sompsumption
+        """
+        autoconsum_id = self.autoconsum_id
+
+        total_pot_instalada_gen = 0.0
+
+        if autoconsum_id:
+            for generador in autoconsum_id.generador_id:
+                pot_instalada = generador.pot_instalada_gen
+                if pot_instalada:
+                    total_pot_instalada_gen += pot_instalada
+
+        return total_pot_instalada_gen
+
+
+    @property
     def contracts(self):
         return {
             "contractId": self.name,
@@ -479,6 +498,10 @@ class Contract(object):
             "dateStart": make_timestamp(self.data_alta),
             "dateEnd": make_timestamp(self.data_baixa),
             "autoconsumo": self.selfConsumption,
+            #"autoconsumo": {
+            #    "selfConsumptionType": self.selfConsumption,
+            #    "installedPower": self.installedPower,
+            #},
             "juridicType": self.juridicType,
             "tariffId": self.tarifa[1],
             "tariff_": self.currentTariff,
