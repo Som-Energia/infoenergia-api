@@ -91,6 +91,7 @@ class TestBaseTariff(BaseTestCase):
         token = self.get_auth_token(user.username, self.dummy_passwd)
         params = {
             "tariffPriceId": 43,
+            "withTaxes": False,
         }
         _, response = self.loop.run_until_complete(
             self.client.get(
@@ -103,6 +104,7 @@ class TestBaseTariff(BaseTestCase):
         self.assertEqual(response.status, 200)
 
         prices = response.json['data'][0]['prices']
+        taxes = response.json['data'][0]['prices']['current']['taxes']
         tariffPriceId = response.json['data'][0]['tariffPriceId']
         self.assertTrue(
             len(prices) > 0
@@ -110,6 +112,7 @@ class TestBaseTariff(BaseTestCase):
         self.assertTrue(
             tariffPriceId == 43
         )
+        self.assertEqual(taxes, {})
         self.delete_user(user)
 
     @db_session
@@ -387,7 +390,7 @@ class TestTariff(BaseTestCase):
         self.filters['withTaxes'] = True
         self.filters['geographicalRegion'] = "canarias"
 
-        tariff = TariffPrice( self.filters, self.tariff_id_2TD)
+        tariff = TariffPrice(self.filters, self.tariff_id_2TD)
         prices = tariff.tariff
 
         self.assertEqual(prices['prices']['history'][0]['dateEnd'], '2022-12-31')
