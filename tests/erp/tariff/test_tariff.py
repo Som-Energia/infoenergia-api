@@ -9,8 +9,6 @@ class TestTariffPrice:
     ):
         # when we create a tariff from an id
         tariff_price = await TariffPrice.create(_20TD_tariff_id)
-        import ipdb
 
-        ipdb.set_trace()
         # then we have an isntance of TariffPrice class
         assert isinstance(tariff_price, TariffPrice)
