@@ -231,16 +231,16 @@ class TestBaseContracts(BaseTestCase):
 
         self.assertEqual(response.status, 200)
 
-        response_data = response.json['data'][0]
-        current = response_data['current']['prices']
+        response_data = response.json["data"][0]
+        current = response_data["current"]["prices"]
         history_prices = []
-        for prices in response_data['history']:
-            history_prices.extend(prices['prices'])
-        history = sorted(history_prices, key= lambda x: x['dateStart'], reverse=True)
-        # Check if tariff's version start date starts one day after end date of previous
+        for prices in response_data["history"]:
+            history_prices.extend(prices["prices"])
+        history = sorted(history_prices, key= lambda x: x["dateStart"], reverse=True)
+        # Check if tariff"s version start date starts one day after end date of previous
         self.assertEqual(
-            datetime.strptime(current['dateStart'], "%Y-%m-%d"),
-            datetime.strptime(history[0]['dateEnd'], "%Y-%m-%d")+ timedelta(days=1)
+            datetime.strptime(current["dateStart"], "%Y-%m-%d"),
+            datetime.strptime(history[0]["dateEnd"], "%Y-%m-%d")+ timedelta(days=1)
         )
 
         self.delete_user(user)
@@ -248,7 +248,7 @@ class TestBaseContracts(BaseTestCase):
 
 class TestContracts(BaseTestCase):
 
-    contract_id = 322497
+    contract_id = 49794
     contract_id_3X = 158697
 
     def test__create_contract(self):
@@ -261,11 +261,11 @@ class TestContracts(BaseTestCase):
         self.assertDictEqual(
             tariff,
             {
-                "dateEnd": "2021-11-21T00:00:00+01:00",
-                "dateStart": "2021-06-01T00:00:00+01:00",
                 "tariffId": "2.0TD",
                 "tariffPriceId": 101,
-            },
+                "dateStart": "2022-01-11T00:00:00+01:00",
+                "dateEnd": "2024-03-09T00:00:00+01:00"
+            }
         )
 
     def test__get_tariffHistory(self):
@@ -275,24 +275,24 @@ class TestContracts(BaseTestCase):
             tariff_history,
             [
                 {
-                    "dateEnd": "2019-06-05T00:00:00+01:00",
-                    "dateStart": "2011-12-31T00:00:00+01:00",
                     "tariffId": "2.0A",
                     "tariffPriceId": 4,
+                    "dateStart": "2011-12-31T00:00:00+01:00",
+                    "dateEnd": "2019-06-05T00:00:00+02:00"
                 },
                 {
-                    "dateEnd": "2021-05-31T00:00:00+01:00",
-                    "dateStart": "2019-06-06T00:00:00+01:00",
                     "tariffId": "2.0DHS",
                     "tariffPriceId": 18,
+                    "dateStart": "2019-06-06T00:00:00+02:00",
+                    "dateEnd": "2021-05-31T00:00:00+02:00"
                 },
                 {
-                    "dateEnd": "2021-12-30T00:00:00+01:00",
-                    "dateStart": "2021-06-01T00:00:00+01:00",
-                    "tariffId": "2.0TD",
-                    "tariffPriceId": 101,
-                },
-            ],
+                "tariffId": "2.0TD",
+                "tariffPriceId": 101,
+                "dateStart": "2021-06-01T00:00:00+02:00",
+                "dateEnd": "2024-04-17T00:00:00+02:00"
+                }
+            ]
         )
 
     def test__get_current_power(self):
@@ -301,11 +301,11 @@ class TestContracts(BaseTestCase):
         self.assertDictEqual(
             power,
             {
-                "power": {"P1-2": 3400, "P3": 3400},
-                "dateStart": "2021-06-01T00:00:00+01:00",
-                "dateEnd": "2021-11-21T00:00:00+01:00",
-                "measurement_point": "05",
-            },
+                "power": {"P1-2": 4500, "P3": 4500},
+                "dateStart": "2022-01-11T00:00:00+01:00",
+                "dateEnd": "2024-03-09T00:00:00+01:00",
+                "measurement_point": "05"
+            }
         )
 
     def test__get_powerHistory(self):
@@ -315,24 +315,30 @@ class TestContracts(BaseTestCase):
             power,
             [
                 {
-                    "power": {"P1": 6600.0},
-                    "dateStart": "2011-11-22T00:00:00+01:00",
-                    "dateEnd": "2019-09-01T00:00:00+01:00",
-                    "measurement_point": "05",
+                    "power": {"P1": 4400.0},
+                    "dateStart": "2015-03-10T00:00:00+01:00",
+                    "dateEnd": "2017-08-30T00:00:00+02:00",
+                    "measurement_point": "05"
                 },
                 {
-                    "power": {"P1": 3400.0},
-                    "dateStart": "2019-09-02T00:00:00+01:00",
-                    "dateEnd": "2021-05-31T00:00:00+01:00",
-                    "measurement_point": "05",
+                    "power": {"P1": 3450.0},
+                    "dateStart": "2017-08-31T00:00:00+02:00",
+                    "dateEnd": "2021-05-31T00:00:00+02:00",
+                    "measurement_point": "05"
                 },
                 {
-                    "power": {"P1-2": 3400.0, "P3": 3400.0},
-                    "dateStart": "2021-06-01T00:00:00+01:00",
-                    "dateEnd": "2021-11-21T00:00:00+01:00",
-                    "measurement_point": "05",
+                    "power": {"P1-2": 3450.0, "P3": 3450.0},
+                    "dateStart": "2021-06-01T00:00:00+02:00",
+                    "dateEnd": "2021-11-25T00:00:00+01:00",
+                    "measurement_point": "05"
                 },
-            ],
+                {
+                    "power": {"P1-2": 4500.0, "P3": 4500.0},
+                    "dateStart": "2021-11-26T00:00:00+01:00",
+                    "dateEnd": "2024-03-09T00:00:00+01:00",
+                    "measurement_point": "05"
+                }
+            ]
         )
 
     def test__get_climaticZone_from_cups(self):
@@ -346,13 +352,13 @@ class TestContracts(BaseTestCase):
         self.assertDictEqual(
             address,
             {
-                "city": "Barcelona",
-                "cityCode": "08019",
+                "city": "Caldes de Malavella",
+                "cityCode": "17033",
                 "countryCode": "ES",
-                "postalCode": "08036",
-                "provinceCode": "08",
-                "province": "Barcelona",
-            },
+                "postalCode": "17456",
+                "provinceCode": "17",
+                "province": "Girona"
+            }
         )
 
     def test__get_building_details(self):
@@ -361,18 +367,18 @@ class TestContracts(BaseTestCase):
         self.assertDictEqual(
             building,
             {
-                "buildingConstructionYear": 1999,
-                "dwellingArea": 89,
-                "propertyType": False,
-                "buildingType": "Apartment",
-                "dwellingPositionInBuilding": False,
-                "dwellingOrientation": False,
-                "buildingWindowsType": False,
-                "buildingWindowsFrame": "",
-                "buildingCoolingSource": False,
-                "buildingHeatingSource": "other",
-                "buildingHeatingSourceDhw": False,
-                "buildingSolarSystem": False,
+                "buildingConstructionYear": 1985,
+                "buildingCoolingSource": "other",
+                "buildingHeatingSource": "gas",
+                "buildingHeatingSourceDhw": "gas",
+                "buildingSolarSystem": "not_installed",
+                "buildingType": "Single_house",
+                "buildingWindowsFrame": "wood",
+                "buildingWindowsType": "double_panel",
+                "dwellingArea": 100,
+                "dwellingOrientation": "S",
+                "dwellingPositionInBuilding": "first_floor",
+                "propertyType": "primary"
             },
         )
 
@@ -383,8 +389,8 @@ class TestContracts(BaseTestCase):
             profile,
             {
                 "totalPersonsNumber": 3,
-                "minorsPersonsNumber": 0,
-                "workingAgePersonsNumber": False,
+                "minorsPersonsNumber": 1,
+                "workingAgePersonsNumber": 2,
                 "retiredAgePersonsNumber": False,
                 "malePersonsNumber": False,
                 "femalePersonsNumber": False,
@@ -392,9 +398,9 @@ class TestContracts(BaseTestCase):
                     "edu_prim": False,
                     "edu_sec": False,
                     "edu_uni": False,
-                    "edu_noStudies": False,
-                },
-            },
+                    "edu_noStudies": False
+                }
+            }
         )
 
     def test__get_no_service(self):
@@ -409,7 +415,7 @@ class TestContracts(BaseTestCase):
             report,
             {
                 "language": "ca_ES",
-                "initialMonth": 201111,
+                "initialMonth": 201503,
             },
         )
 
@@ -423,10 +429,14 @@ class TestContracts(BaseTestCase):
         experimental_group = contract.experimentalGroup
         self.assertEqual(experimental_group, True)
 
-    def test__get_selfConsumption(self):
+    def test__get_selfConsumptionType(self):
         contract = Contract(self.contract_id)
         self_consumption = contract.selfConsumption
-        self.assertEqual(self_consumption, "[00] - Sin Autoconsumo")
+        self.assertEqual(self_consumption, "[41] - Con excedentes y compensación Individual - Consumo")
+
+    def test__get_selfConsumptionInstalledPower(self):
+        contract = Contract(self.contract_id)
+        self.assertEqual(contract.installedPower, 4.45)
 
     def test__get_juridicType_physical_person(self):
         contract = Contract(self.contract_id)
@@ -445,9 +455,19 @@ class TestContracts(BaseTestCase):
             devices,
             [
                 {
-                    "dateStart": "2011-12-23T00:00:00+01:00",
+                    "dateStart": "2020-10-23T00:00:00+02:00",
                     "dateEnd": None,
-                    "deviceId": "ab201f66-4da7-517b-be40-13b7e0de7429",
+                    "deviceId": "35edccba-f211-5f05-8932-73fb305664d3"
+                },
+                {
+                    "dateStart": "2017-07-28T00:00:00+02:00",
+                    "dateEnd": "2020-10-23T00:00:00+02:00",
+                    "deviceId": "2eba5491-173b-5f2d-a36c-1a5f16f5ca17"
+                },
+                {
+                    "dateStart": "2015-03-10T00:00:00+01:00",
+                    "dateEnd": "2017-07-27T00:00:00+02:00",
+                    "deviceId": "59092b2b-49e3-5d9d-8440-66d8f9748d23"
                 }
-            ],
+            ]
         )
