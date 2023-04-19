@@ -483,17 +483,19 @@ class Contract(object):
         Generator installed power when contract with self-sompsumption
         """
         if not hasattr(self, '_installed_power'):
-            Autoconsum = self._erp.model("giscedata.autoconsum")
-            Generador = self._erp.model("giscedata.autoconsum.generador")
-            generator_ids = Autoconsum.read(self.autoconsum_id[0], ['generador_id']).get('generador_id', []) or []
+            self._installed_power = 0.0
 
-            self._installed_power = sum([
-                Generador.read(generator_id, ['pot_instalada_gen']).get('pot_instalada_gen', 0.0) or 0.0
-                for generator_id in generator_ids
-            ])
+            if self.autoconsum_id:
+                Autoconsum = self._erp.model("giscedata.autoconsum")
+                Generador = self._erp.model("giscedata.autoconsum.generador")
+                generator_ids = Autoconsum.read(self.autoconsum_id[0], ['generador_id']).get('generador_id', []) or []
+
+                self._installed_power = sum([
+                    Generador.read(generator_id, ['pot_instalada_gen']).get('pot_instalada_gen', 0.0) or 0.0
+                    for generator_id in generator_ids
+                ])
 
         return self._installed_power
-
 
     @property
     def contracts(self):
