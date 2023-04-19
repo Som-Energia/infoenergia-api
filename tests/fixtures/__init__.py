@@ -68,6 +68,28 @@ def user():
 
 
 @pytest.fixture
+@db_session
+def unprivileged_user():
+    """
+    Return an instance of an inforenergia api unprivileged user
+    """
+    user = User.get(username="someone")
+    if not user:
+        user = User(
+            username="someone",
+            password=pbkdf2_sha256.hash("password"),
+            email="someone@foo.bar",
+            id_partner=1,
+            is_superuser=False,
+            category="Energética",
+        )
+        commit()
+    user._clear_psw = "password"
+    yield user
+    user.delete()
+
+
+@pytest.fixture
 def client(app):
     """
     Returns an instance of a test client
@@ -93,6 +115,20 @@ async def auth_token(app, user):
     auth_body = {
         "username": user.username,
         "password": user._clear_psw,
+    }
+    _, response = await app.asgi_client.post("/auth", json=auth_body)
+    token = response.json.get("access_token", None)
+    return token
+
+
+@pytest.fixture
+async def unprivileged_auth_token(app, unprivileged_user):
+    """
+    Returns a valid infoenergia api auth token for an unprivileged user
+    """
+    auth_body = {
+        "username": unprivileged_user.username,
+        "password": unprivileged_user._clear_psw,
     }
     _, response = await app.asgi_client.post("/auth", json=auth_body)
     token = response.json.get("access_token", None)

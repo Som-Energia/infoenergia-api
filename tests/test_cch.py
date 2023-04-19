@@ -46,6 +46,19 @@ def cchquery(app, auth_token, mocked_next_cursor):
         return response
     return inner
 
+@pytest.fixture
+def unprivileged_cchquery(app, unprivileged_auth_token, mocked_next_cursor):
+    async def inner(contract_id=None, params={}):
+        url="/cch/{}".format(contract_id) if contract_id else "/cch"
+        _, response = await app.asgi_client.get(
+            url,
+            headers={"Authorization": "Bearer {}".format(unprivileged_auth_token)},
+            params=params,
+        )
+        return response
+    return inner
+
+
 class TestCchRequest:
     async def test__get_f5d_by_id__2A(self, cchquery, scenarios):
         response = await cchquery(
@@ -89,8 +102,8 @@ class TestCchRequest:
         ))
         assert len(response.json["data"]) == 50
 
-    async def test__get_f5d_without_permission(self, cchquery, scenarios):
-        response = await cchquery(
+    async def test__get_f5d_without_permission(self, unprivileged_cchquery, scenarios):
+        response = await unprivileged_cchquery(
             contract_id=scenarios["f5d"]["contractId"],
             params = {
                 "type": "tg_cchfact",
