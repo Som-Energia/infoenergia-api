@@ -69,7 +69,7 @@ Edit the .env file:
 Setup test data (Requires VPN access):
 
 ```bash
-# From the directory containing infoenergia-api
+# From the directory containing infoenergia-api repository
 git clone git@gitlab.somenergia.coop:IT/it-docs.git -o testdata
 git clone git@gitlab.somenergia.coop:IT/somenergia-back2backdata.git
 cd infoenergia-api/
