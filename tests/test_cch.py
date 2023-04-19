@@ -132,8 +132,8 @@ class TestCchRequest:
             data=scenarios["p5d"]["cch_data"],
         ))
 
-    async def test__get_p5d_without_permission(self, cchquery, scenarios):
-        response = await cchquery(
+    async def test__get_p5d_without_permission(self, unprivileged_cchquery, scenarios):
+        response = await unprivileged_cchquery(
             contract_id=scenarios["p5d"]["contractId"],
             params = {
                 "type": "tg_cchval",
