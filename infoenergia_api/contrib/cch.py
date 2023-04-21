@@ -393,7 +393,7 @@ class TgCchAutocons(BaseErpCch):
         }
 
 
-def cch_datetime_2_tz_isodate(x):
+def cch_tz_isodate(x):
     tz = pytz.timezone("Europe/Madrid")
     date_cch = tz.localize(x['datetime'], is_dst=x['season']).astimezone(pytz.utc)
     date_cch -= timedelta(hours=1)
@@ -436,7 +436,7 @@ class MongoCurveRepository():
         def unbson(x):
             return dict(x,
                 id=int(x['id']),
-                date=cch_datetime_2_tz_isodate(x),
+                date=cch_tz_isodate(x),
             )
 
         result = [
