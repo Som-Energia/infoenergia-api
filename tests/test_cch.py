@@ -297,13 +297,13 @@ class TestCchModels:
             [('create_at', '<=', '2022-01-01'),]),
     ])
     async def test__build_query__erp_mongo_model__with_single_parameter(self, parameter, value, expected):
-        await self.assert_build_erp_query({ parameter: [value]}, expected)
+        await self.assert_build_erp_query({ parameter: value}, expected)
 
     async def test__build_query__erp_mongo_model__with_several_parameters(self):
         cups = "a_cups"
         await self.assert_build_erp_query(dict(
-            cups = [cups],
-            **{'from_': ['2022-01-01']}
+            cups = cups,
+            **{'from_': '2022-01-01'}
         ),[
             ('datetime', '>=', '2022-01-01'),
             ('name', '=', cups),
@@ -322,14 +322,14 @@ class TestCchModels:
             [('create_at', '<=', '2022-01-01'),]),
     ])
     async def test__build_query__erp_timescale_model__with_single_parameter(self, parameter, value, expected):
-        await self.assert_build_erp_query({ parameter: [value]}, expected, TgCchF1)
+        await self.assert_build_erp_query({ parameter: value}, expected, TgCchF1)
 
     # Build queries for Mongo curves
 
     async def assert_build_mongo_query(self, filters, expected_query):
         filters = dict(filters)
-        filters.setdefault("type", ['tg_cchfact'])
-        model = cch_model(filters['type'][0])
+        filters.setdefault("type", 'tg_cchfact')
+        model = cch_model(filters['type'])
         query = await model.build_query(filters)
         assert query == expected_query
 
@@ -353,13 +353,13 @@ class TestCchModels:
             {'type': {'$eq': 'p4'}}),
     ])
     async def test__build_query__mongo_model__with_single_parameter(self, parameter, value, expected):
-        await self.assert_build_mongo_query({ parameter: [value]}, expected)
+        await self.assert_build_mongo_query({ parameter: value}, expected)
 
     async def test__build_query__mongo_model__with_several_parameters(self):
         cups = "a_cups"
         await self.assert_build_mongo_query(dict(
-            cups = [cups],
-            **{'from_': ['2022-01-01']}
+            cups = cups,
+            **{'from_': '2022-01-01'}
         ),{
             'datetime': {'$gte': datetime.datetime(2022, 1, 1, 0, 0)},
             'name': {'$regex': '^a_cups'},
@@ -367,8 +367,8 @@ class TestCchModels:
 
     async def test__build_query__mongo_model__with_from_and_to(self):
         await self.assert_build_mongo_query({
-            'from_': ['2022-01-01'],
-            'to_': ['2022-01-02'],
+            'from_': '2022-01-01',
+            'to_': '2022-01-02',
         },{
             'datetime': {
                 # Both conditions on datetime are joined
@@ -379,8 +379,8 @@ class TestCchModels:
 
     async def test__build_query__mongo_model__with_downloaded_from_and_to(self):
         await self.assert_build_mongo_query({
-            'downloaded_from': ['2022-01-01'],
-            'downloaded_to': ['2022-01-02'],
+            'downloaded_from': '2022-01-01',
+            'downloaded_to': '2022-01-02',
         },{
             'create_at': {
                 # Both conditions on datetime are joined

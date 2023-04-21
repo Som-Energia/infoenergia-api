@@ -39,28 +39,28 @@ class BaseCch:
         query = {}
         if "from_" in filters:
             query.setdefault('datetime', {}).update(
-                {"$gte": isodate2datetime(filters["from_"][0])}
+                {"$gte": isodate2datetime(filters["from_"])}
             )
 
         if "to_" in filters:
             query.setdefault('datetime', {}).update(
-                {"$lte": isodate2datetime(increment_isodate(filters["to_"][0]))}
+                {"$lte": isodate2datetime(increment_isodate(filters["to_"]))}
             )
 
         if "downloaded_from" in filters:
             query.setdefault('create_at', {}).update(
-                {"$gte": isodate2datetime(filters["downloaded_from"][0])}
+                {"$gte": isodate2datetime(filters["downloaded_from"])}
             )
 
         if "downloaded_to" in filters:
             query.setdefault('create_at', {}).update(
-                {"$lte": isodate2datetime(filters["downloaded_to"][0])}
+                {"$lte": isodate2datetime(filters["downloaded_to"])}
             )
 
-        if "P1" in filters["type"][0].upper():
+        if "P1" in filters["type"].upper():
             query.update({"type": {"$eq": "p"}})
 
-        if "P2" in filters["type"][0].upper():
+        if "P2" in filters["type"].upper():
             query.update({"type": {"$eq": "p4"}})
 
         if filters.get("cups",None):
@@ -222,22 +222,22 @@ class BaseErpCch:
 
     @classmethod
     def to_filter(cls, filters):
-        return [(cls.timefield, '<', increment_isodate(filters['to_'][0]))]
+        return [(cls.timefield, '<', increment_isodate(filters['to_']))]
 
     @classmethod
     async def build_query(cls, filters):
         result = []
         if 'from_' in filters:
-            result += [(cls.timefield, '>=', filters['from_'][0])]
+            result += [(cls.timefield, '>=', filters['from_'])]
 
         if 'to_' in filters:
             result += cls.to_filter(filters)
 
         if 'downloaded_from' in filters:
-            result += [('create_at', '>=', filters['downloaded_from'][0])]
+            result += [('create_at', '>=', filters['downloaded_from'])]
 
         if 'downloaded_to' in filters:
-            result += [('create_at', '<=', filters['downloaded_to'][0])]
+            result += [('create_at', '<=', filters['downloaded_to'])]
 
         if 'cups' in filters:
             # Not using ilike because ERP model turns it into
@@ -293,7 +293,7 @@ class BaseTimescaleErpCch(BaseErpCch):
 
     @classmethod
     def to_filter(cls, filters):
-        return [(cls.timefield, '<=', filters['to_'][0])]
+        return [(cls.timefield, '<=', filters['to_'])]
 
 class TgCchF1(BaseTimescaleErpCch):
 
@@ -506,7 +506,7 @@ async def get_measures(curve_type, cch, contract_id, user):
 
 async def async_get_cch(request, contract_id=None):
     loop = asyncio.get_running_loop()
-    filters = request.args
+    filters = dict(request.query_args)
     cups = None
 
     if contract_id:
