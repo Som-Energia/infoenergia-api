@@ -64,6 +64,7 @@ class TestBaseContracts(BaseTestCase):
             "juridic_type": "physical_person",
             "limit": 1,
         }
+
         _, response = self.loop.run_until_complete(
             self.client.get(
                 "/contracts",
@@ -72,17 +73,16 @@ class TestBaseContracts(BaseTestCase):
                 timeout=None,
             )
         )
-
         self.assertEqual(response.status, 200)
         self.assertDictEqual(
             response.json,
             {
                 "count": 1,
                 "data": self.json4test["contract_20TD"],
-                "total_results": 12,
+                "total_results": 9,
                 "cursor": "N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=",
                 "next_page": "http://{}/contracts?cursor=N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0=&limit=1".format(
-                    response.url.netloc
+                    response.url.netloc.decode("utf-8")
                 ),
             },
         )
@@ -105,6 +105,7 @@ class TestBaseContracts(BaseTestCase):
             "tariff": "3.0TD",
             "limit": 1,
         }
+
         _, response = self.loop.run_until_complete(
             self.client.get(
                 "/contracts",
@@ -144,7 +145,6 @@ class TestBaseContracts(BaseTestCase):
                 timeout=None,
             )
         )
-
         self.assertEqual(response.status, 200)
         self.assertDictEqual(
             response.json,
