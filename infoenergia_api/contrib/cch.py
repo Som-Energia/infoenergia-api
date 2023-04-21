@@ -64,7 +64,7 @@ class BaseCch:
             query.update({"type": {"$eq": "p4"}})
 
         if filters.get("cups",None):
-            query.update(name={"$regex": "^{}".format(filters["cups"][0][:20])})
+            query.update(name={"$regex": "^{}".format(filters["cups"][:20])})
 
         return query
 
@@ -242,7 +242,7 @@ class BaseErpCch:
         if 'cups' in filters:
             # Not using ilike because ERP model turns it into
             # into '=' anyway, see the erp code
-            result += [('name', '=', filters['cups'][0])]
+            result += [('name', '=', filters['cups'])]
 
         return result
 
@@ -403,6 +403,7 @@ async def async_get_cch(request, contract_id=None):
         if not cups:
             return []
             raise Exception("Contract not availble")
+        cups=cups[0]
 
     curve_type = filters.get("type")
     Cch = cch_model(curve_type)
