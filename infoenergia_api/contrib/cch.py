@@ -455,6 +455,22 @@ class TgCchF5dRepository(MongoCurveRepository):
     extra_filter=dict()
     conversionFactor = None
 
+    def measurements(self, raw_data):
+        return dict(
+            season=raw_data['season'],
+            ai=raw_data['ai'],
+            ao=raw_data['ao'],
+            r1=raw_data['r1'],
+            r2=raw_data['r2'],
+            r3=raw_data['r3'],
+            r4=raw_data['r4'],
+            source=raw_data['source'],
+            validated=raw_data['validated'],
+            date=cch_datetime_2_tz_isodate(raw_data),
+            dateDownload=iso_format(raw_data['create_at']),
+            dateUpdate=iso_format(raw_data['update_at']),
+        )
+
 def create_repository(curve_type):
     return {
         'tg_cchfact': TgCchF5dRepository
@@ -464,6 +480,28 @@ def create_repository(curve_type):
 async def get_curve(type, start, end, cups=None):
     repository=create_repository(type)
     return await repository.get_curve(start, end, cups=cups)
+
+
+async def get_measures(curve_type, cch, contract_id, user):
+    loop = asyncio.get_running_loop()
+
+    if not contract_id:
+        contract_id = await loop.run_in_executor(
+            None,
+            get_contract_id,
+            get_erp_instance(),
+            cch['name'],
+            user,
+        )
+    if not contract_id:
+        return {}
+
+    repository = create_repository(curve_type)
+    return {
+        "contractId": contract_id,
+        "meteringPointId": make_uuid("giscedata.cups.ps", cch['name']),
+        "measurements": repository.measurements(cch),
+    }
 
 async def async_get_cch(request, contract_id=None):
     loop = asyncio.get_running_loop()
@@ -478,6 +516,14 @@ async def async_get_cch(request, contract_id=None):
         cups=cups[0]
 
     curve_type = filters.get("type")
+    if curve_type in ['tg_cchfact']:
+        result = await get_curve(
+            curve_type,
+            start = filters.get('from_', None),
+            end = filters.get('to_', None),
+            cups = cups,
+        )
+        return result
     Cch = cch_model(curve_type)
     return await Cch.search(curve_type, filters, cups)
 

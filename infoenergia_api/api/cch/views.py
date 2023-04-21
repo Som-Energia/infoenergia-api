@@ -17,6 +17,7 @@ from infoenergia_api.contrib.cch import (
     TgCchGennetabeta,
     TgCchAutocons,
     async_get_cch,
+    get_measures,
 )
 from infoenergia_api.contrib.mixins import ResponseMixin
 from infoenergia_api.contrib.pagination import PageNotFoundError
@@ -35,7 +36,13 @@ class BaseCchMeasuresContractView(ResponseMixin, PaginationLinksMixin, HTTPMetho
         )
         return cch_ids, links, total_results
 
-    async def get_cch_measures(self, model, cch_ids, user, contract_id=None):
+    async def get_cch_measures(self, model, cch_ids, user, contract_id=None, curve_type=None):
+        if curve_type in ['tg_cchfact']:
+            cchs = cch_ids # TODO: we are getting cch's no ids for those curves
+            return await asyncio.gather(*[
+                get_measures(curve_type, cch, contract_id, user) for cch in cchs
+            ])
+
         measures = []
         loop = asyncio.get_running_loop()
         to_do = [loop.create_task(model.create(cch_id)) for cch_id in sorted(cch_ids)]
@@ -61,8 +68,9 @@ class CchMeasuresContractIdView(BaseCchMeasuresContractView):
         logger.info("Getting cch measures for contract: %s", contract_id)
         request.ctx.user = user
 
+        curve_type = request.args.get('type', '')
         try:
-            model = cch_model(request.args.get("type", ""))
+            model = cch_model(curve_type)
             if not model:
                 raise ModelNotFoundError()
 
@@ -71,7 +79,7 @@ class CchMeasuresContractIdView(BaseCchMeasuresContractView):
             return self.error_response(e)
         else:
             cch_measures = await self.get_cch_measures(
-                model, cch_ids, user, contract_id
+                model, cch_ids, user, contract_id, curve_type=curve_type,
             )
             response = {
                 "total_results": total_results,
@@ -94,8 +102,9 @@ class CchMeasuresView(BaseCchMeasuresContractView):
     async def get(self, request, user):
         request.ctx.user = user
         logger.info("Getting cch measures")
+        curve_type = request.args.get('type', '')
         try:
-            model = cch_model(request.args.get("type", ""))
+            model = cch_model(curve_type)
             if not model:
                 raise ModelNotFoundError()
 
@@ -103,7 +112,9 @@ class CchMeasuresView(BaseCchMeasuresContractView):
         except (PageNotFoundError, ModelNotFoundError) as e:
             return self.error_response(e)
         else:
-            cch_measures = await self.get_cch_measures(model, cch_ids, user)
+            cch_measures = await self.get_cch_measures(
+                model, cch_ids, user, curve_type=curve_type
+            )
             response = {
                 "total_results": total_results,
                 "count": len(cch_measures),
