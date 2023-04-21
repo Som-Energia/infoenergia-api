@@ -6,7 +6,7 @@ from infoenergia_api.contrib import (
     TgCchAutocons,
     cch_model,
 )
-from infoenergia_api.contrib.cch import get_curve
+from infoenergia_api.contrib.cch import get_curve, MongoCurveRepository
 
 import pytest
 import datetime
@@ -271,6 +271,69 @@ class TestCchRequest:
         yaml_snapshot(ns(
             curve=curve,
         ))
+
+
+class TestMongoCurveRepository:
+    async def assert_build_mongo_query(self, filters, expected_query):
+        query = MongoCurveRepository().build_query(**filters)
+        assert query == expected_query
+
+    async def test__build_query__no_filters(self):
+        await self.assert_build_mongo_query(dict(), {})
+
+    @pytest.mark.parametrize('parameter,value,expected', [
+        ('cups', '12345678901234567890_this_should_disappear',
+            {'name': {'$regex': '^12345678901234567890'}}),
+        ('start', '2022-01-01',
+            {'datetime': {'$gte': datetime.datetime(2022, 1, 1, 0, 0)}}),
+        ('end', '2022-01-01',
+            {'datetime': {'$lte': datetime.datetime(2022, 1, 2, 0, 0)}}),
+        ('downloaded_from', '2022-01-01',
+            {'create_at': {'$gte': datetime.datetime(2022, 1, 1, 0, 0)}}),
+        ('downloaded_to', '2022-01-01',
+            {'create_at': {'$lte': datetime.datetime(2022, 1, 1, 0, 0)}}),
+        ('type', 'p', # P1
+            {'type': {'$eq': 'p'}}),
+        ('type', 'p4', # P2
+            {'type': {'$eq': 'p4'}}),
+    ])
+    async def test__build_query__with_single_parameter(self, parameter, value, expected):
+        await self.assert_build_mongo_query({ parameter: value}, expected)
+
+    async def test__build_query__with_several_parameters(self):
+        cups = "a_cups"
+        await self.assert_build_mongo_query(dict(
+            cups = cups,
+            start = '2022-01-01',
+        ),{
+            'datetime': {'$gte': datetime.datetime(2022, 1, 1, 0, 0)},
+            'name': {'$regex': '^a_cups'},
+        })
+
+    async def test__build_query__with_from_and_to(self):
+        await self.assert_build_mongo_query({
+            'start': '2022-01-01',
+            'end': '2022-01-02',
+        },{
+            'datetime': {
+                # Both conditions on datetime are joined
+                '$gte': datetime.datetime(2022, 1, 1, 0, 0),
+                '$lte': datetime.datetime(2022, 1, 3, 0, 0),
+            },
+        })
+
+    async def test__build_query__with_downloaded_from_and_to(self):
+        await self.assert_build_mongo_query({
+            'downloaded_from': '2022-01-01',
+            'downloaded_to': '2022-01-02',
+        },{
+            'create_at': {
+                # Both conditions on datetime are joined
+                '$gte': datetime.datetime(2022, 1, 1, 0, 0),
+                '$lte': datetime.datetime(2022, 1, 2, 0, 0),
+            },
+        })
+
 
 
 class TestCchModels:

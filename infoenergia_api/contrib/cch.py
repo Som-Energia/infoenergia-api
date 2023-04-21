@@ -406,7 +406,15 @@ class MongoCurveRepository():
         mongo_client = get_mongo_instance()
         self.db = mongo_client.somenergia
 
-    async def get_curve(self, start, end, cups=None, updated_from=None, updated_to=None, attributes=None, conversionFactors=None):
+    def build_query(
+        self,
+        start=None,
+        end=None,
+        cups=None,
+        downloaded_from=None,
+        downloaded_to=None,
+        **extra_filter
+    ):
         query = {}
         if start:
             query.setdefault('datetime', {}).update(
@@ -416,22 +424,22 @@ class MongoCurveRepository():
             query.setdefault('datetime', {}).update(
                 {"$lte": isodate2datetime(increment_isodate(end))}
             )
-        """
-        # TODO
-        if "downloaded_from" in filters:
+        if downloaded_from:
             query.setdefault('create_at', {}).update(
-                {"$gte": isodate2datetime(updated_from)}
+                {"$gte": isodate2datetime(downloaded_from)}
             )
-        if "downloaded_to" in filters:
+        if downloaded_to:
             query.setdefault('create_at', {}).update(
-                {"$lte": isodate2datetime(increment_isodate(updated_to))}
+                {"$lte": isodate2datetime(downloaded_to)}
             )
-        for key, value in self.extra_filter.items():
+        for key, value in extra_filter.items():
             query.update({key: {"$eq": value}})
-        """
         if cups:
             query.update(name={"$regex": "^{}".format(cups[:20])})
+        return query
 
+    async def get_curve(self, start, end, cups=None):
+        query = self.build_query(start, end, cups)
         cch_collection = self.db[self.model]
         def unbson(x):
             return dict(x,
