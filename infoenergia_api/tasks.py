@@ -369,7 +369,7 @@ def get_experimentalgroup(erp_client, cups_id):
     return cups.get("empowering", False)
 
 
-def get_cups(request, contractId=None):
+def get_cups(request, user, contractId=None):
     erp = get_erp_instance()
     contract_obj = erp.model("giscedata.polissa")
     filters = [
@@ -378,7 +378,7 @@ def get_cups(request, contractId=None):
         ("emp_allow_send_data", "=", True),
         ("name", "=", contractId),
     ]
-    filters = get_contract_user_filters(erp, request.ctx.user, filters)
+    filters = get_contract_user_filters(erp, user, filters)
     if request.args:
         filters = get_request_filters(
             erp,

@@ -510,7 +510,7 @@ async def async_get_cch(request, contract_id=None):
     cups = None
 
     if contract_id:
-        cups = await loop.run_in_executor(None, get_cups, request, contract_id)
+        cups = await loop.run_in_executor(None, get_cups, request, request.ctx.user, contract_id)
         if not cups:
             return []
             raise Exception("Contract not availble")
