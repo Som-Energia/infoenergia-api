@@ -16,6 +16,7 @@ from ..utils import (
 )
 from ..tasks import get_cups
 from .erp import get_erp_instance
+from .mongo_manager import get_mongo_instance
 
 class BaseCch:
 
@@ -402,8 +403,7 @@ def cch_tz_isodate(x):
 
 class MongoCurveRepository():
     def __init__(self):
-        app = Sanic.get_app()
-        mongo_client = app.ctx.mongo_client
+        mongo_client = get_mongo_instance()
         self.db = mongo_client.somenergia
 
     async def get_curve(self, start, end, cups=None, updated_from=None, updated_to=None, attributes=None, conversionFactors=None):
