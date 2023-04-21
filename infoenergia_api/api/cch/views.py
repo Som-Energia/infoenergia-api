@@ -18,6 +18,7 @@ from infoenergia_api.contrib.cch import (
     TgCchAutocons,
     async_get_cch,
     get_measures,
+    migrated_repositories,
 )
 from infoenergia_api.contrib.mixins import ResponseMixin
 from infoenergia_api.contrib.pagination import PageNotFoundError
@@ -37,7 +38,7 @@ class BaseCchMeasuresContractView(ResponseMixin, PaginationLinksMixin, HTTPMetho
         return cch_ids, links, total_results
 
     async def get_cch_measures(self, model, cch_ids, user, contract_id=None, curve_type=None):
-        if curve_type in ['tg_cchfact']:
+        if curve_type in migrated_repositories:
             cchs = cch_ids # TODO: we are getting cch's no ids for those curves
             return await asyncio.gather(*[
                 get_measures(curve_type, cch, contract_id, user) for cch in cchs

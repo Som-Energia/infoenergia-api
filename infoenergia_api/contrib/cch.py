@@ -471,11 +471,12 @@ class TgCchF5dRepository(MongoCurveRepository):
             dateUpdate=iso_format(raw_data['update_at']),
         )
 
-def create_repository(curve_type):
-    return {
-        'tg_cchfact': TgCchF5dRepository
-    }[curve_type]()
+migrated_repositories={
+    'tg_cchfact': TgCchF5dRepository
+}
 
+def create_repository(curve_type):
+    return migrated_repositories[curve_type]()
 
 async def get_curve(type, start, end, cups=None):
     repository=create_repository(type)
@@ -516,7 +517,7 @@ async def async_get_cch(request, contract_id=None):
         cups=cups[0]
 
     curve_type = filters.get("type")
-    if curve_type in ['tg_cchfact']:
+    if curve_type in migrated_repositories:
         result = await get_curve(
             curve_type,
             start = filters.get('from_', None),
