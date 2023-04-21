@@ -393,6 +393,78 @@ class TgCchAutocons(BaseErpCch):
         }
 
 
+def cch_datetime_2_tz_isodate(x):
+    tz = pytz.timezone("Europe/Madrid")
+    date_cch = tz.localize(x['datetime'], is_dst=x['season']).astimezone(pytz.utc)
+    date_cch -= timedelta(hours=1)
+    return iso_format_tz(date_cch)
+
+
+class MongoCurveRepository():
+    def __init__(self):
+        app = Sanic.get_app()
+        mongo_client = app.ctx.mongo_client
+        self.db = mongo_client.somenergia
+
+    async def get_curve(self, start, end, cups=None, updated_from=None, updated_to=None, attributes=None, conversionFactors=None):
+        query = {}
+        if start:
+            query.setdefault('datetime', {}).update(
+                {"$gte": isodate2datetime(start)}
+            )
+        if end:
+            query.setdefault('datetime', {}).update(
+                {"$lte": isodate2datetime(increment_isodate(end))}
+            )
+        """
+        # TODO
+        if "downloaded_from" in filters:
+            query.setdefault('create_at', {}).update(
+                {"$gte": isodate2datetime(updated_from)}
+            )
+        if "downloaded_to" in filters:
+            query.setdefault('create_at', {}).update(
+                {"$lte": isodate2datetime(increment_isodate(updated_to))}
+            )
+        for key, value in self.extra_filter.items():
+            query.update({key: {"$eq": value}})
+        """
+        if cups:
+            query.update(name={"$regex": "^{}".format(cups[:20])})
+
+        cch_collection = self.db[self.model]
+        def unbson(x):
+            return dict(x,
+                id=int(x['id']),
+                date=cch_datetime_2_tz_isodate(x),
+            )
+
+        result = [
+            unbson(cch)
+            async for cch in cch_collection.find(
+                filter=query,
+                # exclude _id since it is not serializable
+                projection=dict(_id=False),
+            )
+        ]
+        return result
+
+
+class TgCchF5dRepository(MongoCurveRepository):
+    model='tg_cchfact'
+    extra_filter=dict()
+    conversionFactor = None
+
+def create_repository(curve_type):
+    return {
+        'tg_cchfact': TgCchF5dRepository
+    }[curve_type]()
+
+
+async def get_curve(type, start, end, cups=None):
+    repository=create_repository(type)
+    return await repository.get_curve(start, end, cups=cups)
+
 async def async_get_cch(request, contract_id=None):
     loop = asyncio.get_running_loop()
     filters = request.args

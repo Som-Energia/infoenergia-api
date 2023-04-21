@@ -6,9 +6,13 @@ from infoenergia_api.contrib import (
     TgCchAutocons,
     cch_model,
 )
+from infoenergia_api.contrib.cch import get_curve
+
 import pytest
 import datetime
 from yamlns.pytestutils import ns, assert_ns_equal, assert_ns_contains
+
+from infoenergia_api.contrib.erp import get_erp_instance
 
 def assert_response_equal(response, expected, expected_status=200):
     if type(expected) == str:
@@ -237,6 +241,35 @@ class TestCchRequest:
         yaml_snapshot(ns(
             status=response.status,
             json=response.json,
+        ))
+
+    def get_cups(self, contract_number=None):
+        erp = get_erp_instance()
+        contract_obj = erp.model("giscedata.polissa")
+        contract_id = contract_obj.search([
+            ("name", "=", contract_number),
+        ])[0]
+        return contract_obj.read(contract_id, ["cups"])["cups"][1]
+
+    @pytest.mark.parametrize('curve_type,contract_number', [
+        #('tg_f1', contract_with_f1_curves),
+        #('tg_cchval', contract_with_readings),
+        ('tg_cchfact', contract_with_readings),
+        #('tg_gennetabeta', contract_collective_self_consumption),
+        #('tg_cchautocons', contract_collective_self_consumption),
+        #('P1', contract_with_px_and_0F_cups),
+        #('P2', contract_with_px_and_0F_cups), # 4 times more curves than P1 but paginated
+    ])
+    async def test__get_curve__two_days(self, curve_type, contract_number, cchquery, yaml_snapshot):
+        cups = self.get_cups(contract_number)
+        curve = await get_curve(
+            type=curve_type,
+            cups=cups,
+            start="2022-11-29",
+            end="2022-11-30",
+        )
+        yaml_snapshot(ns(
+            curve=curve,
         ))
 
 
