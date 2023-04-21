@@ -514,7 +514,6 @@ async def async_get_cch(request, contract_id=None):
         if not cups:
             return []
             raise Exception("Contract not availble")
-        cups=cups[0]
 
     curve_type = filters.get("type")
     if curve_type in migrated_repositories:

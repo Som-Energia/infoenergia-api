@@ -380,4 +380,5 @@ def get_cups(user, contractId=None):
     ]
     filters = get_contract_user_filters(erp, user, filters)
     contracts = contract_obj.search(filters)
-    return [contract_obj.read(contract, ["cups"])["cups"][1] for contract in contracts]
+    if not contracts: return None
+    return contract_obj.read(contracts[0], ["cups"])["cups"][1]
