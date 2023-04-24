@@ -57,13 +57,13 @@ class TariffPrice(object):
         return {
             "dateStart": self.price_data["start_date"],
             "dateEnd": self.price_data["end_date"],
-            "activeEnergy": self.price_data["energia"],
-            "power": self.price_data["potencia"],
-            "gkwh": self.price_data["generation_kWh"],
-            "autoconsumo": self.price_data["energia_autoconsumida"],
+            "activeEnergy": dict(sorted(self.price_data["energia"].items())),
+            "power":  dict(sorted(self.price_data["potencia"].items())),
+            "gkwh": dict(sorted(self.price_data["generation_kWh"].items())),
+            "autoconsumo": dict(sorted(self.price_data["energia_autoconsumida"].items())),
             "meter": self.price_data["comptador"],
             "bonoSocial": self.price_data["bo_social"],
-            "reactiveEnergy": self.price_data["reactiva"],
+            "reactiveEnergy": dict(sorted(self.price_data["reactiva"].items())),
             "taxes": {
                 "name": self.price_data['fiscal_position']['name'],
                 "dateStart": self.price_data['fiscal_position']['date_from'],
@@ -79,16 +79,17 @@ class TariffPrice(object):
         current = self.tariff_format if self.price_data else {}
 
         for tariff_price in tariff_prices['history']:
-            self.price_data = tariff_price
-            history.append(self.tariff_format)
+            if tariff_price:
+                self.price_data = tariff_price
+                history.append(self.tariff_format)
         return current, history
 
     @property
     def tariff(self):
         tariff_prices = self.get_erp_tariff_prices
         if "error" in tariff_prices.keys():
-           return {"error": tariff_prices.get("error", False)}
-        else:
+            return {"error": tariff_prices.get("error", False), "tariffPriceId": self.tariff_id}
+        if tariff_prices:
             if self.contract_id:
                 contract_tariff_prices = {"history": []}
                 for tariff_id, tariff_price in tariff_prices.items():
@@ -115,44 +116,52 @@ class TariffPrice(object):
                 }
 
     def __iter__(self):
-        yield from self.tariff.items()
+        if not 'error' in self.tariff.keys():
+            yield from self.tariff.items()
 
 
-def get_tariff_prices(request, contract_id=None):
+def get_tariff_filters(request, contract_id=None):
+    BOOL_TABLE = {
+        'true': True,
+        'false': False
+    }
+
+    filters = dict(request.query_args)
+
+    filters['withTaxes'] = BOOL_TABLE.get(filters.get('withTaxes', '').lower(), False)
+    filters['home'] = BOOL_TABLE.get(filters.get('home', '').lower(), False)
+
+    if contract_id:
+        filters["contract_id"] = contract_id
+        return filters
+    return filters
+
+def get_tariffs(request):
     tariff_obj = request.app.ctx.erp_client.model("giscedata.polissa.tarifa")
     erp_filters = [
         ("active", "=", True),
     ]
-    filters = {}
+    filters = dict(request.query_args)
 
-    if request.args:
-        filters = { key: value[0] for (key, value) in request.args.items()}
+    if "tariffPriceId" in filters:
+        return request.args["tariffPriceId"]
 
-        if "tariffPriceId" in request.args:
-            filters["tariffPriceId"] = request.args["tariffPriceId"]
-            return filters
-        elif "type" in request.args:
-            erp_filters += [
-                ("name", "=", request.args["type"][0]),
-            ]
-            tariff_id = tariff_obj.search(erp_filters)
-            filters["tariffPriceId"] = tariff_id
-            return filters
-    
-    if contract_id:
-        filters["contract_id"] = contract_id
-        return filters
+    if "type" in filters:
+        erp_filters += [
+            ("name", "=", request.args["type"][0]),
+        ]
+        tariff_id = tariff_obj.search(erp_filters)
+        return tariff_id
 
     tariff_ids = tariff_obj.search(erp_filters)
-    filters["tariffPriceId"] = tariff_ids
-    return filters
+    return tariff_ids
 
 
-async def async_get_tariff_prices(request, contract_id=None):
+async def async_get_tariff_prices(request, contract_id = None):
     try:
         tariff = await request.app.loop.run_in_executor(
             None,
-            functools.partial(get_tariff_prices, request, contract_id),
+            functools.partial(get_tariffs, request),
         )
     except Exception as e:
         raise e

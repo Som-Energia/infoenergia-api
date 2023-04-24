@@ -6,7 +6,7 @@ from infoenergia_api.contrib import (
     ResponseMixin,
 )
 from infoenergia_api.contrib.contracts import async_get_contracts
-from infoenergia_api.contrib.tariff import async_get_tariff_prices
+from infoenergia_api.contrib.tariff import async_get_tariff_prices, get_tariff_filters
 
 from sanic import Blueprint
 from sanic.log import logger
@@ -96,11 +96,13 @@ class ContractsIdTariffView(ResponseMixin, PaginationLinksMixin, HTTPMethodView)
             return self.error_response(e)
 
         else:
-            tariff_price_filters, links, total_results = await self.paginate_results(
-                request, function=async_get_tariff_prices, contract_id=contracts_ids
+            tariff_price_filters = get_tariff_filters(request, contract_id=contracts_ids)
+
+            tariff_price_ids, links, total_results = await self.paginate_results(
+                request, function=async_get_tariff_prices
             )
             tariff_prices = [
-                await TariffPrice.create(filters=tariff_price_filters)
+                await TariffPrice.create(tariff_price_filters, tariff_price_ids)
             ]
 
             base_response = {"total_results": total_results, **links}

@@ -41,7 +41,7 @@ class TestBaseTariff(BaseTestCase):
             {
                 "count": 1,
                 "data": self.json4test["price2A"]["data_TwoPrices"],
-                "total_results": 4
+                "total_results": 1
             }
         )
         self.delete_user(user)
@@ -91,6 +91,7 @@ class TestBaseTariff(BaseTestCase):
         token = self.get_auth_token(user.username, self.dummy_passwd)
         params = {
             "tariffPriceId": 43,
+            "withTaxes": False,
         }
         _, response = self.loop.run_until_complete(
             self.client.get(
@@ -103,6 +104,7 @@ class TestBaseTariff(BaseTestCase):
         self.assertEqual(response.status, 200)
 
         prices = response.json['data'][0]['prices']
+        taxes = response.json['data'][0]['prices']['current']['taxes']
         tariffPriceId = response.json['data'][0]['tariffPriceId']
         self.assertTrue(
             len(prices) > 0
@@ -110,39 +112,7 @@ class TestBaseTariff(BaseTestCase):
         self.assertTrue(
             tariffPriceId == 43
         )
-        self.delete_user(user)
-
-    @db_session
-    def test__get_tariff__3A_non_prices_today(self):
-        user = self.get_or_create_user(
-            username="someone",
-            password=self.dummy_passwd,
-            email="someone@somenergia.coop",
-            partner_id=1,
-            is_superuser=True,
-            category="partner",
-        )
-        token = self.get_auth_token(user.username, self.dummy_passwd)
-        params = {
-            "type": "3.0A",
-        }
-        _, response = self.loop.run_until_complete(
-            self.client.get(
-                "/tariff",
-                headers={"Authorization": "Bearer {}".format(token)},
-                params=params,
-                timeout=None,
-            )
-        )
-
-        self.assertEqual(response.status, 200)
-
-        self.assertDictEqual(
-            response.json, {
-                "count": 1,
-                "data": [{'error': 'Tariff pricelist not found'}],
-                'total_results': 2}
-        )
+        self.assertEqual(taxes, {})
         self.delete_user(user)
 
     @db_session
@@ -175,7 +145,7 @@ class TestBaseTariff(BaseTestCase):
             response.json, {
                 "count": 1,
                 "data": self.json4test["price3A"]["data_prices"],
-                'total_results': 4
+                'total_results': 1
             }
         )
         self.delete_user(user)
@@ -203,6 +173,22 @@ class TestBaseTariff(BaseTestCase):
             tariffPriceId == 43
         )
 
+    @db_session
+    def test__get_tariff__2A_without_results(self):
+        params = {
+            "type": "2.0A"
+        }
+        _, response = self.loop.run_until_complete(
+            self.client.get(
+                "/tariff",
+                params=params,
+                timeout=None,
+            )
+        )
+
+        self.assertEqual(response.status, 200)
+        prices = response.json
+        self.assertEqual(prices['data'], [])
 
 class TestTariff(BaseTestCase):
 
@@ -255,7 +241,7 @@ class TestTariff(BaseTestCase):
         tariff = TariffPrice(self.filters, self.tariff_id_2TD)
         _prices = tariff.tariff
 
-        self.assertEqual(_prices, {'error': 'Tariff pricelist not found'})
+        self.assertEqual(_prices, None)
 
     def test__get_erp_tariff_prices__2TD_price_power(self):
         # Select old prices for tariff 2.0TD
@@ -309,8 +295,9 @@ class TestTariff(BaseTestCase):
         self.filters['to_'] = '2022-12-01'
         tariff = TariffPrice( self.filters, self.tariff_id_3TD)
         prices = tariff.tariff
+
         self.assertEqual(
-            prices['prices']['history'][0]['GKWh'],
+            prices['prices']['history'][0]['gkwh'],
             {
                 'P1': {'unit': '€/kWh', 'value': 0.144},
                 'P2': {'unit': '€/kWh', 'value': 0.132},
@@ -387,7 +374,7 @@ class TestTariff(BaseTestCase):
         self.filters['withTaxes'] = True
         self.filters['geographicalRegion'] = "canarias"
 
-        tariff = TariffPrice( self.filters, self.tariff_id_2TD)
+        tariff = TariffPrice(self.filters, self.tariff_id_2TD)
         prices = tariff.tariff
 
         self.assertEqual(prices['prices']['history'][0]['dateEnd'], '2022-12-31')
