@@ -449,6 +449,8 @@ class MongoCurveRepository():
             return dict(cch,
                 id=int(cch['id']), # un-bson-ize
                 date=cch_tz_isodate(cch),
+                dateDownload=iso_format(cch["create_at"]),
+                dateUpdate=iso_format(cch["update_at"]),
             )
 
         result = [
@@ -532,8 +534,8 @@ class TgCchF5dRepository(MongoCurveRepository):
         return dict(
             date=raw_data['date'],
             season=raw_data['season'],
-            dateDownload=iso_format(raw_data['create_at']),
-            dateUpdate=iso_format(raw_data['update_at']),
+            dateDownload=raw_data['dateDownload'],
+            dateUpdate=raw_data['dateUpdate'],
             source=raw_data['source'],
             validated=raw_data['validated'],
             ai=raw_data['ai'],
@@ -551,8 +553,8 @@ class TgCchValRepository(MongoCurveRepository):
         return dict(
             date=raw_data["date"],
             season=raw_data["season"],
-            dateDownload=iso_format(raw_data["create_at"]),
-            dateUpdate=iso_format(raw_data["update_at"]),
+            dateDownload=raw_data['dateDownload'],
+            dateUpdate=raw_data['dateUpdate'],
             ai=raw_data["ai"],
             ao=raw_data["ao"],
         )
@@ -564,8 +566,8 @@ class TgCchPnRepository(MongoCurveRepository):
         return dict(
             date=raw_data["date"],
             season=raw_data["season"],
-            dateDownload=iso_format(raw_data["create_at"]),
-            dateUpdate=iso_format(raw_data["update_at"]),
+            dateDownload=raw_data['dateDownload'],
+            dateUpdate=raw_data['dateUpdate'],
             source=raw_data["source"],
             validated=raw_data["validated"],
             type=raw_data["type"],
@@ -598,7 +600,7 @@ class TgCchP2Repository(TgCchPnRepository):
         type='p4',
     )
 
-class TgCchGennetabetaRepository(ErpMongoCurveRepository):
+class TgCchGennetabetaRepository(MongoCurveRepository):
     model='tg_cch_gennetabeta'
 
     def measurements(self, raw_data):
@@ -607,8 +609,8 @@ class TgCchGennetabetaRepository(ErpMongoCurveRepository):
             ae=raw_data['ae'],
             ai=raw_data['ai'],
             bill=raw_data['bill'],
-            dateDownload=raw_data['create_at'],
-            dateUpdate=raw_data['update_at'],
+            dateDownload=raw_data['dateDownload'],
+            dateUpdate=raw_data['dateUpdate'],
             r1=raw_data['r1'],
             r2=raw_data['r2'],
             r3=raw_data['r3'],
@@ -618,7 +620,7 @@ class TgCchGennetabetaRepository(ErpMongoCurveRepository):
             validated=raw_data['validated'],
         )
 
-class TgCchAutoconsRepository(ErpMongoCurveRepository):
+class TgCchAutoconsRepository(MongoCurveRepository):
     model='tg_cch_autocons'
 
     def measurements(self, raw_data):
@@ -627,8 +629,8 @@ class TgCchAutoconsRepository(ErpMongoCurveRepository):
             ae=raw_data['ae'],
             ai=raw_data['ai'],
             bill=raw_data['bill'],
-            dateDownload=raw_data['create_at'],
-            dateUpdate=raw_data['update_at'],
+            dateDownload=raw_data['dateDownload'],
+            dateUpdate=raw_data['dateUpdate'],
             r1=raw_data['r1'],
             r2=raw_data['r2'],
             r3=raw_data['r3'],
