@@ -6,7 +6,11 @@ from infoenergia_api.contrib import (
     TgCchAutocons,
     cch_model,
 )
-from infoenergia_api.contrib.cch import get_curve, MongoCurveRepository
+from infoenergia_api.contrib.cch import (
+    get_curve,
+    MongoCurveRepository,
+    TimescaleCurveRepository,
+)
 
 import pytest
 import datetime
@@ -333,6 +337,23 @@ class TestMongoCurveRepository:
                 '$lte': datetime.datetime(2022, 1, 2, 0, 0),
             },
         })
+
+
+class TestTimescaleCurveRepository:
+    async def assert_build_query(self, filters, expected_query):
+        query = TimescaleCurveRepository().build_query(**filters)
+        assert query == expected_query
+
+    async def test__build_query__no_filters(self):
+        await self.assert_build_query(dict(), [])
+
+    @pytest.mark.parametrize('parameter,value,expected', [
+        ('cups', '12345678901234567890_this_should_disappear',
+            ["name ILIKE '12345678901234567890%'"]),
+    ])
+    async def test__build_query__with_single_parameter(self, parameter, value, expected):
+        await self.assert_build_query({ parameter: value}, expected)
+
 
 
 

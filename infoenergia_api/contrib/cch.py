@@ -525,6 +525,26 @@ class ErpMongoCurveRepository:
             cch_transform(cch) for cch in cchs
         ]
 
+class TimescaleCurveRepository:
+
+    extra_filter=dict()
+
+    def build_query(
+        self,
+        start=None,
+        end=None,
+        cups=None,
+        downloaded_from=None,
+        downloaded_to=None,
+        **extra_filter
+    ):
+        result = []
+        if cups:
+            # Not using ilike because ERP model turns it into
+            # into '=' anyway, see the erp code
+            result += [f"name ILIKE '{cups[:20]}%'"]
+
+        return result
 
 
 class TgCchF5dRepository(MongoCurveRepository):
