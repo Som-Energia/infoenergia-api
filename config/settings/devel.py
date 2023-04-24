@@ -6,6 +6,9 @@ ERP_CONF = env.json("ERP_CONF")
 # Transport Pool configuration
 TRANSPORT_POOL_CONF = env.json("TRANSPORT_POOL_CONF")
 
+# ERP database, direct access skipping ERP
+ERP_DB_CONF = env.json("ERP_DB_CONF")
+
 # Mongo configuration
 MONGO_CONF = env.str("MONGO_CONF")
 
