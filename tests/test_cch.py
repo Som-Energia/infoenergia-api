@@ -256,7 +256,7 @@ class TestCchRequest:
         return contract_obj.read(contract_id, ["cups"])["cups"][1]
 
     @pytest.mark.parametrize('curve_type,contract_number', [
-        #('tg_f1', contract_with_f1_curves),
+        ('tg_f1', contract_with_f1_curves),
         #('tg_cchval', contract_with_readings),
         ('tg_cchfact', contract_with_readings),
         #('tg_gennetabeta', contract_collective_self_consumption),

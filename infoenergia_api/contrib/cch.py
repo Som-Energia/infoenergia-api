@@ -331,6 +331,8 @@ class TgCchF1(BaseTimescaleErpCch):
             "reserve1": self.reserve1,
             "reserve2": self.reserve2,
             "measureType": self.measure_type,
+            "datetime": self.datetime,
+            "utc_timestamp": self.utc_timestamp,
         }
 
 
@@ -558,6 +560,59 @@ class TimescaleCurveRepository:
                 result += [cursor.mogrify(f"{key} = %s", [value])]
 
         return result
+
+    async def get_curve(self, start, end, cups=None):
+
+        def date_cch(raw_data):
+            _utc_timestamp = raw_data['utc_timestamp'].replace(tzinfo=pytz.UTC)
+            return iso_format_tz(_utc_timestamp)
+
+        def cch_transform(cch):
+            return dict(cch,
+                date=date_cch(cch),
+                dateDownload=iso_format(cch["create_at"]),
+                dateUpdate=iso_format(cch["update_at"]),
+                datetime=iso_format(cch["datetime"]),
+                utc_timestamp=iso_format(cch["utc_timestamp"]),
+
+            )
+        from psycopg.rows import dict_row
+        query = await self.build_query(start, end, cups, **self.extra_filter)
+
+        erpdb = await get_erpdb_instance()
+        async with AsyncClientCursor(erpdb, row_factory=dict_row) as cursor:
+            await cursor.execute(f"""
+                SELECT * from {self.model} WHERE {" AND ".join(query) or "TRUE"};
+            """)
+            return [
+                cch_transform(cch) for cch in await cursor.fetchall()
+            ]
+
+
+class TgCchF1Repository(TimescaleCurveRepository):
+
+    model = 'tg_f1'
+
+    def measurements(self, raw_data):
+        return dict(
+            season=raw_data['season'],
+            ai=raw_data['ai'],
+            ao=raw_data['ao'],
+            r1=raw_data['r1'],
+            r2=raw_data['r2'],
+            r3=raw_data['r3'],
+            r4=raw_data['r4'],
+            source=raw_data['source'],
+            validated=raw_data['validated'],
+            date=raw_data['date'],
+            dateDownload=raw_data['dateDownload'],
+            dateUpdate=raw_data['dateUpdate'],
+            reserve1=raw_data['reserve1'],
+            reserve2=raw_data['reserve2'],
+            measureType=raw_data['measure_type'],
+            datetime=raw_data['datetime'],
+            utc_timestamp=raw_data['utc_timestamp'],
+        )
 
 
 

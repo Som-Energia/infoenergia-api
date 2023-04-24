@@ -18,8 +18,8 @@ def make_timestamp(date):
     return tz.localize(datetime_obj).isoformat("T")
 
 def iso_format(date):
-    """Format a date in naive iso format"""
-    return date.strftime("%Y-%m-%d %H:%M:%S")
+    """Format a date in naive iso format. If None, None returned"""
+    return date and date.strftime("%Y-%m-%d %H:%M:%S")
 
 def iso_format_tz(date):
     """Format a date in tz aware iso format"""
