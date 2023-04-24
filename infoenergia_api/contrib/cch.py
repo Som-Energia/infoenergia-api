@@ -545,17 +545,17 @@ class TimescaleCurveRepository:
         async with AsyncClientCursor(erpdb) as cursor:
             result = []
             if cups:
-                result = [cursor.mogrify("name ILIKE %s", [cups[:20]+"%"])]
+                result += [cursor.mogrify("name ILIKE %s", [cups[:20]+"%"])]
             if start:
-                result = [cursor.mogrify("datetime >= %s", [start+" 00:00:00"])]
+                result += [cursor.mogrify("datetime >= %s", [start+" 00:00:00"])]
             if end:
-                result = [cursor.mogrify("datetime <= %s", [increment_isodate(end) +" 00:00:00"])]
+                result += [cursor.mogrify("datetime <= %s", [increment_isodate(end) +" 00:00:00"])]
             if downloaded_from:
-                result = [cursor.mogrify("create_at >= %s", [downloaded_from+" 00:00:00"])]
+                result += [cursor.mogrify("create_at >= %s", [downloaded_from+" 00:00:00"])]
             if downloaded_to:
-                result = [cursor.mogrify("create_at <= %s", [downloaded_to+" 00:00:00"])]
+                result += [cursor.mogrify("create_at <= %s", [downloaded_to+" 00:00:00"])]
             for key, value in extra_filter.items():
-                result = [cursor.mogrify(f"{key} = %s", [value])]
+                result += [cursor.mogrify(f"{key} = %s", [value])]
 
         return result
 

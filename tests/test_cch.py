@@ -366,6 +366,25 @@ class TestTimescaleCurveRepository:
     async def test__build_query__with_single_parameter(self, parameter, value, expected):
         await self.assert_build_query({ parameter: value}, expected)
 
+    async def test__build_query__with_several_parameters(self):
+        await self.assert_build_query(dict(
+            cups = 'a_cups',
+            start = '2022-01-01',
+            end = '2022-01-02',
+            downloaded_from = '2022-12-30',
+            downloaded_to = '2022-12-31',
+            type = 'p'
+        ), [
+            "name ILIKE 'a_cups%'",
+            "datetime >= '2022-01-01 00:00:00'",
+            "datetime <= '2022-01-03 00:00:00'",
+            "create_at >= '2022-12-30 00:00:00'",
+            "create_at <= '2022-12-31 00:00:00'",
+            "type = 'p'",
+        ])
+            # 'datetime': {'$gte': datetime.datetime(2022, 1, 1, 0, 0)},
+            # 'name': {'$regex': '^a_cups'},
+
 
 
 
