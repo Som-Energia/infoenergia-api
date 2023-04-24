@@ -57,13 +57,13 @@ class TariffPrice(object):
         return {
             "dateStart": self.price_data["start_date"],
             "dateEnd": self.price_data["end_date"],
-            "activeEnergy": self.price_data["energia"],
-            "power": self.price_data["potencia"],
-            "gkwh": self.price_data["generation_kWh"],
-            "autoconsumo": self.price_data["energia_autoconsumida"],
+            "activeEnergy": dict(sorted(self.price_data["energia"].items())),
+            "power":  dict(sorted(self.price_data["potencia"].items())),
+            "gkwh": dict(sorted(self.price_data["generation_kWh"].items())),
+            "autoconsumo": dict(sorted(self.price_data["energia_autoconsumida"].items())),
             "meter": self.price_data["comptador"],
             "bonoSocial": self.price_data["bo_social"],
-            "reactiveEnergy": self.price_data["reactiva"],
+            "reactiveEnergy": dict(sorted(self.price_data["reactiva"].items())),
             "taxes": {
                 "name": self.price_data['fiscal_position']['name'],
                 "dateStart": self.price_data['fiscal_position']['date_from'],
