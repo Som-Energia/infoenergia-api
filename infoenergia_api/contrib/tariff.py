@@ -79,16 +79,20 @@ class TariffPrice(object):
         current = self.tariff_format if self.price_data else {}
 
         for tariff_price in tariff_prices['history']:
-            self.price_data = tariff_price
-            history.append(self.tariff_format)
+            if tariff_price:
+                self.price_data = tariff_price
+                history.append(self.tariff_format)
         return current, history
 
     @property
     def tariff(self):
         tariff_prices = self.get_erp_tariff_prices
         if "error" in tariff_prices.keys():
-           return {"error": tariff_prices.get("error", False)}
-        else:
+            logger.debug(
+               "error %d for tariff_id %d",
+               tariff_prices.get("error", False), self.tariff_id
+            )
+        if tariff_prices and not "error" in tariff_prices.keys():
             if self.contract_id:
                 contract_tariff_prices = {"history": []}
                 for tariff_id, tariff_price in tariff_prices.items():

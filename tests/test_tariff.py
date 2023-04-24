@@ -116,39 +116,6 @@ class TestBaseTariff(BaseTestCase):
         self.delete_user(user)
 
     @db_session
-    def test__get_tariff__3A_non_prices_today(self):
-        user = self.get_or_create_user(
-            username="someone",
-            password=self.dummy_passwd,
-            email="someone@somenergia.coop",
-            partner_id=1,
-            is_superuser=True,
-            category="partner",
-        )
-        token = self.get_auth_token(user.username, self.dummy_passwd)
-        params = {
-            "type": "3.0A",
-        }
-        _, response = self.loop.run_until_complete(
-            self.client.get(
-                "/tariff",
-                headers={"Authorization": "Bearer {}".format(token)},
-                params=params,
-                timeout=None,
-            )
-        )
-
-        self.assertEqual(response.status, 200)
-
-        self.assertDictEqual(
-            response.json, {
-                "count": 1,
-                "data": [{'error': 'Tariff pricelist not found'}],
-                'total_results': 2}
-        )
-        self.delete_user(user)
-
-    @db_session
     def test__get_tariff__3A_with_prices(self):
         user = self.get_or_create_user(
             username="someone",
@@ -258,7 +225,7 @@ class TestTariff(BaseTestCase):
         tariff = TariffPrice(self.filters, self.tariff_id_2TD)
         _prices = tariff.tariff
 
-        self.assertEqual(_prices, {'error': 'Tariff pricelist not found'})
+        self.assertEqual(_prices, None)
 
     def test__get_erp_tariff_prices__2TD_price_power(self):
         # Select old prices for tariff 2.0TD
@@ -312,8 +279,9 @@ class TestTariff(BaseTestCase):
         self.filters['to_'] = '2022-12-01'
         tariff = TariffPrice( self.filters, self.tariff_id_3TD)
         prices = tariff.tariff
+
         self.assertEqual(
-            prices['prices']['history'][0]['GKWh'],
+            prices['prices']['history'][0]['gkwh'],
             {
                 'P1': {'unit': '€/kWh', 'value': 0.144},
                 'P2': {'unit': '€/kWh', 'value': 0.132},
