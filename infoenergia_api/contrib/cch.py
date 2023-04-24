@@ -402,6 +402,8 @@ def cch_tz_isodate(x):
 
 
 class MongoCurveRepository():
+    extra_filter = dict()
+
     def __init__(self):
         mongo_client = get_mongo_instance()
         self.db = mongo_client.somenergia
@@ -439,7 +441,7 @@ class MongoCurveRepository():
         return query
 
     async def get_curve(self, start, end, cups=None):
-        query = self.build_query(start, end, cups)
+        query = self.build_query(start, end, cups, **self.extra_filter)
         cch_collection = self.db[self.model]
         def cch_transform(x):
             return dict(x,
@@ -453,34 +455,92 @@ class MongoCurveRepository():
                 filter=query,
                 # exclude _id since it is not serializable
                 projection=dict(_id=False),
+                #sort=[( "datetime", 1 )],
             )
         ]
         return result
 
-
 class TgCchF5dRepository(MongoCurveRepository):
-    model='tg_cchfact'
-    extra_filter=dict()
-    conversionFactor = None
+    model = 'tg_cchfact'
 
     def measurements(self, raw_data):
         return dict(
+            date=raw_data['date'],
             season=raw_data['season'],
+            dateDownload=iso_format(raw_data['create_at']),
+            dateUpdate=iso_format(raw_data['update_at']),
+            source=raw_data['source'],
+            validated=raw_data['validated'],
             ai=raw_data['ai'],
             ao=raw_data['ao'],
             r1=raw_data['r1'],
             r2=raw_data['r2'],
             r3=raw_data['r3'],
             r4=raw_data['r4'],
-            source=raw_data['source'],
-            validated=raw_data['validated'],
-            date=raw_data['date'],
-            dateDownload=iso_format(raw_data['create_at']),
-            dateUpdate=iso_format(raw_data['update_at']),
         )
 
+class TgCchValRepository(MongoCurveRepository):
+    model = "tg_cchval"
+
+    def measurements(self, raw_data):
+        return dict(
+            date=raw_data["date"],
+            season=raw_data["season"],
+            dateDownload=iso_format(raw_data["create_at"]),
+            dateUpdate=iso_format(raw_data["update_at"]),
+            ai=raw_data["ai"],
+            ao=raw_data["ao"],
+        )
+
+class TgCchPnRepository(MongoCurveRepository):
+    model = "tg_p1"
+
+    def measurements(self, raw_data):
+        return dict(
+            date=raw_data["date"],
+            season=raw_data["season"],
+            dateDownload=iso_format(raw_data["create_at"]),
+            dateUpdate=iso_format(raw_data["update_at"]),
+            source=raw_data["source"],
+            validated=raw_data["validated"],
+            type=raw_data["type"],
+            measureType=raw_data["measure_type"],
+            ai=raw_data["ai"],
+            ao=raw_data["ao"],
+            reserve1=raw_data["reserve1"],
+            reserve2=raw_data["reserve2"],
+            r1=raw_data["r1"],
+            r2=raw_data["r2"],
+            r3=raw_data["r3"],
+            r4=raw_data["r4"],
+            aiquality=raw_data["aiquality"],
+            aoQuality=raw_data["aoquality"],
+            reserve1Quality=raw_data["reserve1quality"],
+            reserve2Quality=raw_data["reserve2quality"],
+            r1Quality=raw_data["r1quality"],
+            r2Quality=raw_data["r2quality"],
+            r3Quality=raw_data["r3quality"],
+            r4Quality=raw_data["r4quality"],
+        )
+
+class TgCchP1Repository(TgCchPnRepository):
+    extra_filter = dict(
+        type='p',
+    )
+
+class TgCchP2Repository(TgCchPnRepository):
+    extra_filter = dict(
+        type='p4',
+    )
+
 migrated_repositories={
-    'tg_cchfact': TgCchF5dRepository
+    'tg_cchfact': TgCchF5dRepository,
+    'tg_cchval': TgCchValRepository,
+    'P1': TgCchP1Repository,
+    'P2': TgCchP2Repository,
+    #"tg_f1": TgCchF1Repository,
+    #'tg_gennetabeta': TgCchGennetabetaRepository,
+    #'tg_cchautocons': TgCchAutoconsRepository,
 }
 
 def create_repository(curve_type):
