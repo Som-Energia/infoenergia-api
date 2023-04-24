@@ -441,14 +441,14 @@ class MongoCurveRepository():
     async def get_curve(self, start, end, cups=None):
         query = self.build_query(start, end, cups)
         cch_collection = self.db[self.model]
-        def unbson(x):
+        def cch_transform(x):
             return dict(x,
-                id=int(x['id']),
+                id=int(x['id']), # un-bson-ize
                 date=cch_tz_isodate(x),
             )
 
         result = [
-            unbson(cch)
+            cch_transform(cch)
             async for cch in cch_collection.find(
                 filter=query,
                 # exclude _id since it is not serializable
