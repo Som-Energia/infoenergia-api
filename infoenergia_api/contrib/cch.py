@@ -5,6 +5,7 @@ import pytz
 
 from sanic import Sanic
 from somutils import isodates
+from psycopg import AsyncClientCursor
 
 from config import config
 
@@ -17,6 +18,8 @@ from ..utils import (
 from ..tasks import get_cups
 from .erp import get_erp_instance
 from .mongo_manager import get_mongo_instance
+from .erpdb_manager import get_erpdb_instance
+
 
 class BaseCch:
 
@@ -529,7 +532,7 @@ class TimescaleCurveRepository:
 
     extra_filter=dict()
 
-    def build_query(
+    async def build_query(
         self,
         start=None,
         end=None,
@@ -538,24 +541,25 @@ class TimescaleCurveRepository:
         downloaded_to=None,
         **extra_filter
     ):
-        from .erpdb_manager import get_erpdb_instance
-        from psycopg import AsyncClientCursor
         erpdb = await get_erpdb_instance()
         async with AsyncClientCursor(erpdb) as cursor:
             result = []
             if cups:
-                # Not using ilike because ERP model turns it into
-                # into '=' anyway, see the erp code
-                result += [cursor.mogrify("name ILIKE %s", [cups[:20]+"%"])]
+                result = [cursor.mogrify("name ILIKE %s", [cups[:20]+"%"])]
+            if start:
+                result = [cursor.mogrify("datetime >= %s", [start+" 00:00:00"])]
+            if end:
+                result = [cursor.mogrify("datetime <= %s", [increment_isodate(end) +" 00:00:00"])]
+            if downloaded_from:
+                result = [cursor.mogrify("create_at >= %s", [downloaded_from+" 00:00:00"])]
+            if downloaded_to:
+                result = [cursor.mogrify("create_at <= %s", [downloaded_to+" 00:00:00"])]
+            for key, value in extra_filter.items():
+                result = [cursor.mogrify(f"{key} = %s", [value])]
 
         return result
-        result = []
-        if cups:
-            # Not using ilike because ERP model turns it into
-            # into '=' anyway, see the erp code
-            result += [f"name ILIKE '{cups[:20]}%'"]
 
-        return result
+
 
 
 class TgCchF5dRepository(MongoCurveRepository):

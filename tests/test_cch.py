@@ -350,6 +350,18 @@ class TestTimescaleCurveRepository:
     @pytest.mark.parametrize('parameter,value,expected', [
         ('cups', '12345678901234567890_this_should_disappear',
             ["name ILIKE '12345678901234567890%'"]),
+        ('start', '2022-01-01',
+            ["datetime >= '2022-01-01 00:00:00'"]),
+        ('end', '2022-01-01',
+            ["datetime <= '2022-01-02 00:00:00'"]),
+        ('downloaded_from', '2022-01-01',
+            ["create_at >= '2022-01-01 00:00:00'"]),
+        ('downloaded_to', '2022-01-01',
+            ["create_at <= '2022-01-01 00:00:00'"]),
+        ('type', 'p', # P1
+            ["type = 'p'"]),
+        ('type', 'p4', # P2
+            ["type = 'p4'"]),
     ])
     async def test__build_query__with_single_parameter(self, parameter, value, expected):
         await self.assert_build_query({ parameter: value}, expected)
