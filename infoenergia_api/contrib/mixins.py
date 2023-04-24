@@ -24,7 +24,8 @@ class ResponseMixin(object):
                 todo, timeout=request.app.config.TASKS_TIMEOUT
             )
             for task in done:
-                serialized_instances.append(task.result())
+                if task.result() != {}:
+                    serialized_instances.append(task.result())
 
         response = {
             "count": len(serialized_instances),

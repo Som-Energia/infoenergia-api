@@ -88,11 +88,8 @@ class TariffPrice(object):
     def tariff(self):
         tariff_prices = self.get_erp_tariff_prices
         if "error" in tariff_prices.keys():
-            logger.debug(
-               "error %d for tariff_id %d",
-               tariff_prices.get("error", False), self.tariff_id
-            )
-        if tariff_prices and not "error" in tariff_prices.keys():
+            return {"error": tariff_prices.get("error", False), "tariffPriceId": self.tariff_id}
+        if tariff_prices:
             if self.contract_id:
                 contract_tariff_prices = {"history": []}
                 for tariff_id, tariff_price in tariff_prices.items():
@@ -119,7 +116,8 @@ class TariffPrice(object):
                 }
 
     def __iter__(self):
-        yield from self.tariff.items()
+        if not 'error' in self.tariff.keys():
+            yield from self.tariff.items()
 
 
 def get_tariff_filters(request, contract_id=None):

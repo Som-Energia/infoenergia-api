@@ -173,6 +173,22 @@ class TestBaseTariff(BaseTestCase):
             tariffPriceId == 43
         )
 
+    @db_session
+    def test__get_tariff__2A_without_results(self):
+        params = {
+            "type": "2.0A"
+        }
+        _, response = self.loop.run_until_complete(
+            self.client.get(
+                "/tariff",
+                params=params,
+                timeout=None,
+            )
+        )
+
+        self.assertEqual(response.status, 200)
+        prices = response.json
+        self.assertEqual(prices['data'], [])
 
 class TestTariff(BaseTestCase):
 
