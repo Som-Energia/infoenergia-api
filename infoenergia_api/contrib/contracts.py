@@ -34,7 +34,7 @@ class Contract(object):
         "cnae",
         "modcontractuals_ids",
         "autoconsumo",
-        "autoconsum_id",
+        "potencia_generacio",
         "persona_fisica",
         "titular_nif",
         "llista_preu",
@@ -462,6 +462,16 @@ class Contract(object):
                 .get("selection", ("", ""))
                 if value == self.autoconsumo
             ][0]
+
+            if self.autoconsumo != '00':
+                return {
+                    "selfConsumptionType": self._self_consumption,
+                    "installedPower": self.potencia_generacio
+                }
+            else:
+                return {
+                    "selfConsumptionType": self._self_consumption,
+                }
         return self._self_consumption
 
     @property
@@ -478,26 +488,6 @@ class Contract(object):
             return "physicalPerson"
 
     @property
-    def installedPower(self):
-        """
-        Generator installed power when contract with self-sompsumption
-        """
-        if not hasattr(self, '_installed_power'):
-            self._installed_power = 0.0
-
-            if self.autoconsum_id:
-                Autoconsum = self._erp.model("giscedata.autoconsum")
-                Generador = self._erp.model("giscedata.autoconsum.generador")
-                generator_ids = Autoconsum.read(self.autoconsum_id[0], ['generador_id']).get('generador_id', []) or []
-
-                self._installed_power = sum([
-                    Generador.read(generator_id, ['pot_instalada_gen']).get('pot_instalada_gen', 0.0) or 0.0
-                    for generator_id in generator_ids
-                ])
-
-        return self._installed_power
-
-    @property
     def contracts(self):
         return {
             "contractId": self.name,
@@ -505,10 +495,7 @@ class Contract(object):
             "payerId": make_uuid("res.partner", self.pagador[0]),
             "dateStart": make_timestamp(self.data_alta),
             "dateEnd": make_timestamp(self.data_baixa),
-            "autoconsumo": {
-               "selfConsumptionType": self.selfConsumption,
-               "installedPower": self.installedPower,
-            },
+            "autoconsumo": self.selfConsumption,
             "juridicType": self.juridicType,
             "tariffId": self.tarifa[1],
             "tariff_": self.currentTariff,

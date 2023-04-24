@@ -432,11 +432,12 @@ class TestContracts(BaseTestCase):
     def test__get_selfConsumptionType(self):
         contract = Contract(self.contract_id)
         self_consumption = contract.selfConsumption
-        self.assertEqual(self_consumption, "[41] - Con excedentes y compensación Individual - Consumo")
+        self.assertEqual(self_consumption['selfConsumptionType'], "[41] - Con excedentes y compensación Individual - Consumo")
 
     def test__get_selfConsumptionInstalledPower(self):
         contract = Contract(self.contract_id)
-        self.assertEqual(contract.installedPower, 4.45)
+        self_consumption = contract.selfConsumption
+        self.assertEqual(self_consumption['installedPower'], 4.45)
 
     def test__get_juridicType_physical_person(self):
         contract = Contract(self.contract_id)
