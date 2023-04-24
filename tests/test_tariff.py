@@ -41,7 +41,7 @@ class TestBaseTariff(BaseTestCase):
             {
                 "count": 1,
                 "data": self.json4test["price2A"]["data_TwoPrices"],
-                "total_results": 4
+                "total_results": 1
             }
         )
         self.delete_user(user)
@@ -178,7 +178,7 @@ class TestBaseTariff(BaseTestCase):
             response.json, {
                 "count": 1,
                 "data": self.json4test["price3A"]["data_prices"],
-                'total_results': 4
+                'total_results': 1
             }
         )
         self.delete_user(user)

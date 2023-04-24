@@ -123,41 +123,43 @@ def get_tariff_filters(request, contract_id=None):
         'true': True,
         'false': False
     }
+
+    filters = dict(request.query_args)
+
+    filters['withTaxes'] = BOOL_TABLE.get(filters.get('withTaxes', '').lower(), False)
+    filters['home'] = BOOL_TABLE.get(filters.get('home', '').lower(), False)
+
+    if contract_id:
+        filters["contract_id"] = contract_id
+        return filters
+    return filters
+
+def get_tariffs(request):
     tariff_obj = request.app.ctx.erp_client.model("giscedata.polissa.tarifa")
     erp_filters = [
         ("active", "=", True),
     ]
     filters = dict(request.query_args)
 
-    filters['withTaxes'] = BOOL_TABLE.get(filters.get('withTaxes', '').lower(), False)
-    filters['home'] = BOOL_TABLE.get(filters.get('home', '').lower(), False)
-
     if "tariffPriceId" in filters:
-        filters["tariffPriceId"] = request.args["tariffPriceId"]
-        return filters
+        return request.args["tariffPriceId"]
 
     if "type" in filters:
         erp_filters += [
             ("name", "=", request.args["type"][0]),
         ]
         tariff_id = tariff_obj.search(erp_filters)
-        filters["tariffPriceId"] = tariff_id
-        return filters
-
-    if contract_id:
-        filters["contract_id"] = contract_id
-        return filters
+        return tariff_id
 
     tariff_ids = tariff_obj.search(erp_filters)
-    filters["tariffPriceId"] = tariff_ids
-    return filters
+    return tariff_ids
 
 
-async def async_get_tariff_prices(request, contract_id=None):
+async def async_get_tariff_prices(request, contract_id = None):
     try:
         tariff = await request.app.loop.run_in_executor(
             None,
-            functools.partial(get_tariff_filters, request, contract_id),
+            functools.partial(get_tariffs, request),
         )
     except Exception as e:
         raise e

@@ -13,7 +13,7 @@ from infoenergia_api.contrib import(
     ResponseMixin,
 )
 
-from infoenergia_api.contrib.tariff import async_get_tariff_prices
+from infoenergia_api.contrib.tariff import get_tariff_filters, async_get_tariff_prices
 
 bp_tariff = Blueprint("tariff")
 
@@ -25,7 +25,9 @@ class TariffView(ResponseMixin, PaginationLinksMixin, HTTPMethodView):
     async def get(self, request):
         logger.info("Getting tariffs")
         try:
-            tariff_price_filters, links, total_results = await self.paginate_results(
+            tariff_price_filters = get_tariff_filters(request, contract_id=None)
+
+            tariff_price_ids, links, total_results = await self.paginate_results(
                 request, function=async_get_tariff_prices
             )
         except PageNotFoundError as e:
@@ -35,7 +37,7 @@ class TariffView(ResponseMixin, PaginationLinksMixin, HTTPMethodView):
             tariff_prices = [
                 await TariffPrice.create(
                     tariff_price_filters, int(tariff_price_id))
-                    for tariff_price_id in tariff_price_filters["tariffPriceId"]
+                    for tariff_price_id in tariff_price_ids
             ]
             base_response = {"total_results": total_results, **links}
             response_body = await self.make_response_body(request, tariff_prices, base_response)
