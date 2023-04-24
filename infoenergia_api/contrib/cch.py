@@ -474,7 +474,7 @@ class TgCchF5dRepository(MongoCurveRepository):
             r4=raw_data['r4'],
             source=raw_data['source'],
             validated=raw_data['validated'],
-            date=cch_datetime_2_tz_isodate(raw_data),
+            date=raw_data['date'],
             dateDownload=iso_format(raw_data['create_at']),
             dateUpdate=iso_format(raw_data['update_at']),
         )
