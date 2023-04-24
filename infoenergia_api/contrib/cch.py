@@ -394,12 +394,7 @@ class TgCchAutocons(BaseErpCch):
         }
 
 
-def cch_tz_isodate(x):
-    tz = pytz.timezone("Europe/Madrid")
-    date_cch = tz.localize(x['datetime'], is_dst=x['season']).astimezone(pytz.utc)
-    date_cch -= timedelta(hours=1)
-    return iso_format_tz(date_cch)
-
+# New implementations
 
 class MongoCurveRepository():
     extra_filter = dict()
@@ -443,10 +438,17 @@ class MongoCurveRepository():
     async def get_curve(self, start, end, cups=None):
         query = self.build_query(start, end, cups, **self.extra_filter)
         cch_collection = self.db[self.model]
-        def cch_transform(x):
-            return dict(x,
-                id=int(x['id']), # un-bson-ize
-                date=cch_tz_isodate(x),
+
+        def cch_tz_isodate(cch):
+            tz = pytz.timezone("Europe/Madrid")
+            date_cch = tz.localize(cch['datetime'], is_dst=cch['season']).astimezone(pytz.utc)
+            date_cch -= timedelta(hours=1)
+            return iso_format_tz(date_cch)
+
+        def cch_transform(cch):
+            return dict(cch,
+                id=int(cch['id']), # un-bson-ize
+                date=cch_tz_isodate(cch),
             )
 
         result = [
@@ -459,6 +461,69 @@ class MongoCurveRepository():
             )
         ]
         return result
+
+class ErpMongoCurveRepository:
+
+    extra_filter=dict()
+
+    def __init__(self):
+        self._erp = get_erp_instance()
+
+    def to_filter(self, end):
+        return [('datetime', '<', increment_isodate(end))]
+
+    def build_query(
+        self,
+        start=None,
+        end=None,
+        cups=None,
+        downloaded_from=None,
+        downloaded_to=None,
+        **extra_filter
+    ):
+        result = []
+        if start:
+            result += [('datetime', '>=', start)]
+
+        if end:
+            result += self.to_filter(end)
+
+        if downloaded_from:
+            result += [('create_at', '>=', downloaded_from)]
+
+        if downloaded_to:
+            result += [('create_at', '<=', downloaded_to)]
+
+        if cups:
+            # Not using ilike because ERP model turns it into
+            # into '=' anyway, see the erp code
+            result += [('name', '=', cups)]
+
+        return result
+
+    async def get_curve(self, start, end, cups=None):
+        loop = asyncio.get_running_loop()
+        query = self.build_query(start, end, cups, **self.extra_filter)
+        erp_model_name = self.model.replace('_','.',1)
+        if not hasattr(self, 'erp_model'):
+            self.erp_model = self._erp.model(erp_model_name)
+        cch_ids = await loop.run_in_executor(None, self.erp_model.search, query)
+        cchs = await loop.run_in_executor(None, self.erp_model.read, cch_ids)
+
+        def erp_cch_tz_isodate(cch):
+            localtime = isodates.parseLocalTime(cch['datetime'], isSummer=cch['season'])
+            return iso_format_tz(localtime)
+
+        def cch_transform(cch):
+            return dict(cch,
+                date=erp_cch_tz_isodate(cch),
+            )
+
+        return [
+            cch_transform(cch) for cch in cchs
+        ]
+
+
 
 class TgCchF5dRepository(MongoCurveRepository):
     model = 'tg_cchfact'
@@ -533,14 +598,54 @@ class TgCchP2Repository(TgCchPnRepository):
         type='p4',
     )
 
+class TgCchGennetabetaRepository(ErpMongoCurveRepository):
+    model='tg_cch_gennetabeta'
+
+    def measurements(self, raw_data):
+        return dict(
+            date=raw_data["date"],
+            ae=raw_data['ae'],
+            ai=raw_data['ai'],
+            bill=raw_data['bill'],
+            dateDownload=raw_data['create_at'],
+            dateUpdate=raw_data['update_at'],
+            r1=raw_data['r1'],
+            r2=raw_data['r2'],
+            r3=raw_data['r3'],
+            r4=raw_data['r4'],
+            season=raw_data['season'],
+            source=raw_data['source'],
+            validated=raw_data['validated'],
+        )
+
+class TgCchAutoconsRepository(ErpMongoCurveRepository):
+    model='tg_cch_autocons'
+
+    def measurements(self, raw_data):
+        return dict(
+            date=raw_data["date"],
+            ae=raw_data['ae'],
+            ai=raw_data['ai'],
+            bill=raw_data['bill'],
+            dateDownload=raw_data['create_at'],
+            dateUpdate=raw_data['update_at'],
+            r1=raw_data['r1'],
+            r2=raw_data['r2'],
+            r3=raw_data['r3'],
+            r4=raw_data['r4'],
+            season=raw_data['season'],
+            source=raw_data['source'],
+            validated=raw_data['validated'],
+        )
+
 migrated_repositories={
     'tg_cchfact': TgCchF5dRepository,
     'tg_cchval': TgCchValRepository,
     'P1': TgCchP1Repository,
     'P2': TgCchP2Repository,
     #"tg_f1": TgCchF1Repository,
-    #'tg_gennetabeta': TgCchGennetabetaRepository,
-    #'tg_cchautocons': TgCchAutoconsRepository,
+    'tg_gennetabeta': TgCchGennetabetaRepository,
+    'tg_cchautocons': TgCchAutoconsRepository,
 }
 
 def create_repository(curve_type):
