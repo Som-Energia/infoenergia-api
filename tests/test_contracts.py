@@ -262,7 +262,7 @@ class TestContracts(BaseTestCase):
             tariff,
             {
                 "tariffId": "2.0TD",
-                "tariffPriceId": 101,
+                "tariffPriceId": 43,
                 "dateStart": "2022-01-11T00:00:00+01:00",
                 "dateEnd": "2024-03-09T00:00:00+01:00"
             }
@@ -276,19 +276,19 @@ class TestContracts(BaseTestCase):
             [
                 {
                     "tariffId": "2.0A",
-                    "tariffPriceId": 4,
+                    "tariffPriceId": 1,
                     "dateStart": "2011-12-31T00:00:00+01:00",
                     "dateEnd": "2019-06-05T00:00:00+02:00"
                 },
                 {
                     "tariffId": "2.0DHS",
-                    "tariffPriceId": 18,
+                    "tariffPriceId": 4,
                     "dateStart": "2019-06-06T00:00:00+02:00",
                     "dateEnd": "2021-05-31T00:00:00+02:00"
                 },
                 {
                 "tariffId": "2.0TD",
-                "tariffPriceId": 101,
+                "tariffPriceId": 43,
                 "dateStart": "2021-06-01T00:00:00+02:00",
                 "dateEnd": "2024-04-17T00:00:00+02:00"
                 }

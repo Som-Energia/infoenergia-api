@@ -86,7 +86,7 @@ class Contract(object):
 
             self._current_tariff = {
                 "tariffId": modcon["tarifa"][1],
-                "tariffPriceId": modcon["llista_preu"][0],
+                "tariffPriceId": modcon["tarifa"][0],
                 "dateStart": make_timestamp(modcon["data_inici"]),
                 "dateEnd": make_timestamp(modcon["data_final"]),
             }
@@ -113,7 +113,7 @@ class Contract(object):
         return [
             {
                 "tariffId": modcon["tarifa"][1],
-                "tariffPriceId": modcon["llista_preu"][0],
+                "tariffPriceId": modcon["tarifa"][0],
                 "dateStart": make_timestamp(modcon["data_inici"]),
                 "dateEnd": make_timestamp(modcon["data_final"]),
             }
