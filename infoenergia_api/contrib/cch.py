@@ -67,7 +67,7 @@ class BaseCch:
         if "P2" in filters["type"].upper():
             query.update({"type": {"$eq": "p4"}})
 
-        if filters.get("cups",None):
+        if filters.get("cups", None):
             query.update(name={"$regex": "^{}".format(filters["cups"][:20])})
 
         return query

@@ -382,10 +382,6 @@ class TestTimescaleCurveRepository:
             "create_at <= '2022-12-31 00:00:00'",
             "type = 'p'",
         ])
-            # 'datetime': {'$gte': datetime.datetime(2022, 1, 1, 0, 0)},
-            # 'name': {'$regex': '^a_cups'},
-
-
 
 
 class TestCchModels:
