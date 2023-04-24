@@ -390,7 +390,6 @@ components:
       explode: false
       schema:
         type: integer
-        default: false 
     taxesParam:
       name: withTaxes
       in: query
@@ -726,9 +725,23 @@ components:
           description: contract cancelation date
           example: null
         autoconsumo:
-          type: string
-          description: Type of selfconsumption
-          example: "[00] - Sin Autoconsumo"
+          type: object
+          description: selfconsumption information
+          items:
+            type: object
+            properties:
+              selfConsumptionType:
+                type: string
+                description: Type of selfconsumption
+              installerPower:
+                type: number
+                format: float
+                description: Total generators installed power
+          example:
+            {
+              "selfConsumptionType": "[00] - Sin Autoconsumo",
+              "installerPower": "4.0"
+            }
         juridicType:
           type: string
           description: juridic type (physical or juridc person)

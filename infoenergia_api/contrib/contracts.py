@@ -34,6 +34,7 @@ class Contract(object):
         "cnae",
         "modcontractuals_ids",
         "autoconsumo",
+        "potencia_generacio",
         "persona_fisica",
         "titular_nif",
         "llista_preu",
@@ -80,14 +81,16 @@ class Contract(object):
           "dateEnd": null,
         }
         """
-        modcon = find_changes(self._erp, self.modcontractual_activa[0], "tarifa")[-1]
+        if not hasattr(self, "_current_tariff"):
+            modcon = find_changes(self._erp, self.modcontractual_activa[0], "tarifa")[-1]
 
-        return {
-            "tariffId": modcon["tarifa"][1],
-            "tariffPriceId": modcon["llista_preu"][0],
-            "dateStart": make_timestamp(modcon["data_inici"]),
-            "dateEnd": make_timestamp(modcon["data_final"]),
-        }
+            self._current_tariff = {
+                "tariffId": modcon["tarifa"][1],
+                "tariffPriceId": modcon["llista_preu"][0],
+                "dateStart": make_timestamp(modcon["data_inici"]),
+                "dateEnd": make_timestamp(modcon["data_final"]),
+            }
+        return self._current_tariff
 
     @property
     def tariffHistory(self):
@@ -154,13 +157,15 @@ class Contract(object):
           "measurement_point": '05'
         }
         """
-        modcon = find_changes(self._erp, self.modcontractual_activa[0], "potencia")[-1]
-        return {
-            "power": self.power,
-            "dateStart": make_timestamp(modcon["data_inici"]),
-            "dateEnd": make_timestamp(modcon["data_final"]),
-            "measurement_point": modcon["agree_tipus"],
-        }
+        if not hasattr(self, "_current_power"):
+            modcon = find_changes(self._erp, self.modcontractual_activa[0], "potencia")[-1]
+            self._current_power = {
+                "power": self.power,
+                "dateStart": make_timestamp(modcon["data_inici"]),
+                "dateEnd": make_timestamp(modcon["data_final"]),
+                "measurement_point": modcon["agree_tipus"],
+            }
+        return self._current_power
 
     @property
     def powerHistory(self):
@@ -206,47 +211,48 @@ class Contract(object):
             'province': 'Barcelona',
         }
         """
-        cups_obj = self._erp.model("giscedata.cups.ps")
-        muni_obj = self._erp.model("res.municipi")
-        state_obj = self._erp.model("res.country.state")
-        sips_obj = self._erp.model("giscedata.sips.ps")
+        if not hasattr(self, '_address'):
+            cups_obj = self._erp.model("giscedata.cups.ps")
+            muni_obj = self._erp.model("res.municipi")
+            state_obj = self._erp.model("res.country.state")
+            sips_obj = self._erp.model("giscedata.sips.ps")
 
-        cups_fields = [
-            "id_municipi",
-            "tv",
-            "nv",
-            "cpa",
-            "cpo",
-            "pnp",
-            "pt",
-            "name",
-            "es",
-            "pu",
-            "dp",
-        ]
-        cups = cups_obj.read(self.cups[0], cups_fields)
-        muni_id = cups["id_municipi"][0]
-        postal_code = cups["dp"]
+            cups_fields = [
+                "id_municipi",
+                "tv",
+                "nv",
+                "cpa",
+                "cpo",
+                "pnp",
+                "pt",
+                "name",
+                "es",
+                "pu",
+                "dp",
+            ]
+            cups = cups_obj.read(self.cups[0], cups_fields)
+            muni_id = cups["id_municipi"][0]
+            postal_code = cups["dp"]
 
-        ine = muni_obj.read(muni_id, ["ine"])["ine"]
-        state_id = muni_obj.read(muni_id, ["state"])["state"][0]
-        state = state_obj.read(state_id, ["code", "name"])
-        sips_id = sips_obj.search([("name", "=", cups["name"])])
-        # if not postal_code:  to do fix postal code in DDBB
-        if sips_id:
-            postal_code = sips_obj.read(int(sips_id[0]), ["codi_postal"])["codi_postal"]
-        else:
-            if ine in ine_to_dp:
-                postal_code = ine_to_dp[ine]
-        address = {
-            "city": cups["id_municipi"][1],
-            "cityCode": ine,
-            "countryCode": "ES",
-            "postalCode": postal_code,
-            "provinceCode": state["code"],
-            "province": state["name"],
-        }
-        return address
+            ine = muni_obj.read(muni_id, ["ine"])["ine"]
+            state_id = muni_obj.read(muni_id, ["state"])["state"][0]
+            state = state_obj.read(state_id, ["code", "name"])
+            sips_id = sips_obj.search([("name", "=", cups["name"])])
+            # if not postal_code:  to do fix postal code in DDBB
+            if sips_id:
+                postal_code = sips_obj.read(int(sips_id[0]), ["codi_postal"])["codi_postal"]
+            else:
+                if ine in ine_to_dp:
+                    postal_code = ine_to_dp[ine]
+            self._address = {
+                "city": cups["id_municipi"][1],
+                "cityCode": ine,
+                "countryCode": "ES",
+                "postalCode": postal_code,
+                "provinceCode": state["code"],
+                "province": state["name"],
+            }
+        return self._address
 
     @property
     def buildingDetails(self):
@@ -268,10 +274,8 @@ class Contract(object):
          }
         """
         building_obj = self._erp.model("empowering.cups.building")
-
-        building_id = building_obj.search([("cups_id", "=", self.cups[0])])
-        if not building_id:
-            return None
+        if not (building_id := building_obj.search([("cups_id", "=", self.cups[0])])):
+            return {}
 
         fields = [
             "buildingConstructionYear",
@@ -389,24 +393,25 @@ class Contract(object):
           }
         ]
         """
-        if not self.comptadors:
-            return []
+        if not hasattr(self, '_devices'):
+            if not self.comptadors:
+                return []
 
-        compt_obj = self._erp.model("giscedata.lectures.comptador")
-        fields = ["data_alta", "data_baixa"]
+            compt_obj = self._erp.model("giscedata.lectures.comptador")
+            fields = ["data_alta", "data_baixa"]
 
-        devices = []
-        for comptador in compt_obj.read(self.comptadors, fields) or []:
-            devices.append(
-                {
-                    "dateStart": make_timestamp(comptador["data_alta"]),
-                    "dateEnd": make_timestamp(comptador["data_baixa"]),
-                    "deviceId": make_uuid(
-                        "giscedata.lectures.comptador", comptador["id"]
-                    ),
-                }
-            )
-        return devices
+            self._devices = []
+            for comptador in compt_obj.read(self.comptadors, fields) or []:
+                self._devices.append(
+                    {
+                        "dateStart": make_timestamp(comptador["data_alta"]),
+                        "dateEnd": make_timestamp(comptador["data_baixa"]),
+                        "deviceId": make_uuid(
+                            "giscedata.lectures.comptador", comptador["id"]
+                        ),
+                    }
+                )
+        return self._devices
 
     @property
     def report(self):
@@ -449,13 +454,25 @@ class Contract(object):
         """
         Type of self-consumption
         """
-        return [
-            name
-            for value, name in self._Polissa.fields_get("autoconsumo")
-            .get("autoconsumo", {})
-            .get("selection", ("", ""))
-            if value == self.autoconsumo
-        ][0]
+        if not hasattr(self, '_self_consumption'):
+            self._self_consumption = [
+                name
+                for value, name in self._Polissa.fields_get("autoconsumo")
+                .get("autoconsumo", {})
+                .get("selection", ("", ""))
+                if value == self.autoconsumo
+            ][0]
+
+            if self.autoconsumo != '00':
+                return {
+                    "selfConsumptionType": self._self_consumption,
+                    "installedPower": self.potencia_generacio
+                }
+            else:
+                return {
+                    "selfConsumptionType": self._self_consumption,
+                }
+        return self._self_consumption
 
     @property
     def juridicType(self):
