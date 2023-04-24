@@ -43,3 +43,4 @@ hiredis = "*"
 somutils = "*"
 yamlns = "*"
 connexion = {extras = ["swagger-ui"], version = "*"}
+psycopg = "*"

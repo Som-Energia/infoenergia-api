@@ -538,6 +538,17 @@ class TimescaleCurveRepository:
         downloaded_to=None,
         **extra_filter
     ):
+        from .erpdb_manager import get_erpdb_instance
+        from psycopg import AsyncClientCursor
+        erpdb = await get_erpdb_instance()
+        async with AsyncClientCursor(erpdb) as cursor:
+            result = []
+            if cups:
+                # Not using ilike because ERP model turns it into
+                # into '=' anyway, see the erp code
+                result += [cursor.mogrify("name ILIKE %s", [cups[:20]+"%"])]
+
+        return result
         result = []
         if cups:
             # Not using ilike because ERP model turns it into
