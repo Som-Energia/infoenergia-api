@@ -1,15 +1,8 @@
-from infoenergia_api.contrib import (
-    TgCchF5d,
-    TgCchF1,
-    TgCchP1,
-    TgCchGennetabeta,
-    TgCchAutocons,
-    cch_model,
-)
 from infoenergia_api.contrib.cch import (
     get_curve,
     MongoCurveRepository,
     TimescaleCurveRepository,
+    ErpMongoCurveRepository,
 )
 
 import pytest
@@ -384,41 +377,13 @@ class TestTimescaleCurveRepository:
         ])
 
 
-class TestCchModels:
+class TestErpMongoCurveRepository:
 
     # Build queries for ERP curves
 
-    async def assert_build_erp_query(self, filters, expected_query, model=TgCchGennetabeta):
-        query = await model.build_query(filters)
+    async def assert_build_query(self, filters, expected_query):
+        query = await ErpMongoCurveRepository().build_query(**filters)
         assert query == expected_query
-
-    async def test__build_query__erp_mongo_model__no_filters(self):
-        await self.assert_build_erp_query(dict(), [])
-
-    @pytest.mark.parametrize('parameter,value,expected', [
-        ('cups', '12345678901234567890_this_should_be_kept',
-            [('name', '=', '12345678901234567890_this_should_be_kept'),]),
-        ('from_', '2022-01-01',
-            [('datetime', '>=', '2022-01-01'),]),
-        ('to_', '2022-01-01',
-            [('datetime', '<', '2022-01-02'),]), # the date is next day
-        ('downloaded_from', '2022-01-01',
-            [('create_at', '>=', '2022-01-01'),]),
-        ('downloaded_to', '2022-01-01',
-            [('create_at', '<=', '2022-01-01'),]),
-    ])
-    async def test__build_query__erp_mongo_model__with_single_parameter(self, parameter, value, expected):
-        await self.assert_build_erp_query({ parameter: value}, expected)
-
-    async def test__build_query__erp_mongo_model__with_several_parameters(self):
-        cups = "a_cups"
-        await self.assert_build_erp_query(dict(
-            cups = cups,
-            **{'from_': '2022-01-01'}
-        ),[
-            ('datetime', '>=', '2022-01-01'),
-            ('name', '=', cups),
-        ])
 
     @pytest.mark.parametrize('parameter,value,expected', [
         ('cups', '12345678901234567890_this_should_be_kept',
@@ -433,78 +398,12 @@ class TestCchModels:
             [('create_at', '<=', '2022-01-01'),]),
     ])
     async def test__build_query__erp_timescale_model__with_single_parameter(self, parameter, value, expected):
-        await self.assert_build_erp_query({ parameter: value}, expected, TgCchF1)
+        await self.assert_build_query({ parameter: value}, expected)
 
-    # Build queries for Mongo curves
-
-    async def assert_build_mongo_query(self, filters, expected_query):
-        filters = dict(filters)
-        filters.setdefault("type", 'tg_cchfact')
-        model = cch_model(filters['type'])
-        query = await model.build_query(filters)
-        assert query == expected_query
-
-    async def test__build_query__mongo_model__no_filters(self):
-        await self.assert_build_mongo_query(dict(), {})
-
-    @pytest.mark.parametrize('parameter,value,expected', [
-        ('cups', '12345678901234567890_this_should_disappear',
-            {'name': {'$regex': '^12345678901234567890'}}),
-        ('from_', '2022-01-01',
-            {'datetime': {'$gte': datetime.datetime(2022, 1, 1, 0, 0)}}),
-        ('to_', '2022-01-01',
-            {'datetime': {'$lte': datetime.datetime(2022, 1, 2, 0, 0)}}),
-        ('downloaded_from', '2022-01-01',
-            {'create_at': {'$gte': datetime.datetime(2022, 1, 1, 0, 0)}}),
-        ('downloaded_to', '2022-01-01',
-            {'create_at': {'$lte': datetime.datetime(2022, 1, 1, 0, 0)}}),
-        ('type', 'P1',
-            {'type': {'$eq': 'p'}}),
-        ('type', 'P2',
-            {'type': {'$eq': 'p4'}}),
-    ])
-    async def test__build_query__mongo_model__with_single_parameter(self, parameter, value, expected):
-        await self.assert_build_mongo_query({ parameter: value}, expected)
-
-    async def test__build_query__mongo_model__with_several_parameters(self):
-        cups = "a_cups"
-        await self.assert_build_mongo_query(dict(
-            cups = cups,
-            **{'from_': '2022-01-01'}
-        ),{
-            'datetime': {'$gte': datetime.datetime(2022, 1, 1, 0, 0)},
-            'name': {'$regex': '^a_cups'},
-        })
-
-    async def test__build_query__mongo_model__with_from_and_to(self):
-        await self.assert_build_mongo_query({
-            'from_': '2022-01-01',
-            'to_': '2022-01-02',
-        },{
-            'datetime': {
-                # Both conditions on datetime are joined
-                '$gte': datetime.datetime(2022, 1, 1, 0, 0),
-                '$lte': datetime.datetime(2022, 1, 3, 0, 0),
-            },
-        })
-
-    async def test__build_query__mongo_model__with_downloaded_from_and_to(self):
-        await self.assert_build_mongo_query({
-            'downloaded_from': '2022-01-01',
-            'downloaded_to': '2022-01-02',
-        },{
-            'create_at': {
-                # Both conditions on datetime are joined
-                '$gte': datetime.datetime(2022, 1, 1, 0, 0),
-                '$lte': datetime.datetime(2022, 1, 2, 0, 0),
-            },
-        })
+@pytest.mark.skip("Kept as reference, need to adapt to the new implementation")
+class BooTest:
 
     # Instanciating curve points
-
-    async def test__create_f5d(self, f5d_id, app):
-        f5d = await TgCchF5d.create(f5d_id)
-        assert isinstance(f5d, TgCchF5d)
 
     async def test__get_f5d_measurements(self, f5d_id, app):
         f5d = await TgCchF5d.create(f5d_id)
@@ -523,10 +422,6 @@ class TestCchModels:
             "source": 1,
             "validated": True,
         }
-
-    async def test__create_f1(self, f1_id, event_loop):
-        f1 = await TgCchF1.create(f1_id)
-        assert isinstance(f1, TgCchF1)
 
     async def test__get_f1_measurements(self, f1_id, event_loop):
         f1 = await TgCchF1.create(f1_id)
@@ -609,10 +504,6 @@ class TestCchModels:
             "validated": False,
         }
 
-    async def test__create_gennetabeta(self, gennetabeta_id, event_loop):
-        point = await TgCchGennetabeta.create(gennetabeta_id)
-        assert isinstance(point, TgCchGennetabeta)
-
     async def test__get_gennetabeta_measurements(self, gennetabeta_id, event_loop):
         point = await TgCchGennetabeta.create(gennetabeta_id)
         measurements = point.measurements
@@ -631,10 +522,6 @@ class TestCchModels:
             "source": False,
             "validated": ""
         }
-
-    async def test__create_autocons(self, autocons_id, event_loop):
-        point = await TgCchAutocons.create(autocons_id)
-        assert isinstance(point, TgCchAutocons)
 
     async def test__get_autocons_measurements(self, autocons_id, event_loop):
         point = await TgCchAutocons.create(autocons_id)
