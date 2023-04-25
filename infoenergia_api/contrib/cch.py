@@ -403,6 +403,7 @@ class TgCchAutocons(BaseErpCch):
 
 class MongoCurveRepository():
     extra_filter = dict()
+    measure_delta = dict(hours=1)
 
     def __init__(self):
         mongo_client = get_mongo_instance()
@@ -447,7 +448,7 @@ class MongoCurveRepository():
         def cch_tz_isodate(cch):
             tz = pytz.timezone("Europe/Madrid")
             date_cch = tz.localize(cch['datetime'], is_dst=cch['season']).astimezone(pytz.utc)
-            date_cch -= timedelta(hours=1)
+            date_cch -= timedelta(**self.measure_delta)
             return iso_format_tz(date_cch)
 
         def cch_transform(cch):
@@ -472,6 +473,7 @@ class MongoCurveRepository():
 class ErpMongoCurveRepository:
 
     extra_filter=dict()
+    measure_delta = dict(hours=1)
 
     def __init__(self):
         self._erp = get_erp_instance()
@@ -518,8 +520,10 @@ class ErpMongoCurveRepository:
         cchs = await loop.run_in_executor(None, self.erp_model.read, cch_ids)
 
         def erp_cch_tz_isodate(cch):
+            tz = pytz.timezone("Europe/Madrid")
             localtime = isodates.parseLocalTime(cch['datetime'], isSummer=cch['season'])
-            return iso_format_tz(localtime)
+            date_cch -= timedelta(**self.measure_delta)
+            return iso_format_tz(localtime.astimezone(tz))
 
         def cch_transform(cch):
             return dict(cch,
@@ -533,6 +537,7 @@ class ErpMongoCurveRepository:
 class TimescaleCurveRepository:
 
     extra_filter=dict()
+    measure_delta = dict(hours=1)
 
     async def build_query(
         self,
@@ -565,6 +570,7 @@ class TimescaleCurveRepository:
 
         def date_cch(raw_data):
             _utc_timestamp = raw_data['utc_timestamp'].replace(tzinfo=pytz.UTC)
+            _utc_timestamp -= timedelta(**self.measure_delta)
             return iso_format_tz(_utc_timestamp)
 
         def cch_transform(cch):
@@ -689,6 +695,7 @@ class TgCchP2Repository(TgCchPnRepository):
     extra_filter = dict(
         type='p4',
     )
+    measure_delta=dict(minutes=15)
 
 class TgCchGennetabetaRepository(MongoCurveRepository):
     model='tg_cch_gennetabeta'
