@@ -798,16 +798,13 @@ async def async_get_cch(request, contract_id=None):
             raise Exception("Contract not availble")
 
     curve_type = filters.get("type")
-    if curve_type in migrated_repositories:
-        result = await get_curve(
-            curve_type,
-            start = filters.get('from_', None),
-            end = filters.get('to_', None),
-            cups = cups,
-        )
-        return result
-    Cch = cch_model(curve_type)
-    return await Cch.search(curve_type, filters, cups)
+    result = await get_curve(
+        curve_type,
+        start = filters.get('from_', None),
+        end = filters.get('to_', None),
+        cups = cups,
+    )
+    return result
 
 
 def cch_model(type_name):
