@@ -10,12 +10,6 @@ from config import config
 from infoenergia_api.contrib import PaginationLinksMixin
 from infoenergia_api.contrib.cch import (
     cch_model,
-    TgCchF1,
-    TgCchF5d,
-    TgCchP1,
-    TgCchVal,
-    TgCchGennetabeta,
-    TgCchAutocons,
     async_get_cch,
     get_measures,
     migrated_repositories,
