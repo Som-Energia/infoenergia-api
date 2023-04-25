@@ -379,18 +379,16 @@ class TestTimescaleCurveRepository:
 
 class TestErpMongoCurveRepository:
 
-    # Build queries for ERP curves
-
     async def assert_build_query(self, filters, expected_query):
-        query = await ErpMongoCurveRepository().build_query(**filters)
+        query = ErpMongoCurveRepository().build_query(**filters)
         assert query == expected_query
 
     @pytest.mark.parametrize('parameter,value,expected', [
         ('cups', '12345678901234567890_this_should_be_kept',
             [('name', '=', '12345678901234567890_this_should_be_kept'),]),
-        ('from_', '2022-01-01',
+        ('start', '2022-01-01',
             [('utc_timestamp', '>=', '2022-01-01'),]), # changes time field
-        ('to_', '2022-01-01',
+        ('end', '2022-01-01',
             [('utc_timestamp', '<=', '2022-01-01'),]), # changes time field
         ('downloaded_from', '2022-01-01',
             [('create_at', '>=', '2022-01-01'),]),
