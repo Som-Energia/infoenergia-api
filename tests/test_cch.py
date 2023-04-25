@@ -351,9 +351,9 @@ class TestTimescaleCurveRepository:
         ('cups', '12345678901234567890_this_should_disappear',
             ["name ILIKE '12345678901234567890%'"]),
         ('start', '2022-01-01',
-            ["datetime >= '2022-01-01 00:00:00'"]),
+            ["utc_timestamp >= '2021-12-31 23:00:00'"]),
         ('end', '2022-01-01',
-            ["datetime <= '2022-01-02 00:00:00'"]),
+            ["utc_timestamp <= '2022-01-01 23:00:00'"]),
         ('downloaded_from', '2022-01-01',
             ["create_at >= '2022-01-01 00:00:00'"]),
         ('downloaded_to', '2022-01-01',
@@ -376,8 +376,8 @@ class TestTimescaleCurveRepository:
             type = 'p'
         ), [
             "name ILIKE 'a_cups%'",
-            "datetime >= '2022-01-01 00:00:00'",
-            "datetime <= '2022-01-03 00:00:00'",
+            "utc_timestamp >= '2021-12-31 23:00:00'",
+            "utc_timestamp <= '2022-01-02 23:00:00'",
             "create_at >= '2022-12-30 00:00:00'",
             "create_at <= '2022-12-31 00:00:00'",
             "type = 'p'",

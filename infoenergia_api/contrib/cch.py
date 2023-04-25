@@ -534,6 +534,10 @@ class ErpMongoCurveRepository:
             cch_transform(cch) for cch in cchs
         ]
 
+def local_isodate_2_utc_isodatetime(isodate):
+    localtime = isodates.localisodate(isodate)
+    return str(isodates.asUtc(localtime))[:19]
+    
 class TimescaleCurveRepository:
 
     extra_filter=dict()
@@ -554,9 +558,15 @@ class TimescaleCurveRepository:
             if cups:
                 result += [cursor.mogrify("name ILIKE %s", [cups[:20]+"%"])]
             if start:
-                result += [cursor.mogrify("datetime >= %s", [start+" 00:00:00"])]
+                start_utc = local_isodate_2_utc_isodatetime(start)
+                result += [cursor.mogrify("utc_timestamp >= %s",
+                    [start_utc]
+                )]
             if end:
-                result += [cursor.mogrify("datetime <= %s", [increment_isodate(end) +" 00:00:00"])]
+                end_utc = local_isodate_2_utc_isodatetime(increment_isodate(end))
+                result += [cursor.mogrify("utc_timestamp <= %s",
+                    [end_utc]
+                )]
             if downloaded_from:
                 result += [cursor.mogrify("create_at >= %s", [downloaded_from+" 00:00:00"])]
             if downloaded_to:
@@ -742,7 +752,7 @@ migrated_repositories={
     'tg_cchval': TgCchValRepository,
     'P1': TgCchP1Repository,
     'P2': TgCchP2Repository,
-    #"tg_f1": TgCchF1Repository,
+    "tg_f1": TgCchF1Repository,
     'tg_gennetabeta': TgCchGennetabetaRepository,
     'tg_cchautocons': TgCchAutoconsRepository,
 }
