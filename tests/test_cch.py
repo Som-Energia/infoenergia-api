@@ -61,6 +61,38 @@ def unprivileged_cchquery(app, unprivileged_auth_token, mocked_next_cursor):
 
 
 class TestCchRequest:
+
+    async def test__get_cch__unsuported_type(self, cchquery, scenarios):
+        response = await cchquery(
+            params = {
+                "type": "non_existing_curve_type", # This changes
+                "from_": "2018-11-16",
+                "to_": "2018-12-16",
+            },
+        )
+        assert_response_equal(response, ns(
+            error=dict(
+                code='cch_model_not_found',
+                message=''
+            ),
+        ), 400)
+
+    async def test__get_cch_contract__unsuported_type(self, cchquery, scenarios):
+        response = await cchquery(
+            contract_id=scenarios["f5d"]["contractId"],
+            params = {
+                "type": "non_existing_curve_type", # This changes
+                "from_": "2018-11-16",
+                "to_": "2018-12-16",
+            },
+        )
+        assert_response_equal(response, ns(
+            error=dict(
+                code='cch_model_not_found',
+                message=''
+            ),
+        ), 400)
+
     async def test__get_f5d_by_id__2A(self, cchquery, scenarios):
         response = await cchquery(
             contract_id=scenarios["f5d"]["contractId"],
