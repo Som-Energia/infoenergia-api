@@ -208,7 +208,10 @@ paths:
       tags:
       - cch
       summary: Obtain hourly curves
-      description: Get hourly curves information depending on type of curve, date or tariff parameters
+      description: |
+        Get hourly curves information depending on type of curve, date or tariff parameters
+        For convinience, if it is limited by `to_`, the first measure of the next day is included as well.
+        `date` is the start of the measure period (the measure is obtained at the end of that period).
       operationId: server.get_cch
       parameters:
         - $ref: "#/components/parameters/cchTypeParam"
@@ -233,7 +236,10 @@ paths:
       tags:
       - cch
       summary: Obtain cch curves for a especific contract
-      description: Get cch curves information depending on some date and tariff parameters for a specific contract
+      description: |
+        Get cch curves information depending on some date and tariff parameters for a specific contract.
+        For convinience, if it is limited by `to_`, the first measure of the next day is included as well.
+        `date` is the start of the measure period (the measure is obtained at the end of that period).
       operationId: server.get_cch_by_contract_id
       parameters:
         - $ref: "#/components/parameters/contractIDParam"
@@ -319,8 +325,9 @@ components:
       name: from_
       in: query
       description: >
-        Filter results from the date specifiend.
+        Filter results from the date specified.
         Must be in **YYYY-MM-DD** format.
+        Local time is considered for comparision.
       required: false
       style: form
       schema:
@@ -331,7 +338,8 @@ components:
       name: to_
       in: query
       description: >
-        Filter results until this date. Must be in **YYYY-MM-DD** format and **greater than from_** param.
+        Filter results until this date, included. Must be in **YYYY-MM-DD** format and **greater or equal than from_** param.
+        Local time is considered for comparision.
       required: false
       style: form
       schema:
