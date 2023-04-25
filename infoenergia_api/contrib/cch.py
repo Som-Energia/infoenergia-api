@@ -479,7 +479,7 @@ class ErpMongoCurveRepository:
         self._erp = get_erp_instance()
 
     def to_filter(self, end):
-        return [('datetime', '<', increment_isodate(end))]
+        return [('datetime', '<=', increment_isodate(end))]
 
     def build_query(
         self,

@@ -387,9 +387,9 @@ class TestErpMongoCurveRepository:
         ('cups', '12345678901234567890_this_should_be_kept',
             [('name', '=', '12345678901234567890_this_should_be_kept'),]),
         ('start', '2022-01-01',
-            [('utc_timestamp', '>=', '2022-01-01'),]), # changes time field
+            [('datetime', '>=', '2022-01-01'),]), # changes time field
         ('end', '2022-01-01',
-            [('utc_timestamp', '<=', '2022-01-01'),]), # changes time field
+            [('datetime', '<=', '2022-01-02'),]), # changes time field
         ('downloaded_from', '2022-01-01',
             [('create_at', '>=', '2022-01-01'),]),
         ('downloaded_to', '2022-01-01',
