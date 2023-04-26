@@ -39,6 +39,14 @@ class CurveRepository():
     extra_filter = dict()
     measure_delta = dict(hours=1)
 
+    def measurements(self, raw_data):
+        return dict(
+            (
+                self.translated_fields.get(field, field),
+                raw_data[field],
+            )
+            for field in self.fields
+        )
 
 class MongoCurveRepository(CurveRepository):
 
@@ -233,13 +241,13 @@ class TgCchF1Repository(TimescaleCurveRepository):
         'dateUpdate',
         'reserve1',
         'reserve2',
-        'measure_type',
         'datetime',
+        'measure_type',
         'utc_timestamp',
     ]
-
-    def measurements(self, raw_data):
-        return dict((field, raw_data[field]) for field in self.fields)
+    translated_fields = dict(
+        measure_type='measureType',
+    )
 
 
 class TgCchF5dRepository(MongoCurveRepository):
