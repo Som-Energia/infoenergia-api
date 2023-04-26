@@ -35,28 +35,7 @@ def cch_date_from_cch_utctimestamp(raw_data, measure_delta):
     utcdatetime -= timedelta(**measure_delta)
     return iso_format_tz(utcdatetime)
 
-class CurveRepository():
-
-    extra_filter = dict()
-    measure_delta = dict(hours=1)
-    translated_fields=dict()
-
-    def __init__(self, backend):
-        self.backend = backend
-
-    async def get_curve(self, start, end, cups=None):
-        return await self.backend.get_curve(self, start, end, cups)
-
-    def measurements(self, raw_data):
-        return dict(
-            (
-                self.translated_fields.get(field, field),
-                raw_data[field],
-            )
-            for field in self.fields
-        )
-
-class MongoCurveRepository():
+class MongoCurveBackend():
 
     def __init__(self):
         mongo_client = get_mongo_instance()
@@ -118,7 +97,7 @@ class MongoCurveRepository():
         return result
 
 
-class TimescaleCurveRepository():
+class TimescaleCurveBackend():
 
     async def build_query(
         self,
@@ -180,6 +159,27 @@ class TimescaleCurveRepository():
             ]
 
 #### Concrete curves
+
+class CurveRepository():
+
+    extra_filter = dict()
+    measure_delta = dict(hours=1)
+    translated_fields=dict()
+
+    def __init__(self, backend):
+        self.backend = backend
+
+    async def get_curve(self, start, end, cups=None):
+        return await self.backend.get_curve(self, start, end, cups)
+
+    def measurements(self, raw_data):
+        return dict(
+            (
+                self.translated_fields.get(field, field),
+                raw_data[field],
+            )
+            for field in self.fields
+        )
 
 class TgCchF1Repository(CurveRepository):
 
@@ -345,7 +345,7 @@ curve_type_backends={
 }
 
 backends = dict(
-    mongo = MongoCurveRepository,
+    mongo = MongoCurveBackend,
     timescale = TimescaleCurveRepository,
 )
 
