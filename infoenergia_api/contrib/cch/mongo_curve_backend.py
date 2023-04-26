@@ -8,6 +8,7 @@ from ...utils import (
     naive_local_isodatetime_2_utc_datetime,
 )
 
+
 def cch_date_from_cch_datetime(cch, measure_delta):
     utcdatetime = naive_local_isodatetime_2_utc_datetime(
         naive_local_isodate = cch['datetime'],
@@ -16,7 +17,8 @@ def cch_date_from_cch_datetime(cch, measure_delta):
     utcdatetime -= timedelta(**measure_delta)
     return iso_format_tz(utcdatetime)
 
-class MongoCurveBackend():
+
+class MongoCurveBackend:
 
     def __init__(self):
         mongo_client = get_mongo_instance()
@@ -59,8 +61,9 @@ class MongoCurveBackend():
         cch_collection = self.db[curve_type.model]
 
         def cch_transform(cch):
-            return dict(cch,
-                id=int(cch['id']), # un-bson-ize
+            return dict(
+                cch,
+                id=int(cch['id']),  # un-bson-ize
                 date=cch_date_from_cch_datetime(cch, curve_type.measure_delta),
                 dateDownload=iso_format(cch["create_at"]),
                 dateUpdate=iso_format(cch["update_at"]),
@@ -76,5 +79,3 @@ class MongoCurveBackend():
             )
         ]
         return result
-
-

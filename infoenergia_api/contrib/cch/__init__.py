@@ -10,11 +10,11 @@ from .mongo_curve_backend import MongoCurveBackend
 from .timescale_curve_backend import TimescaleCurveBackend
 
 
-class CurveRepository():
+class CurveRepository:
 
     extra_filter = dict()
     measure_delta = dict(hours=1)
-    translated_fields=dict()
+    translated_fields = dict()
 
     def __init__(self, backend):
         self.backend = backend
@@ -30,6 +30,7 @@ class CurveRepository():
             )
             for field in self.fields
         )
+
 
 class TgCchF1Repository(CurveRepository):
 
@@ -59,6 +60,7 @@ class TgCchF1Repository(CurveRepository):
 
 
 class TgCchF5dRepository(CurveRepository):
+
     model = 'tg_cchfact'
     fields = [
         'date',
@@ -75,9 +77,11 @@ class TgCchF5dRepository(CurveRepository):
         'r4',
     ]
 
+
 class TgCchValRepository(CurveRepository):
+
     model = "tg_cchval"
-    fields=[
+    fields = [
         'date',
         'season',
         'dateDownload',
@@ -86,7 +90,9 @@ class TgCchValRepository(CurveRepository):
         'ao',
     ]
 
+
 class TgCchPnRepository(CurveRepository):
+
     model = "tg_p1"
     fields = [
         "date",
@@ -126,20 +132,26 @@ class TgCchPnRepository(CurveRepository):
         r4quality='r4Quality',
     )
 
+
 class TgCchP1Repository(TgCchPnRepository):
+
     extra_filter = dict(
         type='p',
     )
 
+
 class TgCchP2Repository(TgCchPnRepository):
+
     extra_filter = dict(
         type='p4',
     )
-    measure_delta=dict(minutes=15)
+    measure_delta = dict(minutes=15)
+
 
 class TgCchGennetabetaRepository(CurveRepository):
-    model='tg_cch_gennetabeta'
-    fields=[
+
+    model = 'tg_cch_gennetabeta'
+    fields = [
         "date",
         'ae',
         'ai',
@@ -155,8 +167,10 @@ class TgCchGennetabetaRepository(CurveRepository):
         'validated',
     ]
 
+
 class TgCchAutoconsRepository(CurveRepository):
-    model='tg_cch_autocons'
+
+    model = 'tg_cch_autocons'
     fields = [
         'date',
         'ae',
@@ -185,12 +199,12 @@ curve_types={
 }
 
 curve_backends = dict(
-    mongo = MongoCurveBackend,
-    timescale = TimescaleCurveBackend,
+    mongo=MongoCurveBackend,
+    timescale=TimescaleCurveBackend,
 )
 
 # TODO: This should be a configuration
-curve_type_backends={
+curve_type_backends = {
     'tg_cchfact': 'mongo',
     'tg_cchval': 'mongo',
     'P1': 'mongo',
@@ -200,10 +214,12 @@ curve_type_backends={
     'tg_cchautocons': 'mongo',
 }
 
+
 def create_repository(curve_type):
     backend_name = curve_type_backends[curve_type]
     Backend = curve_backends[backend_name]
     return curve_types[curve_type](Backend())
+
 
 async def get_curve(type, start, end, cups=None):
     repository=create_repository(type)
@@ -231,6 +247,7 @@ async def get_measures(curve_type, cch, contract_id, user):
         "measurements": repository.measurements(cch),
     }
 
+
 async def async_get_cch(request, contract_id=None):
     loop = asyncio.get_running_loop()
     filters = dict(request.query_args)
@@ -244,8 +261,8 @@ async def async_get_cch(request, contract_id=None):
     curve_type = filters.get("type")
     result = await get_curve(
         curve_type,
-        start = filters.get('from_', None),
-        end = filters.get('to_', None),
-        cups = cups,
+        start=filters.get('from_', None),
+        end=filters.get('to_', None),
+        cups=cups,
     )
     return result

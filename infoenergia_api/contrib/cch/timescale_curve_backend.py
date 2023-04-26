@@ -20,7 +20,7 @@ def cch_date_from_cch_utctimestamp(raw_data, measure_delta):
     return iso_format_tz(utcdatetime)
 
 
-class TimescaleCurveBackend():
+class TimescaleCurveBackend:
 
     async def build_query(
         self,
@@ -79,5 +79,3 @@ class TimescaleCurveBackend():
             return [
                 cch_transform(cch) for cch in await cursor.fetchall()
             ]
-
-
