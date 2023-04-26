@@ -38,6 +38,7 @@ def cch_date_from_cch_utctimestamp(raw_data, measure_delta):
 class CurveRepository():
     extra_filter = dict()
     measure_delta = dict(hours=1)
+    translated_fields=dict()
 
     def measurements(self, raw_data):
         return dict(
@@ -252,66 +253,70 @@ class TgCchF1Repository(TimescaleCurveRepository):
 
 class TgCchF5dRepository(MongoCurveRepository):
     model = 'tg_cchfact'
-
-    def measurements(self, raw_data):
-        return dict(
-            date=raw_data['date'],
-            season=raw_data['season'],
-            dateDownload=raw_data['dateDownload'],
-            dateUpdate=raw_data['dateUpdate'],
-            source=raw_data['source'],
-            validated=raw_data['validated'],
-            ai=raw_data['ai'],
-            ao=raw_data['ao'],
-            r1=raw_data['r1'],
-            r2=raw_data['r2'],
-            r3=raw_data['r3'],
-            r4=raw_data['r4'],
-        )
+    fields = [
+        'date',
+        'season',
+        'dateDownload',
+        'dateUpdate',
+        'source',
+        'validated',
+        'ai',
+        'ao',
+        'r1',
+        'r2',
+        'r3',
+        'r4',
+    ]
 
 class TgCchValRepository(MongoCurveRepository):
     model = "tg_cchval"
-
-    def measurements(self, raw_data):
-        return dict(
-            date=raw_data["date"],
-            season=raw_data["season"],
-            dateDownload=raw_data['dateDownload'],
-            dateUpdate=raw_data['dateUpdate'],
-            ai=raw_data["ai"],
-            ao=raw_data["ao"],
-        )
+    fields=[
+        'date',
+        'season',
+        'dateDownload',
+        'dateUpdate',
+        'ai',
+        'ao',
+    ]
 
 class TgCchPnRepository(MongoCurveRepository):
     model = "tg_p1"
-
-    def measurements(self, raw_data):
-        return dict(
-            date=raw_data["date"],
-            season=raw_data["season"],
-            dateDownload=raw_data['dateDownload'],
-            dateUpdate=raw_data['dateUpdate'],
-            source=raw_data["source"],
-            validated=raw_data["validated"],
-            type=raw_data["type"],
-            measureType=raw_data["measure_type"],
-            ai=raw_data["ai"],
-            ao=raw_data["ao"],
-            reserve1=raw_data["reserve1"],
-            reserve2=raw_data["reserve2"],
-            r1=raw_data["r1"],
-            r2=raw_data["r2"],
-            r3=raw_data["r3"],
-            r4=raw_data["r4"],
-            aiquality=raw_data["aiquality"],
-            aoQuality=raw_data["aoquality"],
-            reserve1Quality=raw_data["reserve1quality"],
-            reserve2Quality=raw_data["reserve2quality"],
-            r1Quality=raw_data["r1quality"],
-            r2Quality=raw_data["r2quality"],
-            r3Quality=raw_data["r3quality"],
-            r4Quality=raw_data["r4quality"],
-        )
+    fields = [
+        "date",
+        "season",
+        'dateDownload',
+        'dateUpdate',
+        "source",
+        "validated",
+        "type",
+        "measure_type",
+        "ai",
+        "ao",
+        "reserve1",
+        "reserve2",
+        "r1",
+        "r2",
+        "r3",
+        "r4",
+        "aiquality",
+        "aoquality",
+        "reserve1quality",
+        "reserve2quality",
+        "r1quality",
+        "r2quality",
+        "r3quality",
+        "r4quality",
+    ]
+    translated_fields = dict(
+        measure_type='measureType',
+        aoquality='aoQuality',
+        reserve1quality='reserve1Quality',
+        reserve2quality='reserve2Quality',
+        r1quality='r1Quality',
+        r2quality='r2Quality',
+        r3quality='r3Quality',
+        r4quality='r4Quality',
+    )
 
 class TgCchP1Repository(TgCchPnRepository):
     extra_filter = dict(
@@ -326,23 +331,21 @@ class TgCchP2Repository(TgCchPnRepository):
 
 class TgCchGennetabetaRepository(MongoCurveRepository):
     model='tg_cch_gennetabeta'
-
-    def measurements(self, raw_data):
-        return dict(
-            date=raw_data["date"],
-            ae=raw_data['ae'],
-            ai=raw_data['ai'],
-            bill=raw_data['bill'],
-            dateDownload=raw_data['dateDownload'],
-            dateUpdate=raw_data['dateUpdate'],
-            r1=raw_data['r1'],
-            r2=raw_data['r2'],
-            r3=raw_data['r3'],
-            r4=raw_data['r4'],
-            season=raw_data['season'],
-            source=raw_data['source'],
-            validated=raw_data['validated'],
-        )
+    fields=[
+        "date",
+        'ae',
+        'ai',
+        'bill',
+        'dateDownload',
+        'dateUpdate',
+        'r1',
+        'r2',
+        'r3',
+        'r4',
+        'season',
+        'source',
+        'validated',
+    ]
 
 class TgCchAutoconsRepository(MongoCurveRepository):
     model='tg_cch_autocons'
