@@ -1,6 +1,7 @@
 import uuid
 from datetime import datetime, timedelta, date
 import pytz
+from somutils import isodates
 
 from .api.registration.models import UserCategory
 
@@ -25,7 +26,7 @@ def iso_format_tz(date):
     """Format a date in tz aware iso format"""
     return date and date.strftime("%Y-%m-%d %H:%M:%S%z")
 
-def isodate2datetime(isodate: str):
+def local_isodate_2_naive_local_datetime(isodate: str):
     """Given an iso formated date, returns a naive datetime at 00:00"""
     return datetime.strptime(isodate, "%Y-%m-%d")
 
@@ -39,6 +40,12 @@ def increment_isodate(aisodate, days=1):
     date = isodate(aisodate)
     newdate = date + timedelta(days=days)
     return str(newdate)
+
+def local_isodate_2_utc_isodatetime(isodate):
+    """Given a isodate returns a naive isodatetime
+    representing the local 00:00h in utc"""
+    localtime = isodates.localisodate(isodate)
+    return str(isodates.asUtc(localtime))[:19]
 
 def get_id_for_contract(obj, modcontract_ids):
     ids = (obj.search([("modcontractual_id", "=", ids)]) for ids in modcontract_ids)

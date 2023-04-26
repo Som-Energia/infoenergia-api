@@ -10,17 +10,13 @@ from ..utils import (
     iso_format,
     iso_format_tz,
     increment_isodate,
-    isodate2datetime,
+    local_isodate_2_naive_local_datetime,
+    local_isodate_2_utc_isodatetime,
 )
 from ..tasks import get_cups
 from .erp import get_erp_instance
 from .mongo_manager import get_mongo_instance
 from .erpdb_manager import get_erpdb_instance
-
-
-def local_isodate_2_utc_isodatetime(isodate):
-    localtime = isodates.localisodate(isodate)
-    return str(isodates.asUtc(localtime))[:19]
 
 
 class CurveRepository():
@@ -46,19 +42,19 @@ class MongoCurveRepository(CurveRepository):
         query = {}
         if start:
             query.setdefault('datetime', {}).update(
-                {"$gte": isodate2datetime(start)}
+                {"$gte": local_isodate_2_naive_local_datetime(start)}
             )
         if end:
             query.setdefault('datetime', {}).update(
-                {"$lte": isodate2datetime(increment_isodate(end))}
+                {"$lte": local_isodate_2_naive_local_datetime(increment_isodate(end))}
             )
         if downloaded_from:
             query.setdefault('create_at', {}).update(
-                {"$gte": isodate2datetime(downloaded_from)}
+                {"$gte": local_isodate_2_naive_local_datetime(downloaded_from)}
             )
         if downloaded_to:
             query.setdefault('create_at', {}).update(
-                {"$lte": isodate2datetime(downloaded_to)}
+                {"$lte": local_isodate_2_naive_local_datetime(downloaded_to)}
             )
         for key, value in extra_filter.items():
             query.update({key: {"$eq": value}})
