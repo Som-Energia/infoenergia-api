@@ -11,7 +11,7 @@ from infoenergia_api.contrib import PaginationLinksMixin
 from infoenergia_api.contrib.cch import (
     async_get_cch,
     get_measures,
-    migrated_repositories,
+    curve_types,
 )
 from infoenergia_api.contrib.mixins import ResponseMixin
 from infoenergia_api.contrib.pagination import PageNotFoundError
@@ -50,7 +50,7 @@ class CchMeasuresContractIdView(BaseCchMeasuresContractView):
 
         curve_type = request.args.get('type', '')
         try:
-            if curve_type not in migrated_repositories:
+            if curve_type not in curve_types:
                 raise ModelNotFoundError()
             cchs, links, total_results = await self.get_cch_ids(request, contract_id)
         except (PageNotFoundError, ModelNotFoundError) as e:
@@ -82,7 +82,7 @@ class CchMeasuresView(BaseCchMeasuresContractView):
         logger.info("Getting cch measures")
         curve_type = request.args.get('type', '')
         try:
-            if curve_type not in migrated_repositories:
+            if curve_type not in curve_types:
                 raise ModelNotFoundError()
             cchs, links, total_results = await self.get_cch_ids(request)
         except (PageNotFoundError, ModelNotFoundError) as e:

@@ -36,6 +36,7 @@ def cch_date_from_cch_utctimestamp(raw_data, measure_delta):
     return iso_format_tz(utcdatetime)
 
 class CurveRepository():
+
     extra_filter = dict()
     measure_delta = dict(hours=1)
     translated_fields=dict()
@@ -317,7 +318,7 @@ class TgCchAutoconsRepository(MongoCurveRepository):
     ]
 
 
-migrated_repositories={
+curve_types={
     'tg_cchfact': TgCchF5dRepository,
     'tg_cchval': TgCchValRepository,
     'P1': TgCchP1Repository,
@@ -328,7 +329,7 @@ migrated_repositories={
 }
 
 def create_repository(curve_type):
-    return migrated_repositories[curve_type]()
+    return curve_types[curve_type]()
 
 async def get_curve(type, start, end, cups=None):
     repository=create_repository(type)
