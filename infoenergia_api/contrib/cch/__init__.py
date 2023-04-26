@@ -221,8 +221,8 @@ def create_repository(curve_type):
     return curve_types[curve_type](Backend())
 
 
-async def get_curve(type, start, end, cups=None):
-    repository=create_repository(type)
+async def get_curve(curve_type, start, end, cups=None):
+    repository = create_repository(curve_type)
     return await repository.get_curve(start, end, cups=cups)
 
 
