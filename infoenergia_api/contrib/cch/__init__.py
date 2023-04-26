@@ -240,7 +240,6 @@ async def async_get_cch(request, contract_id=None):
         cups = await loop.run_in_executor(None, get_cups, request.ctx.user, contract_id)
         if not cups:
             return []
-            raise Exception("Contract not availble")
 
     curve_type = filters.get("type")
     result = await get_curve(
