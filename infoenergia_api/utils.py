@@ -23,7 +23,7 @@ def iso_format(date):
 
 def iso_format_tz(date):
     """Format a date in tz aware iso format"""
-    return date.strftime("%Y-%m-%d %H:%M:%S%z")
+    return date and date.strftime("%Y-%m-%d %H:%M:%S%z")
 
 def isodate2datetime(isodate: str):
     """Given an iso formated date, returns a naive datetime at 00:00"""

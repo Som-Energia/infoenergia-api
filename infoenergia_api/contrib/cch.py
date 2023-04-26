@@ -17,9 +17,18 @@ from .erp import get_erp_instance
 from .mongo_manager import get_mongo_instance
 from .erpdb_manager import get_erpdb_instance
 
-class MongoCurveRepository():
+
+def local_isodate_2_utc_isodatetime(isodate):
+    localtime = isodates.localisodate(isodate)
+    return str(isodates.asUtc(localtime))[:19]
+
+
+class CurveRepository():
     extra_filter = dict()
     measure_delta = dict(hours=1)
+
+
+class MongoCurveRepository(CurveRepository):
 
     def __init__(self):
         mongo_client = get_mongo_instance()
@@ -86,10 +95,8 @@ class MongoCurveRepository():
         ]
         return result
 
-class ErpMongoCurveRepository:
 
-    extra_filter=dict()
-    measure_delta = dict(hours=1)
+class ErpMongoCurveRepository(CurveRepository):
 
     def __init__(self):
         self._erp = get_erp_instance()
@@ -150,14 +157,8 @@ class ErpMongoCurveRepository:
             cch_transform(cch) for cch in cchs
         ]
 
-def local_isodate_2_utc_isodatetime(isodate):
-    localtime = isodates.localisodate(isodate)
-    return str(isodates.asUtc(localtime))[:19]
-    
-class TimescaleCurveRepository:
 
-    extra_filter=dict()
-    measure_delta = dict(hours=1)
+class TimescaleCurveRepository(CurveRepository):
 
     async def build_query(
         self,
@@ -220,6 +221,7 @@ class TimescaleCurveRepository:
                 cch_transform(cch) for cch in await cursor.fetchall()
             ]
 
+#### Concrete curves
 
 class TgCchF1Repository(TimescaleCurveRepository):
 
