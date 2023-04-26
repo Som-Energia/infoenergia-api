@@ -18,6 +18,20 @@ from .erp import get_erp_instance
 from .mongo_manager import get_mongo_instance
 from .erpdb_manager import get_erpdb_instance
 
+# season + naive_local_isodatetime -> local datetime -> substract delta -> 
+def cch_date_from_cch_datetime(cch, measure_delta):
+    tz = pytz.timezone("Europe/Madrid")
+    utcdatetime = tz.localize(cch['datetime'], is_dst=cch['season']).astimezone(pytz.utc)
+    utcdatetime -= timedelta(**measure_delta)
+    return iso_format_tz(utcdatetime)
+
+# naive_utc_datetime -> substract delta -> utc isodatetimetz
+def cch_date_from_cch_utctimestamp(raw_data, measure_delta):
+    tz = pytz.timezone("Europe/Madrid")
+    utcdatetime = raw_data['utc_timestamp'].replace(tzinfo=pytz.UTC)
+    localdatetime = utcdatetime.astimezone(tz)
+    localdatetime -= timedelta(**measure_delta)
+    return iso_format_tz(localdatetime)
 
 class CurveRepository():
     extra_filter = dict()
@@ -66,16 +80,10 @@ class MongoCurveRepository(CurveRepository):
         query = self.build_query(start, end, cups, **self.extra_filter)
         cch_collection = self.db[self.model]
 
-        def cch_tz_isodate(cch):
-            tz = pytz.timezone("Europe/Madrid")
-            date_cch = tz.localize(cch['datetime'], is_dst=cch['season']).astimezone(pytz.utc)
-            date_cch -= timedelta(**self.measure_delta)
-            return iso_format_tz(date_cch)
-
         def cch_transform(cch):
             return dict(cch,
                 id=int(cch['id']), # un-bson-ize
-                date=cch_tz_isodate(cch),
+                date=cch_date_from_cch_datetime(cch, self.measure_delta),
                 dateDownload=iso_format(cch["create_at"]),
                 dateUpdate=iso_format(cch["update_at"]),
             )
@@ -138,15 +146,9 @@ class ErpMongoCurveRepository(CurveRepository):
         cch_ids = await loop.run_in_executor(None, self.erp_model.search, query)
         cchs = await loop.run_in_executor(None, self.erp_model.read, cch_ids)
 
-        def erp_cch_tz_isodate(cch):
-            tz = pytz.timezone("Europe/Madrid")
-            localtime = isodates.parseLocalTime(cch['datetime'], isSummer=cch['season'])
-            date_cch -= timedelta(**self.measure_delta)
-            return iso_format_tz(localtime.astimezone(tz))
-
         def cch_transform(cch):
             return dict(cch,
-                date=erp_cch_tz_isodate(cch),
+                date=cch_date_from_cch_datetime(cch, self.measure_delta),
             )
 
         return [
@@ -191,14 +193,9 @@ class TimescaleCurveRepository(CurveRepository):
 
     async def get_curve(self, start, end, cups=None):
 
-        def date_cch(raw_data):
-            _utc_timestamp = raw_data['utc_timestamp'].replace(tzinfo=pytz.UTC)
-            _utc_timestamp -= timedelta(**self.measure_delta)
-            return iso_format_tz(_utc_timestamp)
-
         def cch_transform(cch):
             return dict(cch,
-                date=date_cch(cch),
+                date=cch_date_from_cch_utctimestamp(cch, self.measure_delta),
                 dateDownload=iso_format(cch["create_at"]),
                 dateUpdate=iso_format(cch["update_at"]),
                 datetime=iso_format(cch["datetime"]),
