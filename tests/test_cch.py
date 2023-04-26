@@ -1,7 +1,7 @@
 from infoenergia_api.contrib.cch import (
     get_curve,
-    MongoCurveRepository,
-    TimescaleCurveRepository,
+    MongoCurveBackend,
+    TimescaleCurveBackend,
 )
 
 import pytest
@@ -303,7 +303,7 @@ class TestCchRequest:
 
 class TestMongoCurveRepository:
     async def assert_build_mongo_query(self, filters, expected_query):
-        query = MongoCurveRepository().build_query(**filters)
+        query = MongoCurveBackend().build_query(**filters)
         assert query == expected_query
 
     async def test__build_query__no_filters(self):
@@ -365,7 +365,7 @@ class TestMongoCurveRepository:
 
 class TestTimescaleCurveRepository:
     async def assert_build_query(self, filters, expected_query):
-        query = await TimescaleCurveRepository().build_query(**filters)
+        query = await TimescaleCurveBackend().build_query(**filters)
         assert query == expected_query
 
     async def test__build_query__no_filters(self):

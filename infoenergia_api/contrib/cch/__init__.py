@@ -4,7 +4,7 @@ import pytz
 from somutils import isodates
 from psycopg import AsyncClientCursor
 
-from ..utils import (
+from ...utils import (
     make_uuid,
     get_contract_id,
     iso_format,
@@ -15,10 +15,11 @@ from ..utils import (
     naive_local_isodatetime_2_utc_datetime,
     naive_utc_datetime_2_utc_datetime,
 )
-from ..tasks import get_cups
-from .erp import get_erp_instance
-from .mongo_manager import get_mongo_instance
-from .erpdb_manager import get_erpdb_instance
+from ...tasks import get_cups
+from ..erp import get_erp_instance
+from ..mongo_manager import get_mongo_instance
+from ..erpdb_manager import get_erpdb_instance
+
 
 def cch_date_from_cch_datetime(cch, measure_delta):
     utcdatetime = naive_local_isodatetime_2_utc_datetime(
@@ -346,7 +347,7 @@ curve_type_backends={
 
 backends = dict(
     mongo = MongoCurveBackend,
-    timescale = TimescaleCurveRepository,
+    timescale = TimescaleCurveBackend,
 )
 
 def create_repository(curve_type):
