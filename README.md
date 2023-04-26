@@ -104,11 +104,12 @@ pipenv lock  # To upgrade all versions, add --keep-lock to just add the new deps
 
 ### Unreleased
 
-- Curves types (`tg_val`, `tg_fact`...) and curve backends (mongo/timescale)
+- Curve types (`tg_val`, `tg_fact`...) and curve backends (mongo/timescale)
   are now decoupled and backends can be configured for each type on runtime
-- ERP backends have been dropped in favour of direct mongo and timescale ones
-    - ERP backends had problems with large ids and and failed to lookup
-      CUPS with different border point code (final 2 digits)
+- Indirect curve backends using ERP as proxy to access mongo or timescale have
+    been dropped in favour of direct mongo and timescale backends
+    - ERP backends had problems with large ids and they failed to lookup
+      CUPS with different frontier point code (final 2 digits of the CUPS)
 - All CCH curves behave now like P5D (notably P2, gennetabeta and autocons)
     - Filter `to_` includes de first measure taken the next day (at local 00:00)
     - Filter `from_` includes the first measure taken that day (at local 00:00)

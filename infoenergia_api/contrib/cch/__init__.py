@@ -184,6 +184,7 @@ curve_types={
     'tg_cchautocons': TgCchAutoconsRepository,
 }
 
+# TODO: This should be a configuration
 curve_type_backends={
     'tg_cchfact': 'mongo',
     'tg_cchval': 'mongo',
