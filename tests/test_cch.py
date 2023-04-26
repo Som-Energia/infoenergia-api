@@ -291,7 +291,7 @@ class TestCchRequest:
     async def test__get_curve__two_days(self, curve_type, contract_number, cchquery, yaml_snapshot):
         cups = self.get_cups(contract_number)
         curve = await get_curve(
-            type=curve_type,
+            curve_type=curve_type,
             cups=cups,
             start="2022-11-29",
             end="2022-11-30",
