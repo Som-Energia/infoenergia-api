@@ -107,9 +107,6 @@ class ErpMongoCurveRepository(CurveRepository):
     def __init__(self):
         self._erp = get_erp_instance()
 
-    def to_filter(self, end):
-        return [('datetime', '<=', increment_isodate(end))]
-
     def build_query(
         self,
         start=None,
@@ -124,7 +121,7 @@ class ErpMongoCurveRepository(CurveRepository):
             result += [('datetime', '>=', start)]
 
         if end:
-            result += self.to_filter(end)
+            result += [('datetime', '<=', increment_isodate(end))]
 
         if downloaded_from:
             result += [('create_at', '>=', downloaded_from)]
