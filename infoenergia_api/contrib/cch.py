@@ -350,23 +350,22 @@ class TgCchGennetabetaRepository(MongoCurveRepository):
 
 class TgCchAutoconsRepository(MongoCurveRepository):
     model='tg_cch_autocons'
+    fields = [
+        'date',
+        'ae',
+        'ai',
+        'bill',
+        'dateDownload',
+        'dateUpdate',
+        'r1',
+        'r2',
+        'r3',
+        'r4',
+        'season',
+        'source',
+        'validated',
+    ]
 
-    def measurements(self, raw_data):
-        return dict(
-            date=raw_data["date"],
-            ae=raw_data['ae'],
-            ai=raw_data['ai'],
-            bill=raw_data['bill'],
-            dateDownload=raw_data['dateDownload'],
-            dateUpdate=raw_data['dateUpdate'],
-            r1=raw_data['r1'],
-            r2=raw_data['r2'],
-            r3=raw_data['r3'],
-            r4=raw_data['r4'],
-            season=raw_data['season'],
-            source=raw_data['source'],
-            validated=raw_data['validated'],
-        )
 
 migrated_repositories={
     'tg_cchfact': TgCchF5dRepository,
