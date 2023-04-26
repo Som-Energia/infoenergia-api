@@ -309,6 +309,7 @@ class TgCchPnRepository(MongoCurveRepository):
     ]
     translated_fields = dict(
         measure_type='measureType',
+        #aiquality='aiQuality', # TODO: aiquality not translated, bug?
         aoquality='aoQuality',
         reserve1quality='reserve1Quality',
         reserve2quality='reserve2Quality',
