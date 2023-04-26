@@ -2,7 +2,6 @@ from infoenergia_api.contrib.cch import (
     get_curve,
     MongoCurveRepository,
     TimescaleCurveRepository,
-    ErpMongoCurveRepository,
 )
 
 import pytest
@@ -408,27 +407,6 @@ class TestTimescaleCurveRepository:
             "type = 'p'",
         ])
 
-
-class TestErpMongoCurveRepository:
-
-    async def assert_build_query(self, filters, expected_query):
-        query = ErpMongoCurveRepository().build_query(**filters)
-        assert query == expected_query
-
-    @pytest.mark.parametrize('parameter,value,expected', [
-        ('cups', '12345678901234567890_this_should_be_kept',
-            [('name', '=', '12345678901234567890_this_should_be_kept'),]),
-        ('start', '2022-01-01',
-            [('datetime', '>=', '2022-01-01'),]), # changes time field
-        ('end', '2022-01-01',
-            [('datetime', '<=', '2022-01-02'),]), # changes time field
-        ('downloaded_from', '2022-01-01',
-            [('create_at', '>=', '2022-01-01'),]),
-        ('downloaded_to', '2022-01-01',
-            [('create_at', '<=', '2022-01-01'),]),
-    ])
-    async def test__build_query__erp_timescale_model__with_single_parameter(self, parameter, value, expected):
-        await self.assert_build_query({ parameter: value}, expected)
 
 @pytest.mark.skip("Kept as reference, need to adapt to the new implementation")
 class BooTest:

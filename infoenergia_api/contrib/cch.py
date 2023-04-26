@@ -111,59 +111,6 @@ class MongoCurveRepository(CurveRepository):
         return result
 
 
-class ErpMongoCurveRepository(CurveRepository):
-
-    def __init__(self):
-        self._erp = get_erp_instance()
-
-    def build_query(
-        self,
-        start=None,
-        end=None,
-        cups=None,
-        downloaded_from=None,
-        downloaded_to=None,
-        **extra_filter
-    ):
-        result = []
-        if start:
-            result += [('datetime', '>=', start)]
-
-        if end:
-            result += [('datetime', '<=', increment_isodate(end))]
-
-        if downloaded_from:
-            result += [('create_at', '>=', downloaded_from)]
-
-        if downloaded_to:
-            result += [('create_at', '<=', downloaded_to)]
-
-        if cups:
-            # Not using ilike because ERP model turns it into
-            # into '=' anyway, see the erp code
-            result += [('name', '=', cups)]
-
-        return result
-
-    async def get_curve(self, start, end, cups=None):
-        loop = asyncio.get_running_loop()
-        query = self.build_query(start, end, cups, **self.extra_filter)
-        erp_model_name = self.model.replace('_','.',1)
-        if not hasattr(self, 'erp_model'):
-            self.erp_model = self._erp.model(erp_model_name)
-        cch_ids = await loop.run_in_executor(None, self.erp_model.search, query)
-        cchs = await loop.run_in_executor(None, self.erp_model.read, cch_ids)
-
-        def cch_transform(cch):
-            return dict(cch,
-                date=cch_date_from_cch_datetime(cch, self.measure_delta),
-            )
-
-        return [
-            cch_transform(cch) for cch in cchs
-        ]
-
-
 class TimescaleCurveRepository(CurveRepository):
 
     async def build_query(
