@@ -184,6 +184,11 @@ curve_types={
     'tg_cchautocons': TgCchAutoconsRepository,
 }
 
+curve_backends = dict(
+    mongo = MongoCurveBackend,
+    timescale = TimescaleCurveBackend,
+)
+
 # TODO: This should be a configuration
 curve_type_backends={
     'tg_cchfact': 'mongo',
@@ -195,14 +200,9 @@ curve_type_backends={
     'tg_cchautocons': 'mongo',
 }
 
-backends = dict(
-    mongo = MongoCurveBackend,
-    timescale = TimescaleCurveBackend,
-)
-
 def create_repository(curve_type):
     backend_name = curve_type_backends[curve_type]
-    Backend = backends[backend_name]
+    Backend = curve_backends[backend_name]
     return curve_types[curve_type](Backend())
 
 async def get_curve(type, start, end, cups=None):
