@@ -221,29 +221,28 @@ class TimescaleCurveRepository(CurveRepository):
 class TgCchF1Repository(TimescaleCurveRepository):
 
     model = 'tg_f1'
+    fields = [
+        'season',
+        'ai',
+        'ao',
+        'r1',
+        'r2',
+        'r3',
+        'r4',
+        'source',
+        'validated',
+        'date',
+        'dateDownload',
+        'dateUpdate',
+        'reserve1',
+        'reserve2',
+        'measure_type',
+        'datetime',
+        'utc_timestamp',
+    ]
 
     def measurements(self, raw_data):
-        return dict(
-            season=raw_data['season'],
-            ai=raw_data['ai'],
-            ao=raw_data['ao'],
-            r1=raw_data['r1'],
-            r2=raw_data['r2'],
-            r3=raw_data['r3'],
-            r4=raw_data['r4'],
-            source=raw_data['source'],
-            validated=raw_data['validated'],
-            date=raw_data['date'],
-            dateDownload=raw_data['dateDownload'],
-            dateUpdate=raw_data['dateUpdate'],
-            reserve1=raw_data['reserve1'],
-            reserve2=raw_data['reserve2'],
-            measureType=raw_data['measure_type'],
-            datetime=raw_data['datetime'],
-            utc_timestamp=raw_data['utc_timestamp'],
-        )
-
-
+        return dict((field, raw_data[field]) for field in self.fields)
 
 
 class TgCchF5dRepository(MongoCurveRepository):
