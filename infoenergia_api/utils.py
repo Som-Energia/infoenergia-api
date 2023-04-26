@@ -48,6 +48,7 @@ def local_isodate_2_utc_isodatetime(isodate):
     return str(isodates.asUtc(localtime))[:19]
 
 def naive_local_isodatetime_2_utc_datetime(naive_local_isodate, is_dst):
+    tz = pytz.timezone("Europe/Madrid")
     localdatetime = tz.localize(naive_local_isodate, is_dst=is_dst)
     return localdatetime.astimezone(pytz.utc)
 
