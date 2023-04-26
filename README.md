@@ -102,6 +102,27 @@ pipenv lock  # To upgrade all versions, add --keep-lock to just add the new deps
 
 ## Changes
 
+### Unreleased
+
+- Curves types (`tg_val`, `tg_fact`...) and curve backends (mongo/timescale)
+  are now decoupled and backends can be configured for each type on runtime
+- ERP backends have been dropped in favour of direct mongo and timescale ones
+    - ERP backends had problems with large ids and and failed to lookup
+      CUPS with different border point code (final 2 digits)
+- All CCH curves behave now like P5D (notably P2, gennetabeta and autocons)
+    - Filter `to_` includes de first measure taken the next day (at local 00:00)
+    - Filter `from_` includes the first measure taken that day (at local 00:00)
+      althought its measuring period belongs to the day before.
+      Notice that if you call the api for consecutive dates intervals that
+      measure at 00:00 will be repeated in both responses.
+    - Output attribute `date` is not the measuring time but the start of the measuring period
+	- ie. If at T2 we measure the kWh consumed since T1, `date` means T1
+	- Some curves (gennetabeta and autocons) informed T2
+	- Some other curves (P2) informed T2-1h to get T1 but for them T1 = T2-15minutes
+    - Output attribute `date` timezone is UTC (some curves used local Madrid TZ)
+    - Uninformed fields now are `null` instead of `false`
+
+
 ### 2.3.0
 
 - Move all logic to obtain the tariff prices to ERP
