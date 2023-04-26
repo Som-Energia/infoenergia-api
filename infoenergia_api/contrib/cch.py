@@ -163,7 +163,10 @@ class TimescaleCurveRepository(CurveRepository):
         erpdb = await get_erpdb_instance()
         async with AsyncClientCursor(erpdb, row_factory=dict_row) as cursor:
             await cursor.execute(f"""
-                SELECT * from {self.model} WHERE {" AND ".join(query) or "TRUE"};
+                SELECT * from {self.model}
+                WHERE {" AND ".join(query) or "TRUE"}
+                ORDER BY utc_timestamp
+                ;
             """)
             return [
                 cch_transform(cch) for cch in await cursor.fetchall()
