@@ -47,6 +47,13 @@ def local_isodate_2_utc_isodatetime(isodate):
     localtime = isodates.localisodate(isodate)
     return str(isodates.asUtc(localtime))[:19]
 
+def naive_local_isodatetime_2_utc_datetime(naive_local_isodate, is_dst):
+    localdatetime = tz.localize(naive_local_isodate, is_dst=is_dst)
+    return localdatetime.astimezone(pytz.utc)
+
+def naive_utc_datetime_2_utc_datetime(naive_utc_datetime):
+    return naive_utc_datetime.replace(tzinfo=pytz.utc)
+
 def get_id_for_contract(obj, modcontract_ids):
     ids = (obj.search([("modcontractual_id", "=", ids)]) for ids in modcontract_ids)
     wanted_id = next((wanted_id[0] for wanted_id in ids if wanted_id), None)

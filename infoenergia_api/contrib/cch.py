@@ -12,26 +12,28 @@ from ..utils import (
     increment_isodate,
     local_isodate_2_naive_local_datetime,
     local_isodate_2_utc_isodatetime,
+    naive_local_isodatetime_2_utc_datetime,
+    naive_utc_datetime_2_utc_datetime,
 )
 from ..tasks import get_cups
 from .erp import get_erp_instance
 from .mongo_manager import get_mongo_instance
 from .erpdb_manager import get_erpdb_instance
 
-# season + naive_local_isodatetime -> local datetime -> substract delta -> 
 def cch_date_from_cch_datetime(cch, measure_delta):
-    tz = pytz.timezone("Europe/Madrid")
-    utcdatetime = tz.localize(cch['datetime'], is_dst=cch['season']).astimezone(pytz.utc)
+    utcdatetime = naive_local_isodatetime_2_utc_datetime(
+        naive_local_isodate = cch['datetime'],
+        is_dst = cch['season'],
+    )
     utcdatetime -= timedelta(**measure_delta)
     return iso_format_tz(utcdatetime)
 
-# naive_utc_datetime -> substract delta -> utc isodatetimetz
 def cch_date_from_cch_utctimestamp(raw_data, measure_delta):
-    tz = pytz.timezone("Europe/Madrid")
-    utcdatetime = raw_data['utc_timestamp'].replace(tzinfo=pytz.UTC)
-    localdatetime = utcdatetime.astimezone(tz)
-    localdatetime -= timedelta(**measure_delta)
-    return iso_format_tz(localdatetime)
+    utcdatetime = naive_utc_datetime_2_utc_datetime(
+        naive_utc_datetime=raw_data['utc_timestamp'],
+    )
+    utcdatetime -= timedelta(**measure_delta)
+    return iso_format_tz(utcdatetime)
 
 class CurveRepository():
     extra_filter = dict()
