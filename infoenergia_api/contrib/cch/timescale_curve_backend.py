@@ -1,5 +1,6 @@
 from datetime import timedelta
 from psycopg import AsyncClientCursor
+from psycopg.rows import dict_row
 
 from ...utils import (
     iso_format,
@@ -65,7 +66,6 @@ class TimescaleCurveBackend():
                 utc_timestamp=iso_format(cch["utc_timestamp"]),
 
             )
-        from psycopg.rows import dict_row
         query = await self.build_query(start, end, cups, **curve_type.extra_filter)
 
         erpdb = await get_erpdb_instance()

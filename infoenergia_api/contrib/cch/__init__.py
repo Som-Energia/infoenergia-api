@@ -9,7 +9,6 @@ from ..erp import get_erp_instance
 from .mongo_curve_backend import MongoCurveBackend
 from .timescale_curve_backend import TimescaleCurveBackend
 
-#### Concrete curves
 
 class CurveRepository():
 
