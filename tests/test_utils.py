@@ -3,7 +3,6 @@ from erppeek import Client
 from motor.motor_asyncio import AsyncIOMotorClient
 from pony.orm import db_session
 
-from infoenergia_api.contrib.cch import TgCchF5d
 from infoenergia_api.utils import get_contract_id
 from config import config
 from tests.base import BaseTestCase
@@ -25,7 +24,7 @@ class TestUtils(BaseTestCase):
         self.erp = Client(**config.ERP_CONF)
         self.app.ctx.mongo_client = AsyncIOMotorClient(config.MONGO_CONF)
         self.loop = asyncio.get_event_loop()
-        self.f5d_id = "5c2dd783cb2f477212c77abb"
+        self.f5d_cups = self.json4test['a_valid_f5d_cups']
 
     @db_session
     def test__valid_contract(self):
@@ -37,8 +36,7 @@ class TestUtils(BaseTestCase):
             is_superuser=True,
             category="partner",
         )
-        f5d = self.loop.run_until_complete(TgCchF5d.create(self.f5d_id, "tg_cchfact"))
-        valid = get_contract_id(self.erp, f5d.name, user)
+        valid = get_contract_id(self.erp, self.f5d_cups, user)
         self.assertTrue(valid)
         self.delete_user(user)
 
@@ -52,7 +50,7 @@ class TestUtils(BaseTestCase):
             is_superuser=False,
             category="Energética",
         )
-        f5d = self.loop.run_until_complete(TgCchF5d.create(self.f5d_id, "tg_cchfact"))
-        invalid = get_contract_id(self.erp, f5d.name, user)
+        invalid = get_contract_id(self.erp, self.f5d_cups, user)
         self.assertFalse(invalid)
         self.delete_user(user)
+
