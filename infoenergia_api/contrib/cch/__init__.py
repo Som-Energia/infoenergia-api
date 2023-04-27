@@ -80,7 +80,7 @@ class TgCchF5dRepository(CurveRepository):
 
 class TgCchValRepository(CurveRepository):
 
-    model = "tg_cchval"
+    model = 'tg_cchval'
     fields = [
         'date',
         'season',
@@ -93,32 +93,32 @@ class TgCchValRepository(CurveRepository):
 
 class TgCchPnRepository(CurveRepository):
 
-    model = "tg_p1"
+    model = 'tg_p1'
     fields = [
-        "date",
-        "season",
+        'date',
+        'season',
         'dateDownload',
         'dateUpdate',
-        "source",
-        "validated",
-        "type",
-        "measure_type",
-        "ai",
-        "ao",
-        "reserve1",
-        "reserve2",
-        "r1",
-        "r2",
-        "r3",
-        "r4",
-        "aiquality",
-        "aoquality",
-        "reserve1quality",
-        "reserve2quality",
-        "r1quality",
-        "r2quality",
-        "r3quality",
-        "r4quality",
+        'source',
+        'validated',
+        'type',
+        'measure_type',
+        'ai',
+        'ao',
+        'reserve1',
+        'reserve2',
+        'r1',
+        'r2',
+        'r3',
+        'r4',
+        'aiquality',
+        'aoquality',
+        'reserve1quality',
+        'reserve2quality',
+        'r1quality',
+        'r2quality',
+        'r3quality',
+        'r4quality',
     ]
     translated_fields = dict(
         measure_type='measureType',
@@ -152,7 +152,7 @@ class TgCchGennetabetaRepository(CurveRepository):
 
     model = 'tg_cch_gennetabeta'
     fields = [
-        "date",
+        'date',
         'ae',
         'ai',
         'bill',
@@ -193,7 +193,7 @@ curve_types={
     'tg_cchval': TgCchValRepository,
     'P1': TgCchP1Repository,
     'P2': TgCchP2Repository,
-    "tg_f1": TgCchF1Repository,
+    'tg_f1': TgCchF1Repository,
     'tg_gennetabeta': TgCchGennetabetaRepository,
     'tg_cchautocons': TgCchAutoconsRepository,
 }
