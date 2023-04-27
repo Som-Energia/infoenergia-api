@@ -4,6 +4,7 @@ from ...utils import (
     make_uuid,
     get_contract_id,
 )
+from config import config
 from ...tasks import get_cups
 from ..erp import get_erp_instance
 from .mongo_curve_backend import MongoCurveBackend
@@ -203,22 +204,14 @@ curve_backends = dict(
     timescale=TimescaleCurveBackend,
 )
 
-# TODO: This should be a configuration
-curve_type_backends = {
-    'tg_cchfact': 'mongo',
-    'tg_cchval': 'mongo',
-    'P1': 'mongo',
-    'P2': 'mongo',
-    "tg_f1": 'timescale',
-    'tg_gennetabeta': 'mongo',
-    'tg_cchautocons': 'mongo',
-}
-
-
 def create_repository(curve_type):
-    backend_name = curve_type_backends[curve_type]
+    CurveType = curve_types[curve_type]
+    curve_type_backends = config.CURVE_TYPE_BACKENDS
+    backend_name = curve_type_backends.get(
+        curve_type, config.CURVE_TYPE_DEFAULT_BACKEND
+    )
     Backend = curve_backends[backend_name]
-    return curve_types[curve_type](Backend())
+    return CurveType(Backend())
 
 
 async def get_curve(curve_type, start, end, cups=None):

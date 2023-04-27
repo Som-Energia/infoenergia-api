@@ -2,6 +2,7 @@
 Base and common settings for api configuration
 """
 import os
+import json
 
 from environs import Env
 
@@ -28,3 +29,8 @@ RESPONSE_TIMEOUT = 36000
 SANIC_JWT_USER_ID = "id"
 
 SENTRY_DSN = env.str("SENTRY_DSN")
+
+CURVE_TYPE_DEFAULT_BACKEND = env.str('CURVE_TYPE_DEFAULT_BACKEND','mongo')
+CURVE_TYPE_BACKENDS = env.json('CURVE_TYPE_BACKENDS', json.dumps(dict(
+    tg_f1='timescale',
+)))

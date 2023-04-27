@@ -122,7 +122,13 @@ pipenv lock  # To upgrade all versions, add --keep-lock to just add the new deps
 	- Some other curves (P2) informed T2-1h to get T1 but for them T1 = T2-15minutes
     - Output attribute `date` timezone is UTC (some curves used local Madrid TZ)
     - Uninformed fields now are `null` instead of `false`
-
+- Deploy notes:
+    - New dependencies added, pip install required
+    - New `ERP_DB_CONF` configuration to connect directly to the ERP db
+    - New config variable `CURVE_TYPE_DEFAULT_BACKEND` to set a default curve
+      backend: `mongo` or `timescale`.
+    - New config variable `CURVE_TYPE_BACKENDS` to change the default curve
+      backend for each type of curve.
 
 ### 2.3.0
 
