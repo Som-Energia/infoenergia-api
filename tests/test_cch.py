@@ -232,10 +232,18 @@ class TestCchRequest:
                 "limit": 1,
             }
         )
-        yaml_snapshot(ns(
-            status=response.status,
-            json=response.json,
+
+        cursor = response.json.get("cursor", "NO_CURSOR_RETURNED")
+        assert_response_contains(response, ns(
+            count=1,
+            total_results=response.json.get('total_results', "MISSING_TOTAL_RESULTS"),
+            cursor=cursor,
+            next_page="http://{}/cch?type=P2&cursor={}&limit=1".format(
+                response.url.netloc.decode(),
+                cursor,
+            ),
         ))
+        assert len(response.json["data"]) == 1
 
     contract_collective_self_consumption = '0069752'
     contract_with_readings = contract_collective_self_consumption # also complies
