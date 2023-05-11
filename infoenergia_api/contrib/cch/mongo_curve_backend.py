@@ -77,5 +77,7 @@ class MongoCurveBackend:
                 projection=dict(_id=False),
                 #sort=[( "datetime", 1 )],
             )
+            # if all(attr in cch for attr in ('id', 'season'))  # TODO: Review defensive code
         ]
+
         return result
