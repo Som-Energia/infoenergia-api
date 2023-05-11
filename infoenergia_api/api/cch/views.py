@@ -6,7 +6,6 @@ from sanic.response import json
 from sanic.views import HTTPMethodView
 from sanic_jwt.decorators import inject_user, protected
 
-from config import config
 from infoenergia_api.contrib import PaginationLinksMixin
 from infoenergia_api.contrib.cch import (
     async_get_cch,
