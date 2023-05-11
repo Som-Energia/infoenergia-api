@@ -61,7 +61,7 @@ def unprivileged_cchquery(app, unprivileged_auth_token, mocked_next_cursor):
 
 class TestCchRequest:
 
-    async def test__get_cch__unsuported_type(self, cchquery, scenarios):
+    async def test__all_contracts__unsuported_curve_type(self, cchquery, scenarios):
         response = await cchquery(
             params = {
                 "type": "non_existing_curve_type", # This changes
@@ -76,7 +76,7 @@ class TestCchRequest:
             ),
         ), 400)
 
-    async def test__get_cch_contract__unsuported_type(self, cchquery, scenarios):
+    async def test__contract_id__unsuported_curve_type(self, cchquery, scenarios):
         response = await cchquery(
             contract_id=scenarios["f5d"]["contractId"],
             params = {
@@ -92,7 +92,7 @@ class TestCchRequest:
             ),
         ), 400)
 
-    async def test__get_f5d_by_id__2A(self, cchquery, scenarios):
+    async def test__f5d_contract_id__pagination_limit(self, cchquery, scenarios):
         response = await cchquery(
             contract_id=scenarios["f5d"]["contractId"],
             params={
@@ -114,7 +114,7 @@ class TestCchRequest:
         ))
         assert len(response.json["data"]) == 10
 
-    async def test__get_f5d__all_contracts(self, cchquery, scenarios):
+    async def test__f5d__all_contracts__pagination(self, cchquery, scenarios):
         response = await cchquery(
             params = {
                 "to_": "2019-10-08",
@@ -134,7 +134,7 @@ class TestCchRequest:
         ))
         assert len(response.json["data"]) == 50
 
-    async def test__get_f5d_without_permission(self, unprivileged_cchquery, scenarios):
+    async def test__f5d_contract_id__without_permission(self, unprivileged_cchquery, scenarios):
         response = await unprivileged_cchquery(
             contract_id=scenarios["f5d"]["contractId"],
             params = {
@@ -149,7 +149,7 @@ class TestCchRequest:
             data=[],
         ))
 
-    async def test__get_p5d__for_contract_id(self, cchquery, scenarios):
+    async def test__p5d_contract_id__pagination(self, cchquery, scenarios):
         response = await cchquery(
             contract_id=scenarios["p5d"]["contractId"],
             params = {
@@ -164,7 +164,7 @@ class TestCchRequest:
             data=scenarios["p5d"]["cch_data"],
         ))
 
-    async def test__get_p5d_without_permission(self, unprivileged_cchquery, scenarios):
+    async def test__p5d_contract_id__without_permission(self, unprivileged_cchquery, scenarios):
         response = await unprivileged_cchquery(
             contract_id=scenarios["p5d"]["contractId"],
             params = {
@@ -177,7 +177,7 @@ class TestCchRequest:
             data=[],
         ))
 
-    async def test__get_f1_by_id(self, cchquery, scenarios):
+    async def test__f1_contract_id__pagination(self, cchquery, scenarios):
         response = await cchquery(
             contract_id=scenarios["tg_f1"]["contractId"],
             params = {
@@ -200,7 +200,7 @@ class TestCchRequest:
         ))
         assert len(response.json["data"]) == 10
 
-    async def test__get_p1__for_contract_id(self, cchquery, scenarios):
+    async def test__p1_contract_id__pagination(self, cchquery, scenarios):
         response = await cchquery(
             contract_id=scenarios["p1"]["contractId"],
             params = {
@@ -222,7 +222,7 @@ class TestCchRequest:
             ),
         ))
 
-    async def test__get_p2__for_all_contracts(self, cchquery, scenarios, yaml_snapshot):
+    async def test__p2__all_contracts__pagination_limit(self, cchquery, scenarios, yaml_snapshot):
         response = await cchquery(
             params = {
                 "type": "P2",
