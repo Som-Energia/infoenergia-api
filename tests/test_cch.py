@@ -290,12 +290,12 @@ class TestCchRequest:
 
     @pytest.mark.parametrize('curve_type,contract_number', [
         ('tg_f1', contract_with_f1_curves),
-        #('tg_cchval', contract_with_readings),
+        ('tg_cchval', contract_with_readings),
         ('tg_cchfact', contract_with_readings),
-        #('tg_gennetabeta', contract_collective_self_consumption),
-        #('tg_cchautocons', contract_collective_self_consumption),
-        #('P1', contract_with_px_and_0F_cups),
-        #('P2', contract_with_px_and_0F_cups), # 4 times more curves than P1 but paginated
+        ('tg_gennetabeta', contract_collective_self_consumption),
+        ('tg_cchautocons', contract_collective_self_consumption),
+        ('P1', contract_with_px_and_0F_cups),
+        ('P2', contract_with_px_and_0F_cups), # 4 times more curves than P1 but paginated
     ])
     async def test__get_curve__two_days(self, curve_type, contract_number, cchquery, yaml_snapshot):
         cups = self.get_cups(contract_number)
