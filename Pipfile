@@ -43,4 +43,5 @@ hiredis = "*"
 somutils = "*"
 yamlns = "*"
 connexion = {extras = ["swagger-ui"], version = "*"}
-psycopg = "*"
+psycopg = {extras = ["pool", "binary"]}
+backports-zoneinfo = {markers="python_version < '3.9'"} # Missing indirect dependency of psycopg
