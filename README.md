@@ -102,7 +102,7 @@ pipenv lock  # To upgrade all versions, add --keep-lock to just add the new deps
 
 ## Changes
 
-### Unreleased
+### 2.4.0
 
 - Curve types (`tg_val`, `tg_fact`...) and curve backends (mongo/timescale)
   are now decoupled and backends can be configured for each type on runtime
