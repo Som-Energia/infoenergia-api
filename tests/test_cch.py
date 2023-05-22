@@ -114,6 +114,42 @@ class TestCchRequest:
         ))
         assert len(response.json["data"]) == 10
 
+    async def test__f5d_contract_id__download_filters__pagination_limit_2(
+        self,
+        cchquery,
+        scenarios,
+        yaml_snapshot
+    ):
+        contract_id = scenarios["a_valid_f5d_contract_id"]
+
+        response = await cchquery(
+            contract_id=contract_id,
+            params={
+                "type": "tg_cchfact",
+                "downloaded_from": "2023-03-24",
+                "downloaded_to": "2023-03-26",
+                "limit": 2,
+            },
+        )
+
+        cursor = response.json.get("cursor", "NO_CURSOR_RETURNED")
+        assert_response_contains(response, ns(
+            count=2,
+            total_results=624,
+            next_page="http://{}/cch/{}?type=tg_cchfact&cursor={}&limit=2".format(
+                response.url.netloc.decode(),
+                contract_id,
+                cursor
+            ),
+        ))
+        assert len(response.json["data"]) == 2
+        assert("2023-03" in response.json["data"][0]['measurements']['dateDownload'])
+        assert("2023-03" in response.json["data"][1]['measurements']['dateDownload'])
+        yaml_snapshot(ns(
+            status=response.status,
+            json=response.json,
+        ))
+
     async def test__f5d__all_contracts__pagination(self, cchquery, scenarios):
         response = await cchquery(
             params = {

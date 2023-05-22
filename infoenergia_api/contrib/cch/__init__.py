@@ -20,8 +20,18 @@ class CurveRepository:
     def __init__(self, backend):
         self.backend = backend
 
-    async def get_curve(self, start, end, cups=None):
-        return await self.backend.get_curve(self, start, end, cups)
+    async def get_curve(
+        self,
+        start, end,
+        downloaded_from=None, downloaded_to=None,
+        cups=None
+    ):
+        return await self.backend.get_curve(
+            self,
+            start, end,
+            downloaded_from, downloaded_to,
+            cups
+        )
 
     def measurements(self, raw_data):
         return dict(
@@ -214,9 +224,18 @@ def create_repository(curve_type):
     return CurveType(Backend())
 
 
-async def get_curve(curve_type, start, end, cups=None):
+async def get_curve(
+    curve_type,
+    start, end,
+    downloaded_from=None, downloaded_to=None,
+    cups=None
+):
     repository = create_repository(curve_type)
-    return await repository.get_curve(start, end, cups=cups)
+    return await repository.get_curve(
+        start=start, end=end,
+        downloaded_from=downloaded_from, downloaded_to=downloaded_to,
+        cups=cups
+    )
 
 
 async def get_measures(curve_type, cch, contract_id, user):
@@ -256,6 +275,8 @@ async def async_get_cch(request, contract_id=None):
         curve_type,
         start=filters.get('from_', None),
         end=filters.get('to_', None),
+        downloaded_from=filters.get('downloaded_from', None),
+        downloaded_to=filters.get('downloaded_to', None),
         cups=cups,
     )
     return result

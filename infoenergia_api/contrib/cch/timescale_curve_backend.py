@@ -55,19 +55,29 @@ class TimescaleCurveBackend:
 
         return result
 
-    async def get_curve(self, curve_type, start, end, cups=None):
-
+    async def get_curve(
+        self,
+        curve_type,
+        start, end,
+        downloaded_from=None, downloaded_to=None,
+        cups=None
+    ):
         def cch_transform(cch):
-            return dict(cch,
+            return dict(
+                cch,
                 date=cch_date_from_cch_utctimestamp(cch, curve_type.measure_delta),
                 dateDownload=iso_format(cch["create_at"]),
                 dateUpdate=iso_format(cch["update_at"]),
                 datetime=iso_format(cch["datetime"]),
                 utc_timestamp=iso_format(cch["utc_timestamp"]),
-
             )
-        query = await self.build_query(start, end, cups, **curve_type.extra_filter)
 
+        query = await self.build_query(
+            start=start, end=end,
+            downloaded_from=downloaded_from, downloaded_to=downloaded_to,
+            cups=cups,
+            **curve_type.extra_filter
+        )
         erpdb = await get_erpdb_instance()
         async with AsyncClientCursor(erpdb, row_factory=dict_row) as cursor:
             await cursor.execute(f"""

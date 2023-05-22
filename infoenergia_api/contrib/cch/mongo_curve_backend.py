@@ -56,8 +56,21 @@ class MongoCurveBackend:
             query.update(name={"$regex": "^{}".format(cups[:20])})
         return query
 
-    async def get_curve(self, curve_type, start, end, cups=None):
-        query = self.build_query(start, end, cups, **curve_type.extra_filter)
+    async def get_curve(
+        self,
+        curve_type,
+        start, end,
+        downloaded_from=None, downloaded_to=None,
+        cups=None
+    ):
+
+        query = self.build_query(
+            start=start, end=end,
+            downloaded_from=downloaded_from, downloaded_to=downloaded_to,
+            cups=cups,
+            **curve_type.extra_filter
+        )
+
         cch_collection = self.db[curve_type.model]
 
         def cch_transform(cch):
