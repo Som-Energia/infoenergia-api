@@ -186,25 +186,25 @@ class TestCchRequest:
             data=[],
         ))
 
-    async def test__p5d_contract_id__pagination(self, cchquery, scenarios):
+    async def test__p5d_contract_id__pagination(self, cchquery, yaml_snapshot, scenarios):
         response = await cchquery(
-            contract_id=scenarios["p5d"]["contractId"],
-            params = {
+            contract_id=scenarios["a_valid_p5d_contract_id"],
+            params={
                 "type": "tg_cchval",
                 "from_": "2017-12-29",
                 "to_": "2018-01-01",
             }
         )
-        assert_response_equal(response, ns(
-            count=24,
-            total_results=24,
-            data=scenarios["p5d"]["cch_data"],
+
+        yaml_snapshot(ns(
+            status=response.status,
+            json=response.json,
         ))
 
     async def test__p5d_contract_id__without_permission(self, unprivileged_cchquery, scenarios):
         response = await unprivileged_cchquery(
-            contract_id=scenarios["p5d"]["contractId"],
-            params = {
+            contract_id=scenarios["a_valid_p5d_contract_id"],
+            params={
                 "type": "tg_cchval",
             },
         )
@@ -594,5 +594,3 @@ class BooTest:
             "source": False,
             "validated": ""
             }
-
-
