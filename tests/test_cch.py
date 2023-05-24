@@ -142,9 +142,7 @@ class TestCchRequest:
                 cursor
             ),
         ))
-        assert len(response.json["data"]) == 2
-        assert("2023-03" in response.json["data"][0]['measurements']['dateDownload'])
-        assert("2023-03" in response.json["data"][1]['measurements']['dateDownload'])
+
         yaml_snapshot(ns(
             status=response.status,
             json=response.json,
