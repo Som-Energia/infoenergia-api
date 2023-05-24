@@ -1,5 +1,8 @@
 # Changelog
 
+### 2.4.1
+- Fix missing download filters for cch curves
+
 ### 2.4.0
 
 - Curve types (`tg_val`, `tg_fact`...) and curve backends (mongo/timescale)
