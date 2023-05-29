@@ -229,10 +229,56 @@ def get_invoices(request, contractId=None):
     return invoices_ids
 
 
+def get_invoices_by_contract_id(request, contract_id=None):
+    args = RequestParameters(request.args)
+    polissa_obj = request.app.ctx.erp_client.model("giscedata.polissa")
+    factura_obj = request.app.ctx.erp_client.model("giscedata.facturacio.factura")
+
+    polissa_filters = [
+        ('emp_allow_send_data', '=', True),
+        ('name', '=', contract_id),
+    ]
+
+    polissa_id = polissa_obj.search(polissa_filters)
+
+    if polissa_id:
+        filters = [
+            ("polissa_state", "=", "activa"),
+            ("type", "=", "in_invoice"),
+            ("polissa_id", "=", polissa_id[0]),
+        ]
+        filters = get_invoice_user_filters(
+            request.app.ctx.erp_client, request.ctx.user, filters
+        )
+
+        if args:
+            filters = get_request_filters(
+                request.app.ctx.erp_client,
+                request,
+                filters,
+            )
+
+        invoices_ids = factura_obj.search(filters)
+
+        return invoices_ids
+    return []
+
+
 async def async_get_invoices(request, id_contract=None):
     try:
         invoices = await request.app.loop.run_in_executor(
             None, get_invoices, request, id_contract
+        )
+    except Exception as e:
+        raise e
+
+    return invoices
+
+
+async def async_get_invoices_by_contract_id(request, id_contract=None):
+    try:
+        invoices = await request.app.loop.run_in_executor(
+            None, get_invoices_by_contract_id, request, id_contract
         )
     except Exception as e:
         raise e

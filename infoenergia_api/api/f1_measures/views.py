@@ -6,7 +6,11 @@ from sanic.response import json
 from sanic.views import HTTPMethodView
 from sanic_jwt.decorators import inject_user, protected
 
-from infoenergia_api.contrib.f1 import async_get_invoices, Invoice
+from infoenergia_api.contrib.f1 import (
+    async_get_invoices,
+    async_get_invoices_by_contract_id,
+    Invoice
+)
 from infoenergia_api.contrib import PaginationLinksMixin
 from infoenergia_api.contrib.mixins import ResponseMixin
 from infoenergia_api.contrib.pagination import PageNotFoundError
@@ -29,7 +33,9 @@ class F1MeasuresContractIdView(ResponseMixin, PaginationLinksMixin, HTTPMethodVi
 
         try:
             invoices_ids, links, total_results = await self.paginate_results(
-                request, function=async_get_invoices, contract_id=contract_id
+                request,
+                function=async_get_invoices_by_contract_id,
+                contract_id=contract_id
             )
         except PageNotFoundError as e:
             return self.error_response(e)
