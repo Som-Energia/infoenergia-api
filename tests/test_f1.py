@@ -287,21 +287,24 @@ class TestInvoice(BaseTestCase):
         invoice = Invoice(self.invoice_id_2x)
 
         devices = invoice.devices
+
         self.assertListEqual(
             devices,
             [
                 {
-                    "dateStart": "2011-12-23T00:00:00+01:00",
-                    "dateEnd": None,
-                    "deviceId": "ab201f66-4da7-517b-be40-13b7e0de7429",
-                }
-            ],
+                    'dateStart': '2022-06-28T00:00:00+02:00',
+                    'dateEnd': None,
+                    'deviceId': '4385c40f-388c-50ff-94b8-ccb9d3607ec6'
+                 }
+            ]
         )
 
     def test__f1_power_2X(self):
-        invoice = Invoice(self.invoice_id_2x)
+        a_20td_invoice_id_without_f1_values = 202528
+        invoice = Invoice(a_20td_invoice_id_without_f1_values)
 
         f1_power = invoice.f1_power_kW
+
         self.assertListEqual(f1_power, [])
 
     def test__f1_power_3X(self):
@@ -343,20 +346,13 @@ class TestInvoice(BaseTestCase):
         )
 
     def test__get_f1_active_energy_2X(self):
-        invoice = Invoice(self.invoice_id_2x)
+        invoice = Invoice(self.json4test['invoice_20TD']['id'])
 
         f1_active_energy = invoice.f1_active_energy_kWh
+
         self.assertListEqual(
             f1_active_energy,
-            [
-                {
-                    "consum": 280,
-                    "period": "P1",
-                    "source": "Telegestió",
-                    "magnitud": "AE",
-                    "units": "kWh",
-                }
-            ],
+            self.json4test['invoice_20TD']['f1_active_energy']
         )
 
     def test__get_f1_active_energy_3X(self):
@@ -540,7 +536,9 @@ class TestInvoice(BaseTestCase):
         )
 
     def test__f1_maximeter__without_results(self):
-        invoice = Invoice(self.invoice_id_2x)
+        a_20td_invoice_id_without_maximeter_values = 283681
+        invoice = Invoice(a_20td_invoice_id_without_maximeter_values)
 
         f1_maximeter = invoice.f1_maximeter
+
         self.assertListEqual(f1_maximeter, [])
