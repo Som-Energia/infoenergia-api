@@ -102,7 +102,7 @@ pipenv lock  # To upgrade all versions, add --keep-lock to just add the new deps
 
 - Determine the nes semantic version `M.m.r`
 - Update version at `infoenergia_api/__init__.py`
-- Update changelog at `README.md`
+- Update changelog at `CHANGES.md`
 - Commit with "bump to vM.m.r"
 - Tag the commit with `vM.m.r`
 
@@ -135,6 +135,11 @@ user@host:> vim .env
 ## Usage
 
 You can simply execute `pipenv run python run.py` and the api will be ready to accept requests
+
+
+## Changes
+
+Take a look to [CHANGES.md](CHANGES.md) to see the historic of changes that has had this awesome api 🎉
 
 ## Contact
 If you want to contact with us, feel free to send an email to <info@somenergia.coop>.

@@ -1,5 +1,8 @@
 # Changelog
 
+### 2.4.2
+- Improve invoices collection by searching them by contract_id
+
 ### 2.4.1
 - Fix missing download filters for cch curves
 
@@ -134,4 +137,3 @@
 ### 1.0.1
 
 - Add extra filter to contract and f1 endpoints
-
