@@ -115,6 +115,7 @@ class Invoice(object):
                 or "Not informed",
                 "period": re.split("[()]", measure["name"])[1],
                 "consum": int(measure["consum"]),
+                "magnitud": measure["magnitud"],
                 "units": "kVArh",
             }
             for measure in measures
