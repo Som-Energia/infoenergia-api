@@ -235,8 +235,8 @@ def get_invoices_by_contract_id(request, contract_id=None):
     factura_obj = request.app.ctx.erp_client.model("giscedata.facturacio.factura")
 
     polissa_filters = [
-        ('emp_allow_send_data', '=', True),
-        ('name', '=', contract_id),
+        ("emp_allow_send_data", "=", True),
+        ("name", "=", contract_id),
     ]
 
     polissa_id = polissa_obj.search(polissa_filters)

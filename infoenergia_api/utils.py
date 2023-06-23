@@ -10,6 +10,7 @@ def make_uuid(model, model_id):
     token = "%s,%s" % (model, model_id)
     return str(uuid.uuid5(uuid.NAMESPACE_OID, token))
 
+
 def make_timestamp(date):
     if not date:
         return None
@@ -17,21 +18,26 @@ def make_timestamp(date):
     datetime_obj = datetime.strptime(date, "%Y-%m-%d")
     return tz.localize(datetime_obj).isoformat("T")
 
+
 def iso_format(date):
     """Format a date in naive iso format. If None, None returned"""
     return date and date.strftime("%Y-%m-%d %H:%M:%S")
+
 
 def iso_format_tz(date):
     """Format a date in tz aware iso format"""
     return date and date.strftime("%Y-%m-%d %H:%M:%S%z")
 
+
 def local_isodate_2_naive_local_datetime(isodate: str):
     """Given an iso formated date, returns a naive datetime at 00:00"""
     return datetime.strptime(isodate, "%Y-%m-%d")
 
+
 def isodate(isodate: str):
     """Given an iso formated date, returns ae date"""
     return datetime.strptime(isodate, "%Y-%m-%d").date()
+
 
 def increment_isodate(aisodate, days=1):
     """Given an iso formated date, returns another iso date adding
@@ -40,19 +46,23 @@ def increment_isodate(aisodate, days=1):
     newdate = date + timedelta(days=days)
     return str(newdate)
 
+
 def local_isodate_2_utc_isodatetime(isodate):
     """Given a isodate returns a naive isodatetime
     representing the local 00:00h in utc"""
     localtime = isodates.localisodate(isodate)
     return str(isodates.asUtc(localtime))[:19]
 
+
 def naive_local_isodatetime_2_utc_datetime(naive_local_isodate, is_dst):
     tz = pytz.timezone("Europe/Madrid")
     localdatetime = tz.localize(naive_local_isodate, is_dst=is_dst)
     return localdatetime.astimezone(pytz.utc)
 
+
 def naive_utc_datetime_2_utc_datetime(naive_utc_datetime):
     return naive_utc_datetime.replace(tzinfo=pytz.utc)
+
 
 def get_id_for_contract(obj, modcontract_ids):
     ids = (obj.search([("modcontractual_id", "=", ids)]) for ids in modcontract_ids)
@@ -190,7 +200,6 @@ def get_juridic_filter(erp_client, juridic_type):
         juridic_filters = [("titular", "in", juridic_person)]
 
     return juridic_filters
-
 
 
 def get_contract_id(erp_client, cups, user):

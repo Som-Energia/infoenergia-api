@@ -24,7 +24,7 @@ class TestUtils(BaseTestCase):
         self.erp = Client(**config.ERP_CONF)
         self.app.ctx.mongo_client = AsyncIOMotorClient(config.MONGO_CONF)
         self.loop = asyncio.get_event_loop()
-        self.f5d_cups = self.json4test['a_valid_f5d_cups']
+        self.f5d_cups = self.json4test["a_valid_f5d_cups"]
 
     @db_session
     def test__valid_contract(self):
@@ -53,4 +53,3 @@ class TestUtils(BaseTestCase):
         invalid = get_contract_id(self.erp, self.f5d_cups, user)
         self.assertFalse(invalid)
         self.delete_user(user)
-

@@ -82,7 +82,9 @@ class Contract(object):
         }
         """
         if not hasattr(self, "_current_tariff"):
-            modcon = find_changes(self._erp, self.modcontractual_activa[0], "tarifa")[-1]
+            modcon = find_changes(self._erp, self.modcontractual_activa[0], "tarifa")[
+                -1
+            ]
 
             self._current_tariff = {
                 "tariffId": modcon["tarifa"][1],
@@ -158,7 +160,9 @@ class Contract(object):
         }
         """
         if not hasattr(self, "_current_power"):
-            modcon = find_changes(self._erp, self.modcontractual_activa[0], "potencia")[-1]
+            modcon = find_changes(self._erp, self.modcontractual_activa[0], "potencia")[
+                -1
+            ]
             self._current_power = {
                 "power": self.power,
                 "dateStart": make_timestamp(modcon["data_inici"]),
@@ -211,7 +215,7 @@ class Contract(object):
             'province': 'Barcelona',
         }
         """
-        if not hasattr(self, '_address'):
+        if not hasattr(self, "_address"):
             cups_obj = self._erp.model("giscedata.cups.ps")
             muni_obj = self._erp.model("res.municipi")
             state_obj = self._erp.model("res.country.state")
@@ -240,7 +244,9 @@ class Contract(object):
             sips_id = sips_obj.search([("name", "=", cups["name"])])
             # if not postal_code:  to do fix postal code in DDBB
             if sips_id:
-                postal_code = sips_obj.read(int(sips_id[0]), ["codi_postal"])["codi_postal"]
+                postal_code = sips_obj.read(int(sips_id[0]), ["codi_postal"])[
+                    "codi_postal"
+                ]
             else:
                 if ine in ine_to_dp:
                     postal_code = ine_to_dp[ine]
@@ -393,7 +399,7 @@ class Contract(object):
           }
         ]
         """
-        if not hasattr(self, '_devices'):
+        if not hasattr(self, "_devices"):
             if not self.comptadors:
                 return []
 
@@ -454,7 +460,7 @@ class Contract(object):
         """
         Type of self-consumption
         """
-        if not hasattr(self, '_self_consumption'):
+        if not hasattr(self, "_self_consumption"):
             self._self_consumption = [
                 name
                 for value, name in self._Polissa.fields_get("autoconsumo")
@@ -463,10 +469,10 @@ class Contract(object):
                 if value == self.autoconsumo
             ][0]
 
-            if self.autoconsumo != '00':
+            if self.autoconsumo != "00":
                 return {
                     "selfConsumptionType": self._self_consumption,
-                    "installedPower": self.potencia_generacio
+                    "installedPower": self.potencia_generacio,
                 }
             else:
                 return {

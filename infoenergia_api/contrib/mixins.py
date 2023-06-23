@@ -13,9 +13,7 @@ class ResponseMixin(object):
         serialized_instances = []
 
         todo = [
-            request.app.loop.run_in_executor(
-                None, self.serializer, object_
-            )
+            request.app.loop.run_in_executor(None, self.serializer, object_)
             for object_ in instances
         ]
         while todo:
@@ -67,7 +65,9 @@ class ResponseMixin(object):
     def unexpected_error_response(exception):
         capture_exception(exception)
         logger.error(exception)
-        import traceback; traceback.print_exc()
+        import traceback
+
+        traceback.print_exc()
         response = {
             "error": {
                 "code": "unexpected_error",

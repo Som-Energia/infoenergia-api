@@ -30,9 +30,10 @@ class BaseCchMeasuresContractView(ResponseMixin, PaginationLinksMixin, HTTPMetho
         return cchs, links, total_results
 
     async def get_cch_measures(self, cchs, user, contract_id=None, curve_type=None):
-        return await asyncio.gather(*[
-            get_measures(curve_type, cch, contract_id, user) for cch in cchs
-        ])
+        return await asyncio.gather(
+            *[get_measures(curve_type, cch, contract_id, user) for cch in cchs]
+        )
+
 
 class CchMeasuresContractIdView(BaseCchMeasuresContractView):
 
@@ -47,7 +48,7 @@ class CchMeasuresContractIdView(BaseCchMeasuresContractView):
         logger.info("Getting cch measures for contract: %s", contract_id)
         request.ctx.user = user
 
-        curve_type = request.args.get('type', '')
+        curve_type = request.args.get("type", "")
         try:
             if curve_type not in curve_types:
                 raise ModelNotFoundError()
@@ -56,7 +57,10 @@ class CchMeasuresContractIdView(BaseCchMeasuresContractView):
             return self.error_response(e)
         else:
             cch_measures = await self.get_cch_measures(
-                cchs, user, contract_id, curve_type=curve_type,
+                cchs,
+                user,
+                contract_id,
+                curve_type=curve_type,
             )
             response = {
                 "total_results": total_results,
@@ -79,7 +83,7 @@ class CchMeasuresView(BaseCchMeasuresContractView):
     async def get(self, request, user):
         request.ctx.user = user
         logger.info("Getting cch measures")
-        curve_type = request.args.get('type', '')
+        curve_type = request.args.get("type", "")
         try:
             if curve_type not in curve_types:
                 raise ModelNotFoundError()

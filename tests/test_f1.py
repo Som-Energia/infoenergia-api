@@ -292,11 +292,11 @@ class TestInvoice(BaseTestCase):
             devices,
             [
                 {
-                    'dateStart': '2022-06-28T00:00:00+02:00',
-                    'dateEnd': None,
-                    'deviceId': '4385c40f-388c-50ff-94b8-ccb9d3607ec6'
-                 }
-            ]
+                    "dateStart": "2022-06-28T00:00:00+02:00",
+                    "dateEnd": None,
+                    "deviceId": "4385c40f-388c-50ff-94b8-ccb9d3607ec6",
+                }
+            ],
         )
 
     def test__f1_power_2X(self):
@@ -346,13 +346,12 @@ class TestInvoice(BaseTestCase):
         )
 
     def test__get_f1_active_energy_2X(self):
-        invoice = Invoice(self.json4test['invoice_20TD']['id'])
+        invoice = Invoice(self.json4test["invoice_20TD"]["id"])
 
         f1_active_energy = invoice.f1_active_energy_kWh
 
         self.assertListEqual(
-            f1_active_energy,
-            self.json4test['invoice_20TD']['f1_active_energy']
+            f1_active_energy, self.json4test["invoice_20TD"]["f1_active_energy"]
         )
 
     def test__get_f1_active_energy_3X(self):

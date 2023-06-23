@@ -4,6 +4,7 @@ from sanic_jwt import exceptions
 
 from tests.base import BaseTestCase, User
 
+
 class TestLogin(BaseTestCase):
     @db_session
     async def test__authenticate_user(self):
