@@ -6,7 +6,7 @@ from sanic.response import json
 from sanic.views import HTTPMethodView
 from sanic_jwt.decorators import protected
 
-from infoenergia_api.contrib import(
+from infoenergia_api.contrib import (
     TariffPrice,
     PageNotFoundError,
     PaginationLinksMixin,
@@ -35,12 +35,13 @@ class TariffView(ResponseMixin, PaginationLinksMixin, HTTPMethodView):
 
         else:
             tariff_prices = [
-                await TariffPrice.create(
-                    tariff_price_filters, int(tariff_price_id))
-                    for tariff_price_id in tariff_price_ids
+                await TariffPrice.create(tariff_price_filters, int(tariff_price_id))
+                for tariff_price_id in tariff_price_ids
             ]
             base_response = {"total_results": total_results, **links}
-            response_body = await self.make_response_body(request, tariff_prices, base_response)
+            response_body = await self.make_response_body(
+                request, tariff_prices, base_response
+            )
             return json(response_body)
 
 

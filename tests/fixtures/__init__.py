@@ -163,6 +163,7 @@ def mocked_next_cursor(monkeypatch):
     Returns a mocked cursor
     """
     cursor = "N2MxNjhhYmItZjc5Zi01MjM3LTlhMWYtZDRjNDQzY2ZhY2FkOk1RPT0="
+
     async def next_cursor_mock(self, request_id, next_cursor):
         return cursor
 
@@ -204,6 +205,7 @@ def p2_id():
     """
     return "5de09cdecb2f477212bf065d"
 
+
 @pytest.fixture
 def gennetabeta_id():
     """
@@ -211,12 +213,14 @@ def gennetabeta_id():
     """
     return 4311
 
+
 @pytest.fixture
 def autocons_id():
     """
     Returns a random autocons curve point id
     """
     return 181539
+
 
 @pytest.fixture
 def beedata_api_correct_credentials():

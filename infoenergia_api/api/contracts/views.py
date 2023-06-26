@@ -96,7 +96,9 @@ class ContractsIdTariffView(ResponseMixin, PaginationLinksMixin, HTTPMethodView)
             return self.error_response(e)
 
         else:
-            tariff_price_filters = get_tariff_filters(request, contract_id=contracts_ids)
+            tariff_price_filters = get_tariff_filters(
+                request, contract_id=contracts_ids
+            )
 
             tariff_price_ids, links, total_results = await self.paginate_results(
                 request, function=async_get_tariff_prices
@@ -106,9 +108,10 @@ class ContractsIdTariffView(ResponseMixin, PaginationLinksMixin, HTTPMethodView)
             ]
 
             base_response = {"total_results": total_results, **links}
-            response_body = await self.make_response_body(request, tariff_prices, base_response)
+            response_body = await self.make_response_body(
+                request, tariff_prices, base_response
+            )
             return json(response_body)
-
 
 
 bp_contracts.add_route(
@@ -118,13 +121,11 @@ bp_contracts.add_route(
 )
 
 bp_contracts.add_route(
-    ContractsIdView.as_view(),
-    "/contracts/<contract_id>",
-    name="get_contract_by_id"
+    ContractsIdView.as_view(), "/contracts/<contract_id>", name="get_contract_by_id"
 )
 
 bp_contracts.add_route(
     ContractsIdTariffView.as_view(),
     "/contracts/<contract_id>/tariff",
-    name="get_contract_by_id_tariff"
+    name="get_contract_by_id_tariff",
 )

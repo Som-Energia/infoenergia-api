@@ -11,15 +11,14 @@ from ...utils import (
 
 def cch_date_from_cch_datetime(cch, measure_delta):
     utcdatetime = naive_local_isodatetime_2_utc_datetime(
-        naive_local_isodate = cch['datetime'],
-        is_dst = cch['season'],
+        naive_local_isodate=cch["datetime"],
+        is_dst=cch["season"],
     )
     utcdatetime -= timedelta(**measure_delta)
     return iso_format_tz(utcdatetime)
 
 
 class MongoCurveBackend:
-
     def __init__(self):
         mongo_client = get_mongo_instance()
         self.db = mongo_client.somenergia
@@ -35,19 +34,19 @@ class MongoCurveBackend:
     ):
         query = {}
         if start:
-            query.setdefault('datetime', {}).update(
+            query.setdefault("datetime", {}).update(
                 {"$gte": local_isodate_2_naive_local_datetime(start)}
             )
         if end:
-            query.setdefault('datetime', {}).update(
+            query.setdefault("datetime", {}).update(
                 {"$lte": local_isodate_2_naive_local_datetime(increment_isodate(end))}
             )
         if downloaded_from:
-            query.setdefault('create_at', {}).update(
+            query.setdefault("create_at", {}).update(
                 {"$gte": local_isodate_2_naive_local_datetime(downloaded_from)}
             )
         if downloaded_to:
-            query.setdefault('create_at', {}).update(
+            query.setdefault("create_at", {}).update(
                 {"$lte": local_isodate_2_naive_local_datetime(downloaded_to)}
             )
         for key, value in extra_filter.items():
@@ -59,14 +58,18 @@ class MongoCurveBackend:
     async def get_curve(
         self,
         curve_type,
-        start, end,
-        downloaded_from=None, downloaded_to=None,
-        cups=None
+        start,
+        end,
+        downloaded_from=None,
+        downloaded_to=None,
+        cups=None,
     ):
 
         query = self.build_query(
-            start=start, end=end,
-            downloaded_from=downloaded_from, downloaded_to=downloaded_to,
+            start=start,
+            end=end,
+            downloaded_from=downloaded_from,
+            downloaded_to=downloaded_to,
             cups=cups,
             **curve_type.extra_filter
         )
@@ -76,7 +79,7 @@ class MongoCurveBackend:
         def cch_transform(cch):
             return dict(
                 cch,
-                id=int(cch['id']),  # un-bson-ize
+                id=int(cch["id"]),  # un-bson-ize
                 date=cch_date_from_cch_datetime(cch, curve_type.measure_delta),
                 dateDownload=iso_format(cch["create_at"]),
                 dateUpdate=iso_format(cch["update_at"]),
@@ -88,10 +91,10 @@ class MongoCurveBackend:
                 filter=query,
                 # exclude _id since it is not serializable
                 projection=dict(_id=False),
-                #sort=[( "datetime", 1 )],
+                # sort=[( "datetime", 1 )],
             )
             # Defensive code for garbage data without those required fields
-            if all(attr in cch for attr in ('id', 'season'))
+            if all(attr in cch for attr in ("id", "season"))
         ]
 
         return result
