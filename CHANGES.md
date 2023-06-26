@@ -1,5 +1,8 @@
 # Changelog
 
+### 2.4.3
+- added magnitud attribute to f1_reactive_energy_kVArh
+
 ### 2.4.2
 - Improve invoices collection by searching them by contract_id
 
