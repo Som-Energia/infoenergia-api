@@ -1,5 +1,8 @@
 # Changelog
 
+### 2.4.4
+- fixed measurement_point adquisition
+
 ### 2.4.3
 - added magnitud attribute to f1_reactive_energy_kVArh
 
