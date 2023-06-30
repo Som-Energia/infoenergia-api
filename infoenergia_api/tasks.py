@@ -24,13 +24,13 @@ def find_changes(erp_client, modcons_id, field):
         "potencies_periode",
         "llista_preu",
         "agree_tipus",
+        "tipo_medida",
     ]
+    modcons_ids = modcons_id if isinstance(modcons_id, list) else [modcons_id]
 
-    modcons = modcon_obj.read(modcons_id, fields)
-    # to do: re-write if
-    if type(modcons) is dict:
-        modcons = [modcon_obj.read(modcons_id, fields)]
-    modcons = sorted(modcons, key=lambda k: k["data_inici"])
+    modcons = sorted(
+        modcon_obj.read(modcons_ids, fields), key=lambda k: k["data_inici"]
+    )
     prev_ = modcons[0]
     modcons_ = []
     for next_ in modcons[1:]:

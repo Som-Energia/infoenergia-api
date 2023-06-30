@@ -167,7 +167,7 @@ class Contract(object):
                 "power": self.power,
                 "dateStart": make_timestamp(modcon["data_inici"]),
                 "dateEnd": make_timestamp(modcon["data_final"]),
-                "measurement_point": modcon["agree_tipus"],
+                "measurement_point": modcon["tipo_medida"] or "",
             }
         return self._current_power
 
@@ -178,7 +178,7 @@ class Contract(object):
                 "power": self.get_power_history(modcon),
                 "dateStart": make_timestamp(modcon["data_inici"]),
                 "dateEnd": make_timestamp(modcon["data_final"]),
-                "measurement_point": modcon["agree_tipus"],
+                "measurement_point": modcon["tipo_medida"] or "",
             }
             for modcon in find_changes(
                 self._erp, self.modcontractuals_ids, "potencies_periode"

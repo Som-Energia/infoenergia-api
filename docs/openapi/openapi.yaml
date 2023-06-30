@@ -1,0 +1,2001 @@
+openapi: 3.0.3
+info:
+  title: Som Energia Infoenergia API
+  description: 'API for exchange contract information'
+  termsOfService: https://www.somenergia.coop/ca/avis-legal/
+  contact:
+    email: info@somenergia.coop
+  license:
+    name: AGPL-3.0
+    url: https://www.gnu.org/licenses/agpl-3.0.en.html
+  version: 2.1.0
+servers:
+- url: https://apinergia.somenergia.coop
+tags:
+- name: authentication
+  description: User authentication endpoint
+- name: contracts
+  description: All information about a contract
+- name: modcontracts
+  description: All information about contract modifications
+- name: f1
+  description: All information about contract f1 measurements
+- name: cch
+  description: All hourly curves
+- name: reports
+  description: Reports to infoenergia
+- name: measurements
+  description: All information about contract energy measurements
+- name: tariff
+  description: Tariff pricelist
+paths:
+  /auth:
+    post:
+      tags:
+      - authentication
+      summary: Logs user into the system
+      operationId: server.basic_auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuthBodyRequest"
+            examples:
+              auth-body-example:
+                $ref: "#/components/examples/auth-body-example"
+      responses:
+        200:
+          description: Returns a valid access token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+              examples:
+                auth-response-example:
+                  $ref: "#/components/examples/auth-response-example"
+        400:
+          description: Incorrect request construnction. Missing username, password or empty body
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                unauthorized-response-example:
+                  $ref: "#/components/examples/badauthrequest-response-example"
+        401:
+          description: Invalid username/password supplied
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                unauthorized-response-example:
+                  $ref: "#/components/examples/unauthorized-response-example"
+  /contracts:
+    get:
+      tags:
+      - contracts
+      summary: Obtain contract information
+      description: Get contracts information depending on date and tariff parameters
+      operationId: server.get_contracts
+      parameters:
+      - name: tariff
+        in: query
+        description: Tariff of the contract to filter
+        required: false
+        style: form
+        explode: false
+        schema:
+          type: string
+          default: None
+          enum:
+            - None
+            - 2.0TD
+            - 2.0A
+            - 2.1A
+            - 2.0DHA
+            - 2.0DHS
+            - 2.1DHA
+            - 2.1DHS
+            - 3.0TD
+            - 3.0A
+            - 3.1A
+            - 3.1A-LB
+            - 6.1
+            - 6.1A
+            - 6.1B
+      - name: from_
+        in: query
+        description: Filter contracts with activation date from this date on. In format YYYY-MM-DD
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          format: date
+          example: '2019-08-01'
+      - name: to_
+        in: query
+        description: Filter contracts with activation date until this date. In format YYYY-MM-DD
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          format: date
+          example: '2019-08-10'
+      - name: juridic_type
+        in: query
+        description: Filter contracts by juridic type (physical_person or juridic_person).
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          default: None
+          enum:
+            - None
+            - physical_person
+            - juridic_person
+      - name: limit
+        in: query
+        description: How many contracts to return at one time
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          default: 50
+          maximum: 500
+      - name: cursor
+        in: query
+        description: Actual cursor for this search
+        required: false
+        schema:
+          type: string
+          format: byte
+          default: None
+          example: 'dXNlcjpXMDdRQ1JQQTQ='
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total_results:
+                    type: integer
+                    description: total number of registers
+                    example: 234
+                  count:
+                    type: integer
+                    description: number of registers in current page
+                    example: 234
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/contracts'
+                  links:
+                    type: object
+                    properties:
+                      next:
+                        type: string
+                        description: url of next results. If null, you are in the last page
+                        example: "https://apinergia.somenergia.coop/contracts?limit=5&cursor=dXNlcjpVMEc5V0ZYTlo"
+        400:
+          description: Invalid status value
+          content: {}
+      security:
+        - jwt: []
+  /contracts/{contractId}:
+    get:
+      tags:
+      - contracts
+      summary: Find a contract by ID
+      description: Returns a single contract
+      operationId: server.get_contract_by_id
+      parameters:
+      - name: contractId
+        in: path
+        description: ID of contract to return
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total_results:
+                    type: integer
+                    description: total number of registers for this contract
+                    example: 234
+                  count:
+                    type: integer
+                    description: number of registers in current page
+                    example: 234
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/contracts'
+        400:
+          description: Invalid status value
+          content: {}
+      security:
+        - jwt: []
+  /modcontracts:
+    get:
+      tags:
+      - modcontracts
+      summary: Obtain all contracts with contract amendments.
+      description: Get all contracts with one or more contract amendments by date and type.
+      operationId: server.get_modcontracts
+      parameters:
+      - name: type
+        in: query
+        description: Filter by different types of contract modification
+        required: true
+        style: form
+        explode: false
+        schema:
+          type: array
+          items:
+            type: string
+            enum:
+              - canceled
+              - tariff_power
+      - name: from_
+        in: query
+        description: Filter contract amendments from this date on. Format YYYY-MM-DD.
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: string
+          format: date
+          example: '2019-08-01'
+      - name: to_
+        in: query
+        description: Filter contract amendments until this date. Format YYYY-MM-DD
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: string
+          format: date
+          example: '2019-08-10'
+      - name: juridic_type
+        in: query
+        description: Filter contract amendments by juridic type (physical_person or juridic_person).
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          default: None
+          enum:
+            - None
+            - physical_person
+            - juridic_person
+      - name: limit
+        in: query
+        description: How many contracts to return at one time
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          default: 50
+          maximum: 500
+      - name: cursor
+        in: query
+        description: Actual cursor for this search
+        required: false
+        schema:
+          type: string
+          format: byte
+          default: None
+          example: 'dXNlcjpXMDdRQ1JQQTQ='
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total_results:
+                    type: integer
+                    description: total number of registers
+                    example: 234
+                  count:
+                    type: integer
+                    description: number of registers in current page
+                    example: 234
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/contracts'
+                  links:
+                    type: object
+                    properties:
+                      next:
+                        type: string
+                        description: url of next results. If null, you are in the last page
+                        example: "https://apinergia.somenergia.coop/modcontracts?limit=5&cursor=dXNlcjpVMEc5V0ZYTlo"
+        400:
+          description: Invalid status value
+          content: {}
+      security:
+        - jwt: []
+  /modcontracts/{contractId}:
+    get:
+      tags:
+      - modcontracts
+      summary: Obtain contract amendments by contract ID.
+      description: Get one or more contract amendments by date and type for a specific contract.
+      operationId: server.get_modcontracts_by_id
+      parameters:
+      - name: contractId
+        in: path
+        description: ID of contract to return
+        required: true
+        schema:
+          type: string
+      - name: type
+        in: query
+        description: Filter by different types of contract modification
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: array
+          items:
+            type: string
+            enum:
+              - canceled
+              - tariff_power
+      - name: from_
+        in: query
+        description: Filter contract amendments from this date on. Format YYYY-MM-DD.
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: string
+          format: date
+          example: '2019-08-01'
+      - name: to_
+        in: query
+        description: Filter contract amendments until this date. Format YYYY-MM-DD
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: string
+          format: date
+          example: '2019-08-10'
+      - name: juridic_type
+        in: query
+        description: Filter contract amendments by juridic type (physical_person or juridic_person).
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          default: None
+          enum:
+            - None
+            - physical_person
+            - juridic_person
+      - name: limit
+        in: query
+        description: How many contracts to return at one time
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          default: 50
+          maximum: 500
+      - name: cursor
+        in: query
+        description: Actual cursor for this search
+        required: false
+        schema:
+          type: string
+          format: byte
+          default: None
+          example: 'dXNlcjpXMDdRQ1JQQTQ='
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total_results:
+                    type: integer
+                    description: total number of registers
+                    example: 234
+                  count:
+                    type: integer
+                    description: number of registers in current page
+                    example: 234
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/contracts'
+                  links:
+                    type: object
+                    properties:
+                      next:
+                        type: string
+                        description: url of next results. If null, you are in the last page
+                        example: "https://apinergia.somenergia.coop/modcontracts?limit=5&cursor=dXNlcjpVMEc5V0ZYTlo"
+        400:
+          description: Invalid status value
+          content: {}
+      security:
+        - jwt: []
+  /f1:
+    get:
+      tags:
+      - f1
+      summary: Obtain all F1 information
+      description: Get detailed F1 information depending on date and tariff parameters
+      operationId: server.get_f1_measures
+      parameters:
+      - name: tariff
+        in: query
+        description: Tariff of the contract to filter
+        required: false
+        style: form
+        explode: false
+        schema:
+          type: string
+          default: None
+          enum:
+            - None
+            - 2.0TD
+            - 2.0A
+            - 2.1A
+            - 2.0DHA
+            - 2.0DHS
+            - 2.1DHA
+            - 2.1DHS
+            - 3.0TD
+            - 3.0A
+            - 3.1A
+            - 3.1A-LB
+            - 6.1
+            - 6.1A
+            - 6.1B
+      - name: from_
+        in: query
+        description: Filter all F1 from this date on. Format YYYY-MM-DD
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          format: date
+          example: '2019-08-01'
+      - name: to_
+        in: query
+        description: Filter all F1 until this date. Format YYYY-MM-DD
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          format: date
+          example: '2019-08-10'
+      - name: limit
+        in: query
+        description: How many f1 to return at one time
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          default: 50
+          maximum: 500
+      - name: cursor
+        in: query
+        description: Actual cursor for this search
+        required: false
+        schema:
+          type: string
+          format: byte
+          default: None
+          example: 'dXNlcjpXMDdRQ1JQQTQ='
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total_results:
+                    type: integer
+                    description: total number of registers
+                    example: 234
+                  count:
+                    type: integer
+                    description: number of registers in current page
+                    example: 234
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/f1'
+                  links:
+                    type: object
+                    properties:
+                      next:
+                        type: string
+                        description: url of next results. If null, you are in the last page
+                        example: "https://apinergia.somenergia.coop/f1?limit=5&cursor=dXNlcjpVMEc5V0ZYTlo"
+        400:
+          description: Invalid status value
+          content: {}
+      security:
+        - jwt: []
+  /f1/{contractId}:
+    get:
+      tags:
+      - f1
+      summary: Get all F1 by contractID
+      description: Returns all F1 files for a contract
+      operationId: server.get_f1_measures_by_contract_id
+      parameters:
+      - name: contractId
+        in: path
+        description: ID of contract to get F1 data
+        required: true
+        schema:
+          type: string
+      - name: from_
+        in: query
+        description: Filter all F1 from this date on. Format YYYY-MM-DD
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          format: date
+          example: '2019-08-01'
+      - name: to_
+        in: query
+        description: Filter all F1 until this date. Format YYYY-MM-DD
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          format: date
+          example: '2019-08-10'
+      - name: limit
+        in: query
+        description: How many f1 to return at one time
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          default: 50
+          maximum: 500
+      - name: cursor
+        in: query
+        description: Actual cursor for this search
+        required: false
+        schema:
+          type: string
+          format: byte
+          default: None
+          example: 'dXNlcjpXMDdRQ1JQQTQ='
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total_results:
+                    type: integer
+                    description: total number of f1s for this contract
+                    example: 234
+                  count:
+                    type: integer
+                    description: number of f1s for this contract on current page
+                    example: 234
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/f1'
+                  links:
+                    type: object
+                    properties:
+                      next:
+                        type: string
+                        description: url of next contracts. If null, you are in the last page
+                        example: "https://apinergia.somenergia.coop/f1?limit=5&cursor=dXNlcjpVMEc5V0ZYTlo"
+        400:
+          description: Invalid ID supplied
+          content: {}
+        404:
+          description: Contract not found
+          content: {}
+      security:
+        - jwt: []
+  /cch:
+    get:
+      tags:
+      - cch
+      summary: Obtain hourly curves
+      description: Get hourly curves information depending on type of curve, date or tariff parameters
+      operationId: server.get_cch
+      parameters:
+      - name: tariff
+        in: query
+        description: Tariff of the contract to filter
+        required: false
+        style: form
+        explode: false
+        schema:
+          type: string
+          default: None
+          enum:
+            - None
+            - 2.0TD
+            - 2.0A
+            - 2.1A
+            - 2.0DHA
+            - 2.0DHS
+            - 2.1DHA
+            - 2.1DHS
+            - 3.0TD
+            - 3.0A
+            - 3.1A
+            - 3.1A-LB
+            - 6.1
+            - 6.1A
+            - 6.1B
+      - name: type
+        in: query
+        description: type of hourly curve. You can choose from
+            tg_cchfact (Curve used for billing. It has F5D format and should not have holes);
+            tg_cchval (Validated curve. Includes only the hourly records validated by the meter. It has P5D format);
+            tg_f1 (Curve used for billing. It has F1 format and should not have holes);
+            P1 (Validated curve. Includes only the hourly records validated by the meter. It has P1 format);
+            P2 (Validated curve. Includes curves every fifteen minutes validated by the meter. It has P2 format);
+        required: true
+        style: form
+        explode: false
+        schema:
+          type: string
+          default: tg_cchfact
+          enum:
+            - tg_cchfact
+            - tg_cchval
+            - tg_f1
+            - P1
+            - P2
+      - name: from_
+        in: query
+        description: Get all CCH from this date on. In format YYYY-MM-DD
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          format: date
+          example: '2019-08-01'
+      - name: to_
+        in: query
+        description: Get all CCH until this date. In format YYYY-MM-DD
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          format: date
+          example: '2019-08-10'
+      - name: downloaded_from
+        in: query
+        description: Get all CCH downloaded from this date on at 00:00 hours. In format YYYY-MM-DD
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          format: date
+          example: '2019-08-01'
+      - name: downloaded_to
+        in: query
+        description: Get all CCH downloaded until this date at 00:00 hours. In format YYYY-MM-DD
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          format: date
+          example: '2019-08-10'
+      - name: limit
+        in: query
+        description: How many contracts to return at one time
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          default: 50
+          maximum: 500
+      - name: cursor
+        in: query
+        description: Actual cursor for this search
+        required: false
+        schema:
+          type: string
+          format: byte
+          default: None
+          example: 'dXNlcjpXMDdRQ1JQQTQ='
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total_results:
+                    type: integer
+                    description: total number of registers
+                    example: 234
+                  count:
+                    type: integer
+                    description: number of registers in current page
+                    example: 234
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/cch'
+                  links:
+                    type: object
+                    properties:
+                      next:
+                        type: string
+                        description: url of next results. If null, you are in the last page
+                        example: "https://apinergia.somenergia.coop/contracts?limit=5&cursor=dXNlcjpVMEc5V0ZYTlo"
+        400:
+          description: Invalid status value
+          content: {}
+      security:
+        - jwt: []
+  /cch/{contractId}:
+    get:
+      tags:
+      - cch
+      summary: Obtain cch curves
+      description: Get cch curves information depending on some date and tariff parameters
+      operationId: server.get_cch_by_contract_id
+      parameters:
+      - name: contractId
+        in: path
+        description: ID of contract to get cch curve
+        required: true
+        schema:
+          type: string
+      - name: tariff
+        in: query
+        description: Tariff of the contract to filter
+        required: false
+        style: form
+        explode: false
+        schema:
+          type: string
+          default: None
+          enum:
+            - None
+            - 2.0TD
+            - 2.0A
+            - 2.1A
+            - 2.0DHA
+            - 2.0DHS
+            - 2.1DHA
+            - 2.1DHS
+            - 3.0TD
+            - 3.0A
+            - 3.1A
+            - 3.1A-LB
+            - 6.1
+            - 6.1A
+            - 6.1B
+      - name: type
+        in: query
+        description: type of hourly curve. You can choose from
+            tg_cchfact (Curve used for billing. It has F5D format and should not have holes);
+            tg_cchval (Validated curve. Includes only the hourly records validated by the meter. It has P5D format);
+            tg_f1 (Curve used for billing. It has F1 format and should not have holes);
+            P1 (Validated curve. Includes only the hourly records validated by the meter. It has P1 format);
+            P2 (Validated curve. Includes curves every fifteen minutes validated by the meter. It has P2 format);
+        required: true
+        style: form
+        explode: false
+        schema:
+          type: string
+          default: tg_cchfact
+          enum:
+            - tg_cchfact
+            - tg_cchval
+            - tg_f1
+            - P1
+            - P2
+      - name: from_
+        in: query
+        description: Get all curves from this date on. In format YYYY-MM-DD
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          format: date
+          example: '2019-08-01'
+      - name: to_
+        in: query
+        description: Get all curves until this date. In format YYYY-MM-DD
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          format: date
+          example: '2019-08-10'
+      - name: downloaded_from
+        in: query
+        description: Get all curves downloaded from this date on at 00:00 hours. In format YYYY-MM-DD
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          format: date
+          example: '2019-08-01'
+      - name: downloaded_to
+        in: query
+        description: Get all curves downloaded until this date at 00:00 hours. In format YYYY-MM-DD
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          format: date
+          example: '2019-08-10'
+      - name: limit
+        in: query
+        description: How many contracts to return at one time
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          default: 50
+          maximum: 500
+      - name: cursor
+        in: query
+        description: Actual cursor for this search
+        required: false
+        schema:
+          type: string
+          format: byte
+          default: None
+          example: 'dXNlcjpXMDdRQ1JQQTQ='
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total_results:
+                    type: integer
+                    description: total number of registers
+                    example: 234
+                  count:
+                    type: integer
+                    description: number of registers in current page
+                    example: 234
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/cch'
+                  links:
+                    type: object
+                    properties:
+                      next:
+                        type: string
+                        description: url of next results. If null, you are in the last page
+                        example: "https://apinergia.somenergia.coop/contracts?limit=5&cursor=dXNlcjpVMEc5V0ZYTlo"
+        400:
+          description: Invalid status value
+          content: {}
+      security:
+        - jwt: []
+  /reports:
+    post:
+      tags:
+      - reports
+      summary: uploads report for all contracts
+      operationId: server.reports
+      requestBody:
+        description: json with contracts Ids and type of report to be processed
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/reports'
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  reports:
+                    type: integer
+                    description: number of submited reports
+                    example: 3
+                  unprocessed_reports:
+                    type: array
+                    description: reports that could not be processed
+                    items:
+                      type: string
+                    example: ["0000001", "0000002"]
+        400:
+          description: Invalid username/password supplied
+          content: {}
+  /tariff:
+      get:
+        tags:
+        - tariff
+        summary: Obtain tariff prices
+        description: Get all detailed prices for each tariff
+        operationId: server.get_tariff
+        parameters:
+          - name: type
+            in: query
+            description: Choose a tariff to filter
+            required: false
+            style: form
+            explode: false
+            schema:
+              type: string
+              enum:
+                - 2.0TD
+                - 2.0A
+                - 2.1A
+                - 2.0DHA
+                - 2.0DHS
+                - 2.1DHA
+                - 2.1DHS
+                - 3.0TD
+                - 3.0A
+                - 3.1A
+                - 3.1A-LB
+                - 6.1
+                - 6.1A
+                - 6.1B
+          - $ref: "#/components/parameters/from_Param"
+          - $ref: "#/components/parameters/to_Param"
+          - $ref: "#/components/parameters/limitParam"
+          - $ref: "#/components/parameters/cursorParam"
+        responses:
+          200:
+            description: Tariff prices
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/TariffResponse'
+                examples:
+                  tariff-response:
+                    $ref: "#/components/examples/tariff-response-example"
+          400:
+            description: Bad request
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ErrorResponse'
+                examples:
+                  badrequest-response:
+                    $ref: "#/components/examples/badrequest-response-example"
+components:
+  parameters:
+    from_Param:
+      name: from_
+      in: query
+      description: >
+        Filter results from the date specifiend.
+        Must be in **YYYY-MM-DD** format.
+      required: false
+      style: form
+      schema:
+        type: string
+        format: date
+        example: '2019-08-01'
+    to_Param:
+      name: to_
+      in: query
+      description: >
+        Filter results until this date. Must be in **YYYY-MM-DD** format and **greater than from_** param.
+      required: false
+      style: form
+      schema:
+        type: string
+        format: date
+        example: '2019-08-10'
+    limitParam:
+      name: limit
+      in: query
+      description: How many tariff prices to return at one time
+      required: false
+      schema:
+        type: integer
+        minimum: 0
+        default: 100
+    cursorParam:
+      name: cursor
+      in: query
+      description: Actual cursor for this search
+      required: false
+      schema:
+        type: string
+        format: byte
+        default: None
+        example: 'dXNlcjpXMDdRQ1JQQTQ='
+  schemas:
+    reports:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        contract_ids:
+          type: array
+          items:
+            type: string
+          example: ["0000001", "0000002"]
+        type:
+          type: string
+          description: type of report
+          example: "infoenergia"
+        create_at:
+          type: string
+          format: date-time
+          description: json creation date
+          example: "2020-01-01"
+        month:
+          type: string
+          description: month of json data
+          example: "202001"
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        username:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+        token:
+          type: string
+        active:
+          type: boolean
+    contracts:
+      type: object
+      properties:
+        page_results:
+          type: integer
+          description: number of contracts per page
+          example: 100
+        contractId:
+          type: string
+          description: contract ID
+          example: contractId-123
+        ownerId:
+          type: string
+          description: owner ID
+          example: ownerId-123
+        payerId:
+          type: string
+          description: payer ID (should be the same as the owner id)
+          example: signerId-123
+        dateStart:
+          type: string
+          format: date-time
+          description: contract activation date
+          example: "2013-10-11T16:37:05Z"
+        dateEnd:
+          type: string
+          nullable: true
+          description: contract cancelation date
+          example: null
+        autoconsumo:
+          type: string
+          description: Type of selfconsumption
+          example: "[00] - Sin Autoconsumo"
+        juridicType:
+          type: string
+          description: juridic type (physical or juridc person)
+          example: "physicalPerson"
+        tariffId:
+          type: string
+          description: contracted tariff name
+          example:  "2.0TD"
+        tariff_:
+          type: object
+          description: tariff information
+          items:
+            type: object
+            properties:
+              tariffId:
+                type: string
+                description: tariff name
+              tariffPriceId:
+                type: number
+                format: integer
+                description: price id for contracted tariff (see tariff endpoint)
+              dateStart:
+                type: string
+                format: date-time
+              dateEnd:
+                type: string
+                format: date-time
+          example:
+              {
+                "tariff":"2.0A",
+                "tariffCostId": 123,
+                "dateStart": "2019-08-11T00:00:00Z",
+                "dateEnd": null
+              }
+        tariffHistory:
+          type: array
+          description: tariff history
+          items:
+            type: object
+            properties:
+              tariffId:
+                type: string
+              tariffPriceId:
+                type: number
+                format: integer
+                description: price id for contracted tariff (see tariff endpoint)
+              dateStart:
+                type: string
+                format: date-time
+              dateEnd:
+                type: string
+                format: date-time
+          example:
+            {
+              "tariff": "2.0A",
+              "tariffCostId": 123,
+              "dateStart": "2019-08-11T00:00:00Z",
+              "dateEnd": "2019-08-11T00:00:00Z",
+            }
+        power:
+          type: integer
+          format: int64
+          description: contracted power by period
+          example:
+            {
+              "P1": 20000,
+              "P2": 20000,
+              "P3": 30000
+            }
+        power_:
+          type: object
+          description: power information
+          items:
+            type: object
+            properties:
+              power:
+                type: integer
+                description: contracted power by period
+              dateStart:
+                type: string
+                format: date-time
+              dateEnd:
+                type: string
+                format: date-time
+              measurement_point:
+                type: string
+          example:
+              {
+                "power": {
+                  "P1": 20000,
+                  "P2": 20000,
+                  "P3": 20000
+                },
+                "dateStart": "2019-08-11T00:00:00Z",
+                "dateEnd": null,
+                "measurement_point": "05"
+              }
+        powerHistory:
+          type: array
+          description: power history of a contract
+          items:
+            type: object
+            properties:
+              power:
+                type: integer
+              dateStart:
+                type: string
+                format: date-time
+              dateEnd:
+                type: string
+                format: date-time
+              measurement_point:
+                type: string
+          example:
+              {
+                "power": 123,
+                "dateStart": "2019-08-11T00:00:00Z",
+                "dateEnd": "2019-08-11T00:00:00Z",
+                "measurement_point": "05"
+              }
+        climaticZone:
+          type: string
+          description:  climatic zone code
+          example: "climaticZone-1"
+        activityCode:
+          type: string
+          description: activity code plus description
+          example: "activityCode - activityCodeDescription"
+        customer:
+          type: object
+          description: contract owner
+          items:
+            type: object
+            properties:
+              customerId:
+                type: integer
+              address:
+                type: object
+                items:
+                  type: object
+                  properties:
+                    buildingId:
+                      type: string
+                    city:
+                      type: string
+                    cityCode:
+                      type: string
+                    countryCode:
+                      type: string
+                    country:
+                      type: string
+                    postalCode:
+                      type: string
+                    province:
+                      type: string
+                    provinceCode:
+                      type: string
+                    parcelNumber:
+                      type: string
+              meteringPointId:
+                type: string
+                description: metering point ID
+              buildingData:
+                type: object
+                description: details on building conditions
+                items:
+                  type: object
+                  properties:
+                    buildingConstructionYear:
+                      type: integer
+                      format: date
+                      description: construction year
+                    dwellingArea:
+                      type: integer
+                      description: area of residence
+                    propertyType:
+                      type: string
+                      description: type of residence
+                    buildingType:
+                      type: string
+                      description: type of building
+                    dwellingPositionInBuilding:
+                      type: string
+                      description: residence floor
+                    dwellingOrientation:
+                      type: string
+                      description: orientation
+                    buildingWindowsType:
+                      type: string
+                      description: type of windows
+                    buildingWindowsFrame:
+                      type: string
+                      description: type of windows frame
+                    buildingCoolingSource:
+                      type: string
+                      description: cooling source
+                    buildingHeatingSource:
+                      type: string
+                      description: heating source
+                    buildingHeatingSourceDhw:
+                      type: string
+                      description: type of dwh heating source
+                    buildingSolarSystem:
+                      type: string
+                      description: type of solar installation
+              profile:
+                type: object
+                description: details on residents
+                items:
+                  type: object
+                  properties:
+                    totalPersonsNumber:
+                      type: integer
+                      description: total number of persons
+                    minorsPersonsNumber:
+                      type: integer
+                      description: number of minors
+                    workingAgePersonsNumber:
+                      type: integer
+                      description: number of working persons
+                    retiredAgePersonsNumber:
+                      type: integer
+                      description: number of retired persons
+                    malePersonsNumber:
+                      type: integer
+                      description: number of male persons
+                    femalePersonsNumber:
+                      type: integer
+                      description: number of female persons
+                    educationLevel:
+                      type: object
+                      description: education level of residents
+                      items:
+                        type: object
+                        properties:
+                          edu_prim:
+                            type: integer
+                          edu_sec:
+                            type: integer
+                          edu_uni:
+                            type: integer
+                          edu_noStudies:
+                            type: integer
+              customisedServiceParameters:
+                type: object
+                items:
+                  type: object
+                  properties:
+                    OT701:
+                      type: string
+          example:
+                {
+                "customerId": "customerId-123",
+                "address":
+                  {
+                  "buildingId": "building-123",
+                  "city": "city-123",
+                  "cityCode": "cityCode-123",
+                  "countryCode": "ES",
+                  "country": "Spain",
+                  "postalCode": "postalCode-123",
+                  "province": "Barcelona",
+                  "provinceCode": "provinceCode-123",
+                  "parcelNumber": "parcelNumber-123",
+                  },
+                "meteringPointId": "c1759810-90f3-012e-0404-34159e211070",
+                "buildingData":
+                  {
+                  "buildingConstructionYear": 2014,
+                  "dwellingArea": 196,
+                  "propertyType": "primary",
+                  "buildingType": "Apartment",
+                  "dwellingPositionInBuilding": "first_floor",
+                  "dwellingOrientation": "SE",
+                  "buildingWindowsType": "double_panel",
+                  "buildingWindowsFrame": "PVC",
+                  "buildingCoolingSource": "electricity",
+                  "buildingHeatingSource": "district_heating",
+                  "buildingHeatingSourceDhw": "gasoil",
+                  "buildingSolarSystem": "solar_thermal_heating"
+                  },
+                "profile":
+                  {
+                  "totalPersonsNumber": 3,
+                  "minorsPersonsNumber": 0,
+                  "workingAgePersonsNumber": 2,
+                  "retiredAgePersonsNumber": 1,
+                  "malePersonsNumber": 2,
+                  "femalePersonsNumber": 1,
+                  "educationLevel":
+                    {
+                    "edu_prim": 0,
+                    "edu_sec": 1,
+                    "edu_uni": 1,
+                    "edu_noStudies": 1
+                    }
+                  },
+                "customisedServiceParameters":
+                  {
+                  "OT701": "p1;p2;px"
+                  }
+                }
+        devices:
+          type: array
+          description: metering device
+          items:
+            type: object
+            properties:
+              dateStart:
+                type: string
+                format: date-time
+                description: activation date
+              dateEnd:
+                type: string
+                nullable: true
+                format: date-time
+                description: deactivation date
+              devideId:
+                type: string
+                description: metering device id
+          example:
+            [{
+              "dateStart": "2019-10-11T16:37:05Z",
+              "dateEnd": null,
+              "deviceId": "c1810810-0381-012d-25a8-0017f2cd3574"
+              }]
+        report:
+          type: object
+          description: report
+          items:
+            type: object
+            properties:
+              initialMonth:
+                type: string
+                format: YYYYMM
+                description: report month
+              language:
+                type: string
+                description: report language
+          example:
+            {
+              "initialMonth": "201902",
+              "language": "ES"
+            }
+        version:
+          type: integer
+          description: Contract modification's name
+          example: 1
+        experimentalGroupUser:
+          type: boolean
+          description: set to true if the contract is in an experimental group
+          example: true
+        experimentalGroupUserTest:
+          type: boolean
+          description: set to true if it is a test
+          example: true
+    f1:
+      type: object
+      properties:
+        page_results:
+          type: integer
+          description: number of F1 per page
+          example: 100
+        contractId:
+          type: string
+          description: contract ID
+          example: contractId-123
+        invoiceId:
+          type: string
+          description: invoice ID
+          example: invoiceId-123
+        dateStart:
+          type: string
+          nullable: true
+          format: date-time
+          description: invoice start datetime
+        dateEnd:
+          type: string
+          nullable: true
+          format: date-time
+          description: invoice end date
+        tariffId:
+          type: string
+          description: contracted tariff name
+          example: 2.0A
+        meteringPointId:
+          type: string
+          description: metering point ID
+          example: "c1759810-90f3-012e-0404-34159e211070"
+        devices:
+          type: array
+          description: metering device
+          items:
+            type: object
+            properties:
+              dateStart:
+                type: string
+                format: date-time
+                description: activation date
+              dateEnd:
+                type: string
+                nullable: true
+                format: date-time
+                description: deactivation date
+              deviceId:
+                type: string
+                description: metering device id
+          example:
+            [{
+              "dateStart": "2019-10-11T16:37:05Z",
+              "dateEnd": null,
+              "deviceId": "c1810810-0381-012d-25a8-0017f2cd3574"
+              }]
+        power_measurements:
+          type: array
+          description: current F1 power information
+          items:
+            type: object
+            properties:
+              period:
+                type: string
+              excess:
+                type: number
+                format: float
+              peak_maximeter:
+                type: number
+                format: float
+              units:
+                type: string
+            example:
+              [
+                {
+                  period: P1,
+                  excess: 0.0,
+                  peak_maximeter: 2.0,
+                  units: 'kW/dia'
+                },
+                {
+                  period: P2,
+                  excess: 0.0,
+                  peak_maximeter: 2.0,
+                  units: 'kW/dia'
+                },
+                {
+                  period: P3,
+                  excess: 0.0,
+                  peak_maximeter: 2.0,
+                  units: 'kW/dia'
+                }
+              ]
+        reactive_energy_measurements:
+          type: array
+          description: current F1 reactive energy information
+          items:
+            type: object
+            properties:
+              source:
+                type: string
+              period:
+                type: string
+              consum:
+                type: number
+                format: float
+              units:
+                type: string
+            example:
+              [
+                {
+                  source: "Telegestión",
+                  period: P1,
+                  consum: 2.0,
+                  units: 'kVArh'
+                },
+                {
+                  energyType: "reactiva",
+                  source: "Real",
+                  period: P2,
+                  consum: 2.0,
+                  units: 'kVArh'
+                },
+              ]
+        active_energy_measurements:
+          type: array
+          description: current F1 active energy information
+          items:
+            type: object
+            properties:
+              source:
+                type: string
+              period:
+                type: string
+              consum:
+                type: number
+                format: float
+              units:
+                type: string
+            example:
+              [
+                {
+                  source: "Telegestión",
+                  period: P1,
+                  consum: 2.0,
+                  units: 'kWh'
+                },
+                {
+                  source: "Real",
+                  period: P2,
+                  consum: 2.0,
+                  units: 'kWh'
+                },
+              ]
+        maximeter:
+          type: array
+          description: current F1 maximeter information
+          items:
+            type: object
+            properties:
+              dateStart:
+                type: string
+              dateEnd:
+                type: string
+              maxPower:
+                type: number
+                format: float
+              period:
+                type: string
+            example:
+              [
+                {
+                  dateStart: "2021-06-01",
+                  dateEnd: "2021-09-10",
+                  maxPower: 4.95,
+                  period: "2.0TD (P2)"
+                },
+                {
+                  dateStart: "2021-06-01",
+                  dateEnd: "2021-09-10",
+                  maxPower: 2.85,
+                  period: "2.0TD (P1)"
+                },
+              ]
+    cch:
+      type: object
+      properties:
+        contractId:
+          type: string
+          description: contract ID
+          example: contractId-123
+        meteringPointId:
+          type: string
+          description: cups
+          example: "c1759810-90f3-012e-0404-34159e211070"
+        season:
+          type: number
+          format: integer
+          description: current season. 0 if it's winter and 1 if it's or summer
+          example: 0
+        r1:
+          type: number
+          format: float
+          description: first quadrant of reactive energy mesurement (Wh)
+          example: 0
+        r2:
+          type: number
+          format: float
+          description: second quadrant of reactive energy mesurement (Wh)
+          example: 0
+        r3:
+          type: number
+          format: float
+          description: third quadrant of reactive energy mesurement (Wh)
+          example: 0
+        r4:
+          type: number
+          format: float
+          description: fourth quadrant of reactive energy mesurement (Wh)
+          example: 0
+        ai:
+          type: number
+          format: float
+          description: Input of active energy mesurement (Wh)
+          example: 0
+        ao:
+          type: number
+          format: float
+          description: Ouput of active energy mesurement (Wh)
+          example: 0
+        source:
+          type: number
+          format: integer
+          description: "Data collection method.
+            It could have the following values:
+            1 (Medida real válida);
+            2 (Medida perfilada correspondiente a un cierre real);
+            3 (Medida real ajustada a un cierre real);
+            4 (Medida perfilada correspondiente a auto-lectura de cliente);
+            5 (Estimación por consumo histórico del año anterior perfilado);
+            6 (Estimación por factor de utilización perfilado)"
+          example: 1
+        validated:
+          type: boolean
+          description: True if measurement is validated, False otherwise
+          example: True
+        date:
+          type: string
+          format: date
+          description: measurement date.
+          example: "2020-09-01T16:37:05Z"
+        dateDownload:
+          type: string
+          format: date
+          description: file dowloaded at this date
+          example: "2020-09-01T16:37:05Z"
+        dateUpdate:
+          type: string
+          format: date
+          description: file updated at this date
+          example: "2020-09-01T16:37:05Z"
+    Tariff:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Tariff ID
+          example: 123
+        current:
+            $ref: "#/components/schemas/TariffPrice"
+        historical:
+            type: array
+            items:
+              $ref: "#/components/schemas/TariffPrice"
+    TariffPrice:
+      type: object
+      description: A collection of prices for serveral items to apply within a date period
+      properties:
+        dateStart:
+          type: string
+          format: date
+          description: Tariff price starting date
+        dateEnd:
+          type: string
+          format: date
+          description: Tariff price ending date
+        activeEnergy:
+          type: array
+          description: energy price by period
+          items:
+            $ref: "#/components/schemas/PeriodPrice"
+        power:
+          type: array
+          description: power price by period
+          items:
+            $ref: "#/components/schemas/PeriodPrice"
+        gkwh:
+          type: array
+          description: power price by period
+          items:
+            $ref: "#/components/schemas/PeriodPrice"
+    PeriodPrice:
+      type: object
+      properties:
+        period:
+          type: string
+        price:
+          type: number
+          format: float
+        units:
+          type: string
+    PriceReactiveEnergy:
+      type: object
+      description: All prices for reactive energy
+      properties:
+        current:
+          type: array
+          description: current price
+          items:
+            type: object
+            properties:
+              BOE:
+                type: string
+                description: Name of BOW
+              price33:
+                type: number
+                format: float
+                description: price applied
+              price75:
+                type: number
+                format: float
+                description: price applied
+              units:
+                type: string
+        history:
+          type: array
+          description: current price
+          items:
+            type: object
+            properties:
+              BOE:
+                type: string
+                description: Name of BOW
+              price33:
+                type: number
+                format: float
+                description: price applied
+              price75:
+                type: number
+                format: float
+                description: price applied
+              units:
+                type: string
+    # ============================
+    # Request and Response schemas
+    # ============================
+    AuthBodyRequest:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+    AuthResponse:
+      type: object
+      description: Authentication response definition
+      properties:
+        access_token:
+          type: string
+    BaseListResponse:
+      type: object
+      description: "Base parameters that will be appear in each list response"
+      properties:
+        count:
+          type: integer
+          description: number of results of this page
+        total_results:
+          type: integer
+          description: total results of this request
+        links:
+          type: object
+          properties:
+            next:
+              type: string
+              description: url of next results. If null, you are in the last page
+    TariffResponse:
+      allOf:
+        - $ref: "#/components/schemas/BaseListResponse"
+        - type: object
+          properties:
+            data:
+              $ref: "#/components/schemas/Tariff"
+    ErrorResponse:
+      type: object
+      properties:
+        code:
+          type: string
+          description: Error code
+        description:
+          type: string
+          description: Error description
+  examples:
+    auth-body-example:
+      value:
+        username: foo
+        password: oyoyoyoy
+    auth-response-example:
+      value:
+        access_token: ouJhbGciOiKUOzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZXhwIjoxNjgwNjE3MzQ5fE.1McmVkc1wLGHhDzTLTH2a4rb-72Gt6AHs3ER2FDlV_0
+    badrequest-response-example:
+      value:
+        error:
+          code: bad_request
+          message: "Sorry, I couldn't process this request  ¯\_(ツ)_/¯"
+    badauthrequest-response-example:
+      value:
+        error:
+          code: bad_request
+          message: Missing username or password.
+    unauthorized-response-example:
+      value:
+        error:
+          code: unauthorized
+          message: Wrong user name or password
+    tariff-response-example:
+      value: {
+        "total_results": 20,
+        "count": 20,
+        "links": {},
+        "data": [
+          {
+            id: 4,
+            "current": {
+              "dateStart": "2020-07-01",
+              "dateEnd": "2021-03-31",
+              "activeEnergy": [
+                {
+                      "period": "P1",
+                      "price": 0.127,
+                      "units": "€/kWh"
+                  }
+              ],
+              "power": [
+                  {
+                      "period": "P1",
+                      "price": 38.043426,
+                      "units": "€/kW year"
+                  }
+              ],
+              "GKWh": [
+                  {
+                      "period": "P1",
+                      "price": 0.11,
+                      "units": "€/kWh"
+                  }
+              ]
+            },
+            "historical": [
+              {
+                  "dateStart": "2020-06-01",
+                  "dateEnd": "2020-06-30",
+                  "activeEnergy": [
+                      {
+                          "period": "P1",
+                          "price": 0.139,
+                          "units": "€/kWh"
+                      }
+                  ],
+                  "power": [
+                      {
+                          "period": "P1",
+                          "price": 38.043426,
+                          "units": "€/kW year"
+                      }
+                  ],
+                  "GKWh": [
+                      {
+                          "period": "P1",
+                          "price": 0.116,
+                          "units": "€/kWh"
+                      }
+                  ]
+              },
+            ]
+          }
+        ]
+      }
+    price-reactve-energy-example:
+      value: {
+        "current": {
+          "BOE": "BOE núm. 312 - 28/12/2018",
+          "price33": 0.041554,
+          "price75": 0.062332,
+          "units": "€/kVArh"
+        },
+        "history": [
+          {
+            "BOE": "BOE núm. 236 - 30/09/2011",
+            "price33": 0.041554,
+            "price75": 0.062332,
+            "units": "€/kVArh"
+          },
+          {
+            "BOE": "BOE núm. 315 - 31/12/2011",
+            "price33": 0.041554,
+            "price75": 0.062332,
+            "units": "€/kVArh"
+          }
+        ]
+      }
