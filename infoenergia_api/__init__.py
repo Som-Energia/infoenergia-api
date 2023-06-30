@@ -108,9 +108,7 @@ def attach_context(app: Sanic):
 def build_app(app_name: str) -> Sanic:
     from config import config
 
-    app = Sanic(name=app_name)
-
-    ## Triki if until https://github.com/sanic-org/sanic/pull/2451 is resolved
+    # Triki if until https://github.com/sanic-org/sanic/pull/2451 is resolved
     if (
         environment := os.environ.get("INFOENERGIA_MODULE_SETTINGS").split(".")[-1]
         != "testing"
@@ -121,6 +119,8 @@ def build_app(app_name: str) -> Sanic:
             release=VERSION,
             environment=environment,
         )
+
+    app = Sanic(name=app_name)
 
     try:
         app.update_config(config)
