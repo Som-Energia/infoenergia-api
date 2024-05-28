@@ -18,6 +18,7 @@ JWT_ISSUER = "som-energia"
 JWT_SECRET = "j4h5gf6d78RFJTHGYH(/&%$·sdgfh"
 JWT_LIFETIME_SECONDS = 1600
 JWT_ALGORITHM = "HS256"
+OPENAPI_PATH = os.path.join(BASE_DIR, "docs/openapi/openapi.yaml")
 
 tokens = {}
 
@@ -81,6 +82,6 @@ if __name__ == "__main__":
         specification_dir=os.path.join(BASE_DIR, "docs/"),
         debug=True,
     )
-    app.add_api("infoenergia-api.yaml", validate_responses=True, **api_extra_args)
+    app.add_api(OPENAPI_PATH, validate_responses=True, **api_extra_args)
 
     app.run(host="localhost", port=8090)
