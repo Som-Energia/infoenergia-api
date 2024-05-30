@@ -297,6 +297,40 @@ paths:
                     $ref: "#/components/examples/badrequest-response-example"
         security:
           - infoenergiaAuth: []
+  /tariff/indexed:
+    get:
+      tags:
+      - tariff
+      summary: Obtain indexed tariff prices
+      description: Get all detailed prices for energy consumption for all hours **without taxes**
+      parameters:
+        - $ref: "#/components/parameters/tariffsParam"
+        - $ref: "#/components/parameters/fromParam"
+        - $ref: "#/components/parameters/toParam"
+        - $ref: "#/components/parameters/geographicalRegionParam"
+        - $ref: "#/components/parameters/limitParam"
+        - $ref: "#/components/parameters/cursorParam"
+      responses:
+        200:
+          description: hourly prices for an indexed tariff
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnergyIndexedTariffResponse'
+              examples:
+                energy-indexed-tariff-response:
+                  $ref: "#/components/examples/energy-indexed-tariff-response-example"
+        400:
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                badrequest-response:
+                  $ref: "#/components/examples/badrequest-response-example"
+      security:
+        - infoenergiaAuth: []
   /reports:
     post:
       tags:
@@ -662,6 +696,15 @@ components:
           examples:
             modcontracts-response-example:
               $ref: "#/components/examples/tariff-response-example"
+    EnergyIndexedTariffResponse:
+      description: Returns the energy indexed tariff prices for all hours, with the number of results and the corresponding data. If the request is paginated, return the next page cursor and the next page url.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/EnergyIndexedTariff"
+          examples:
+            energy-indexed-tariff-response-example:
+              $ref: "#/components/examples/energy-indexed-tariff-response-example"
   schemas:
     ReportBody:
       type: object
@@ -1391,6 +1434,51 @@ components:
                 type: array
                 items:
                   $ref: "#/components/schemas/TariffPrice"
+    EnergyIndexedTariff:
+      type: object
+      properties:
+        first_date:
+          type: string
+          format: date
+          description: first date of the tariff
+          example: "2020-09-01 16:00:00"
+        last_date:
+          type: string
+          format: date
+          description: last date of the tariff
+          example: "2020-09-02 13:00:00"
+        curves:
+          type: object
+          description: hourly prices for all hours
+          properties:
+            geo_zone:
+              type: string
+              default: "PENINSULA"
+              enum:
+                - "PENINSULA"
+                - "CANARIAS"
+                - "BALEARES"
+              description: Spanish grid System according to Operator (REE)
+              example: "PENINSULA"
+            tariff:
+              type: string
+              enum:
+                - "2.0TD"
+                - "3.0TD"
+                - "3.0TDVE"
+                - "6.1TD"
+                - "6.1TDVE"
+              description: tariff DSO
+              example: "2.0TD"
+            price_euros_kwh:
+              type: array
+              description: List of hourly prices from given range (first date - last date)
+              items:
+                type: float
+
+
+
+
     SingleContractTariffPrice:
       type: object
       properties:
