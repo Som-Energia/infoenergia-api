@@ -35,10 +35,9 @@ pipenv install --dev
 
 # Clear cache lock file for troubleshooting dependencies
 pipenv lock --pre --clear
-
-# Create the application environment file
-cp .env.example .env
 ```
+# Create the application environment file
+Create softlink a it-docs/conf/infoenergia-api/.env (`ln -s ../it-docs/conf/infoenergia-api/.env .env`)
 
 ### Install a redis server
 You can use a docker image:
@@ -54,21 +53,11 @@ sudo apt install redis-server
 ### Configure the application
 Edit the `.env` file:
 
-- Note: Somenergia's credentials can be found in our private documentation.
-- Configure `ERP_CONF` pointing to your ERP instance
-- Configure `MONGO_CONF` pointing to your Mongo instance
-- Configure `ERP_DB_CONF` pointing to your erp database
 - If the `ERP_CONF` "server" starts with http instead of https, set:
 	```
 	TRANSPORT_POOL_CONF={"secure": false}
 	```
 	Otherwise, set it `{"secure": true}`
-- Configure `REDIS_CONF` as `redis://localhost:6379` (if you are using local redis)
-- Point the `DATA_DIR` to an existing local directory to store the database file
-- Given  Beedata API credentials:
-	- Move certificate files locally and update `CERT_FILE` and `KEY_FILE` accordingly
-	- Edit `USERNAME`, `PASSWORD`, `COMPANY_ID` and `BASE_URL` to the provided access parameters.
-
 
 ## Testing
 
