@@ -37,7 +37,7 @@ pipenv install --dev
 pipenv lock --pre --clear
 ```
 # Create the application environment file
-Create softlink a it-docs/conf/infoenergia-api/.env (`ln -s ../it-docs/conf/infoenergia-api/.env .env`)
+Create softlink a deployment-configurations/infoenergia-api/.env (`ln -s ../deployment-configurations/infoenergia-api/.env .env`)
 
 ### Install a redis server
 You can use a docker image:
